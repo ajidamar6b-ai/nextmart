@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080f20">
 <title>NEXTMART | Digital Store</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080f20;color:#f5f7ff;font-family:Arial,sans-serif}
@@ -41,8 +40,11 @@ button{cursor:pointer}
 .product-head p{margin:0;font-size:11px;color:#a4b4ce}
 .panel{background:#141f35;border:1px solid #293a58;border-radius:14px;padding:15px;margin-top:13px}
 label{display:block;font-size:12px;color:#c8d5e9;margin:12px 0 6px}
-input{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;background:#0c172b;color:white;font-size:13px}
-.nominals{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:270px;overflow-y:auto;padding:2px 5px 2px 0;scrollbar-width:thin}
+input,select{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;background:#0c172b;color:white;font-size:13px}
+input.invalid,select.invalid{border:1px solid #ff6464}
+.field-error{color:#ff8585;font-size:11px;margin-top:6px;line-height:1.4}
+.field-hint{color:#8fa6c7;font-size:10px;margin-top:5px}
+.nominals{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:270px;overflow-y:auto;padding:2px 5px 2px 0}
 .nominal{width:100%;background:#192842;border:1px solid #344968;border-radius:9px;padding:14px;text-align:left;font-size:12px;color:#f5f7ff}
 .nominal:after{content:"Pilih";float:right;color:#8faed2;font-size:11px}
 .nominal.active{border:2px solid #55aaff;background:#1b3c66}
@@ -67,7 +69,6 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 @media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -83,7 +84,6 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 </header>
 
 <div id="menuOverlay" class="menu-overlay hidden" onclick="toggleMenu(false)"></div>
-
 <nav id="drawer" class="drawer hidden">
  <div class="drawer-head">
   <div class="drawer-title">MENU NEXTMART</div>
@@ -97,56 +97,40 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 
 <main class="wrap">
 
-<!-- BERANDA -->
 <section id="home">
  <div class="hero">
   <div class="tag">WELCOME TO NEXTMART</div>
   <h2>Semua kebutuhan digital dalam satu tempat.</h2>
   <p>Top up game, pulsa, paket data dan saldo digital dengan mudah.</p>
  </div>
-
  <h3>Kategori Produk</h3>
  <p class="muted">Pilih layanan yang ingin kamu gunakan.</p>
  <div class="grid" id="categories"></div>
-
  <h3>Kenapa NEXTMART?</h3>
  <div class="grid">
-  <div class="card center">
-   <div class="logo-box"><span class="logo-fallback">⚡</span></div>
-   <b>Praktis</b><small>Pilih produk dengan mudah</small>
-  </div>
-  <div class="card center">
-   <div class="logo-box"><span class="logo-fallback">🛡</span></div>
-   <b>Aman</b><small>Pengembangan sistem bertahap</small>
-  </div>
+  <div class="card center"><div class="logo-box"><span class="logo-fallback">⚡</span></div><b>Praktis</b><small>Pilih produk dengan mudah</small></div>
+  <div class="card center"><div class="logo-box"><span class="logo-fallback">🛡</span></div><b>Aman</b><small>Pengembangan sistem bertahap</small></div>
  </div>
 </section>
 
-<!-- LOGIN DAN DAFTAR -->
 <section id="account" class="hidden">
  <button class="back" onclick="home()">← Kembali</button>
  <h3 id="authTitle">Login NEXTMART</h3>
  <p class="muted" id="authDescription">Masuk ke akun NEXTMART kamu.</p>
-
  <div class="panel">
   <label>Email</label>
   <input id="authEmail" type="email" placeholder="Masukkan email" autocomplete="email">
-
   <label>Password</label>
   <input id="authPassword" type="password" placeholder="Minimal 6 karakter" autocomplete="current-password">
-
   <button class="primary" id="authSubmit" onclick="submitAuth()">Login</button>
   <button class="primary" style="background:#253957" id="authSwitch" onclick="switchAuth()">Belum punya akun? Daftar</button>
-
   <div class="auth-status" id="authMessage"></div>
  </div>
 </section>
 
-<!-- PROFIL -->
 <section id="profile" class="hidden">
  <button class="back" onclick="home()">← Kembali</button>
  <h3>Profil Saya</h3>
-
  <div class="panel">
   <div class="center" style="font-size:42px">👤</div>
   <p class="muted">Email akun</p>
@@ -156,7 +140,6 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
  </div>
 </section>
 
-<!-- KATALOG -->
 <section id="catalog" class="hidden">
  <button class="back" onclick="home()">← Kembali</button>
  <h3 id="catalogTitle">Pilih Produk</h3>
@@ -166,89 +149,53 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
  <div class="notice hidden" id="empty">Produk tidak ditemukan.</div>
 </section>
 
-<!-- DETAIL PRODUK -->
 <section id="detail" class="hidden">
  <button class="back" onclick="catalogBack()">← Kembali</button>
  <h3>Detail Produk</h3>
-
  <div class="product-head">
   <div class="logo-box"><img id="detailLogo" alt="Logo produk"></div>
-  <div>
-   <h2 id="detailName"></h2>
-   <p id="detailCategory"></p>
-  </div>
+  <div><h2 id="detailName"></h2><p id="detailCategory"></p></div>
  </div>
-
  <div class="panel">
   <div id="fields"></div>
   <h3>Pilih Nominal</h3>
-  <div class="muted">Geser daftar ke atas atau ke bawah untuk melihat nominal.</div>
+  <div class="muted">Geser daftar untuk melihat nominal.</div>
   <div class="nominals" id="nominals"></div>
-
-  <div class="notice">
-   Nominal dan harga resmi akan dimuat setelah katalog IAK Sandbox diintegrasikan.
-   Validasi ID otomatis belum aktif.
-  </div>
-
+  <div class="notice">Validasi format aktif. Pengecekan apakah ID benar-benar terdaftar membutuhkan koneksi API supplier.</div>
   <button class="primary" id="orderButton" onclick="order()">Lanjutkan</button>
  </div>
 </section>
 
-<!-- RINGKASAN -->
 <section id="summary" class="hidden">
  <button class="back" onclick="show('detail')">← Kembali</button>
  <h3>Ringkasan Pesanan</h3>
- <div class="panel" id="summaryText"></div>
- <div class="notice">
-  Pastikan data tujuan sudah benar. Harga supplier belum terhubung.
-  Hubungi admin untuk memastikan total pembayaran sebelum membayar.
- </div>
+ <div class="panel" id="summaryText" style="white-space:pre-line"></div>
+ <div class="notice">Pastikan data tujuan sudah benar. Harga supplier belum terhubung. Hubungi admin untuk memastikan total pembayaran sebelum membayar.</div>
  <button class="primary" onclick="openPayment()">Pilih Pembayaran</button>
 </section>
 
-<!-- PEMBAYARAN -->
 <section id="payment" class="hidden">
  <button class="back" onclick="show('summary')">← Kembali</button>
  <h3>Metode Pembayaran</h3>
  <p class="muted">Pilih salah satu metode pembayaran NEXTMART.</p>
-
  <div class="panel">
-  <button class="payment-option" onclick="choosePayment('qris')">
-   <strong>▦　QRIS DANA Bisnis</strong>
-   <small>Bayar dengan scan kode QR dari aplikasi pembayaran.</small>
-  </button>
-
-  <button class="payment-option" onclick="choosePayment('dana')">
-   <strong>●　Transfer DANA</strong>
-   <small>Transfer langsung ke nomor DANA NEXTMART.</small>
-  </button>
+  <button class="payment-option" onclick="choosePayment('qris')"><strong>▦　QRIS DANA Bisnis</strong><small>Bayar dengan scan kode QR.</small></button>
+  <button class="payment-option" onclick="choosePayment('dana')"><strong>●　Transfer DANA</strong><small>Transfer ke nomor DANA NEXTMART.</small></button>
  </div>
-
  <div id="payQRIS" class="panel center hidden">
   <h3>QRIS DANA Bisnis</h3>
   <p class="muted">Scan kode QR berikut untuk membayar.</p>
-  <img src="./IMG_4665.jpeg" alt="QRIS DANA Bisnis NEXTMART" class="qris-image"
-   onerror="this.style.display='none';document.getElementById('qrisError').classList.remove('hidden')">
-  <div id="qrisError" class="notice hidden">QRIS tidak ditemukan. Pastikan IMG_4665.jpeg berada satu folder dengan index.html.</div>
+  <img src="./IMG_4665.jpeg" alt="QRIS DANA Bisnis NEXTMART" class="qris-image" onerror="this.style.display='none';document.getElementById('qrisError').classList.remove('hidden')">
+  <div id="qrisError" class="notice hidden">QRIS tidak ditemukan. Pastikan IMG_4665.jpeg satu folder dengan index.html.</div>
  </div>
-
  <div id="payDANA" class="panel center hidden">
   <h3>Transfer DANA</h3>
   <p class="muted">Kirim pembayaran ke nomor DANA berikut.</p>
   <div class="dana-number">089514575634</div>
   <button class="primary" onclick="copyDana()">Salin Nomor DANA</button>
  </div>
-
- <div class="notice">
-  <b>PENTING:</b><br>
-  Harga otomatis belum tersedia. Jangan membayar sebelum admin mengonfirmasi nominal total pesanan melalui Telegram.
-  <br><br>
-  Setelah membayar, hubungi admin untuk verifikasi manual.
- </div>
-
- <a class="primary" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">
-  Hubungi Admin untuk Verifikasi
- </a>
+ <div class="notice"><b>PENTING:</b><br>Harga otomatis belum tersedia. Jangan membayar sebelum admin mengonfirmasi total pesanan. Setelah membayar, hubungi admin untuk verifikasi manual.</div>
+ <a class="primary" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">Hubungi Admin untuk Verifikasi</a>
 </section>
 
 </main>
@@ -257,40 +204,23 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 <footer>© DAMM STORE</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// ========================================
-// KONFIGURASI SUPABASE
-// ========================================
+// SUPABASE
+const SUPABASE_URL="https://jbjrzvmpseunsgvpcozb.supabase.co";
+const SUPABASE_KEY="sb_publishable_2oUrPxCcEKkgQ68364e4Qw_viPYXtip";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const SUPABASE_URL = "https://jbjrzvmpseunsgvpcozb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_2oUrPxCcEKkgQ68364e4Qw_viPYXtip";
+let currentUser=null;
+let authMode="login";
+let pendingOrder=false;
+let currentCategory="";
+let selected=null;
+let selectedNominal="";
+let lastCatalog="";
 
-const sb = window.supabase.createClient(
- SUPABASE_URL,
- SUPABASE_KEY
-);
+const asset=domain=>"https://www.google.com/s2/favicons?domain="+domain+"&sz=128";
 
-// ========================================
-// STATUS AKUN DAN PESANAN
-// ========================================
-
-let currentUser = null;
-let authMode = "login";
-let pendingOrder = false;
-let currentCategory = "";
-let selected = null;
-let selectedNominal = "";
-let lastCatalog = "";
-
-// ========================================
-// KATEGORI
-// ========================================
-
-const asset = domain =>
- "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
-
-const categories = [
+const categories=[
  {id:"game",name:"GAME",desc:"Top up game favorit",domain:"store.steampowered.com"},
  {id:"pulsa",name:"PULSA",desc:"Isi ulang pulsa",domain:"telkomsel.com"},
  {id:"data",name:"PAKET DATA",desc:"Internet semua operator",domain:"telkomsel.com"},
@@ -298,11 +228,7 @@ const categories = [
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"}
 ];
 
-// ========================================
-// PRODUK GAME
-// ========================================
-
-const products = [
+const products=[
  {name:"Mobile Legends",cat:"MOBA",domain:"mobilelegends.com",fields:["User ID","Zone ID"],nom:["86 Diamonds","172 Diamonds","257 Diamonds","344 Diamonds","429 Diamonds","514 Diamonds","706 Diamonds","878 Diamonds"]},
  {name:"Free Fire",cat:"Battle Royale",domain:"ff.garena.com",fields:["Player ID"],nom:["70 Diamonds","140 Diamonds","210 Diamonds","355 Diamonds","500 Diamonds","720 Diamonds","1000 Diamonds"]},
  {name:"Free Fire MAX",cat:"Battle Royale",domain:"ff.garena.com",fields:["Player ID"],nom:["70 Diamonds","140 Diamonds","210 Diamonds","355 Diamonds","500 Diamonds"]},
@@ -325,192 +251,82 @@ const products = [
  {name:"Light of Thel",cat:"RPG",domain:"lightofthel.com",fields:["Player ID"],nom:["Paket kecil","Paket sedang"]}
 ];
 
-// ========================================
-// PROVIDER PULSA, DATA, DAN LAINNYA
-// ========================================
-
-const providers = {
- pulsa:[
-  ["Telkomsel","telkomsel.com"],
-  ["Indosat","im3.id"],
-  ["XL","xl.co.id"],
-  ["AXIS","axis.co.id"],
-  ["Tri","tri.co.id"],
-  ["Smartfren","smartfren.com"]
- ],
- data:[
-  ["Telkomsel","telkomsel.com"],
-  ["Indosat","im3.id"],
-  ["XL","xl.co.id"],
-  ["AXIS","axis.co.id"],
-  ["Tri","tri.co.id"],
-  ["Smartfren","smartfren.com"]
- ],
- ewallet:[
-  ["DANA","dana.id"],
-  ["OVO","ovo.id"],
-  ["GoPay","gopay.co.id"],
-  ["ShopeePay","shopee.co.id"]
- ],
- pln:[
-  ["Token PLN","pln.co.id"]
- ]
+const providers={
+ pulsa:[["Telkomsel","telkomsel.com"],["Indosat","im3.id"],["XL","xl.co.id"],["AXIS","axis.co.id"],["Tri","tri.co.id"],["Smartfren","smartfren.com"]],
+ data:[["Telkomsel","telkomsel.com"],["Indosat","im3.id"],["XL","xl.co.id"],["AXIS","axis.co.id"],["Tri","tri.co.id"],["Smartfren","smartfren.com"]],
+ ewallet:[["DANA","dana.id"],["OVO","ovo.id"],["GoPay","gopay.co.id"],["ShopeePay","shopee.co.id"]],
+ pln:[["Token PLN","pln.co.id"]]
 };
 
-// ========================================
-// MENU DAN NAVIGASI
-// ========================================
-
+// NAVIGASI
 function toggleMenu(open){
  document.getElementById("drawer").classList.toggle("hidden",!open);
  document.getElementById("menuOverlay").classList.toggle("hidden",!open);
 }
-
 function menuAction(action){
  toggleMenu(false);
-
- if(action==="login"){
-  if(currentUser) show("profile");
-  else openAuth();
- }
-
- if(action==="profile"){
-  if(currentUser) show("profile");
-  else openAuth();
- }
-
- if(action==="logout"){
-  if(currentUser) logout();
-  else openAuth();
- }
+ if(action==="login"){if(currentUser)show("profile");else openAuth()}
+ if(action==="profile"){if(currentUser)show("profile");else openAuth()}
+ if(action==="logout"){if(currentUser)logout();else openAuth()}
 }
-
 function show(id){
- [
-  "home","catalog","detail","summary",
-  "payment","account","profile"
- ].forEach(x=>{
-  document.getElementById(x).classList.add("hidden");
- });
-
+ ["home","catalog","detail","summary","payment","account","profile"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  window.scrollTo(0,0);
 }
+function home(){show("home")}
 
-function home(){
- show("home");
-}
-
-// ========================================
-// LOGIN DAN DAFTAR
-// ========================================
-
+// LOGIN
 function openAuth(){
  authMode="login";
  updateAuthUI();
-
  document.getElementById("authEmail").value="";
  document.getElementById("authPassword").value="";
  document.getElementById("authMessage").textContent="";
-
  show("account");
 }
-
 function switchAuth(){
  authMode=authMode==="login"?"signup":"login";
  updateAuthUI();
  document.getElementById("authMessage").textContent="";
 }
-
 function updateAuthUI(){
  const signup=authMode==="signup";
-
- document.getElementById("authTitle").textContent=
-  signup?"Daftar NEXTMART":"Login NEXTMART";
-
- document.getElementById("authDescription").textContent=
-  signup
-   ?"Buat akun baru untuk menggunakan NEXTMART."
-   :"Masuk ke akun NEXTMART kamu.";
-
- document.getElementById("authSubmit").textContent=
-  signup?"Daftar Sekarang":"Login";
-
- document.getElementById("authSwitch").textContent=
-  signup
-   ?"Sudah punya akun? Login"
-   :"Belum punya akun? Daftar";
-
- document.getElementById("authPassword").autocomplete=
-  signup?"new-password":"current-password";
+ document.getElementById("authTitle").textContent=signup?"Daftar NEXTMART":"Login NEXTMART";
+ document.getElementById("authDescription").textContent=signup?"Buat akun baru untuk menggunakan NEXTMART.":"Masuk ke akun NEXTMART kamu.";
+ document.getElementById("authSubmit").textContent=signup?"Daftar Sekarang":"Login";
+ document.getElementById("authSwitch").textContent=signup?"Sudah punya akun? Login":"Belum punya akun? Daftar";
+ document.getElementById("authPassword").autocomplete=signup?"new-password":"current-password";
 }
-
 async function submitAuth(){
  const email=document.getElementById("authEmail").value.trim();
  const password=document.getElementById("authPassword").value;
  const msg=document.getElementById("authMessage");
  const btn=document.getElementById("authSubmit");
-
- if(!email||!password){
-  msg.textContent="Email dan password wajib diisi.";
-  return;
- }
-
- if(password.length<6){
-  msg.textContent="Password minimal 6 karakter.";
-  return;
- }
-
+ if(!email||!password){msg.textContent="Email dan password wajib diisi.";return}
+ if(password.length<6){msg.textContent="Password minimal 6 karakter.";return}
  btn.disabled=true;
  btn.textContent="Memproses...";
- msg.textContent="";
-
  try{
   if(authMode==="signup"){
-
-   const {data,error}=await sb.auth.signUp({
-    email:email,
-    password:password
-   });
-
+   const {data,error}=await sb.auth.signUp({email,password});
    if(error)throw error;
-
    if(data.session){
     currentUser=data.user;
     updateAccountUI();
-    msg.textContent="Pendaftaran berhasil!";
-
-    if(pendingOrder){
-     continuePendingOrder();
-    }else{
-     setTimeout(()=>show("profile"),500);
-    }
-
+    if(pendingOrder)continuePendingOrder();
+    else{msg.textContent="Pendaftaran berhasil!";setTimeout(()=>show("profile"),500)}
    }else{
-    msg.textContent=
-     "Pendaftaran berhasil. Cek email untuk konfirmasi akun. Setelah itu login untuk melanjutkan.";
+    msg.textContent="Pendaftaran berhasil. Cek email untuk konfirmasi, lalu login untuk melanjutkan.";
    }
-
   }else{
-
-   const {data,error}=await sb.auth.signInWithPassword({
-    email:email,
-    password:password
-   });
-
+   const {data,error}=await sb.auth.signInWithPassword({email,password});
    if(error)throw error;
-
    currentUser=data.user;
    updateAccountUI();
-
-   if(pendingOrder){
-    continuePendingOrder();
-   }else{
-    msg.textContent="Login berhasil!";
-    setTimeout(()=>show("profile"),500);
-   }
+   if(pendingOrder)continuePendingOrder();
+   else{msg.textContent="Login berhasil!";setTimeout(()=>show("profile"),500)}
   }
-
  }catch(error){
   msg.textContent="Gagal: "+error.message;
  }finally{
@@ -518,14 +334,8 @@ async function submitAuth(){
   updateAuthUI();
  }
 }
-
-// ========================================
-// PROFIL DAN LOGOUT
-// ========================================
-
 function updateAccountUI(){
  const status=document.getElementById("menuAccountStatus");
-
  if(currentUser){
   status.textContent="Login sebagai: "+currentUser.email;
   document.getElementById("profileEmail").textContent=currentUser.email;
@@ -534,212 +344,259 @@ function updateAccountUI(){
   document.getElementById("profileEmail").textContent="-";
  }
 }
-
 async function logout(){
  const {error}=await sb.auth.signOut();
-
- if(error){
-  alert("Logout gagal: "+error.message);
-  return;
- }
-
+ if(error){alert("Logout gagal: "+error.message);return}
  currentUser=null;
  pendingOrder=false;
  updateAccountUI();
  home();
  alert("Kamu berhasil logout.");
 }
-
-// ========================================
-// CEK SESI SUPABASE
-// ========================================
-
 async function initializeAuth(){
  const {data,error}=await sb.auth.getSession();
-
- if(!error){
-  currentUser=data.session?.user||null;
- }
-
+ if(!error)currentUser=data.session?.user||null;
  updateAccountUI();
-
  sb.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user||null;
   updateAccountUI();
  });
 }
 
-// ========================================
-// KATALOG PRODUK
-// ========================================
-
-function logo(domain,name){
- return `<div class="logo-box"><img src="${asset(domain)}" alt="${name}"></div>`;
-}
-
+// KATALOG
 function drawCategories(){
- document.getElementById("categories").innerHTML=
- categories.map(c=>`
+ document.getElementById("categories").innerHTML=categories.map(c=>`
   <div class="card center" onclick="openCategory('${c.id}')">
-   ${logo(c.domain,c.name)}
-   <b>${c.name}</b>
-   <small>${c.desc}</small>
-  </div>
- `).join("");
+   <div class="logo-box"><img src="${asset(c.domain)}" alt="${c.name}"></div>
+   <b>${c.name}</b><small>${c.desc}</small>
+  </div>`).join("");
 }
-
 function openCategory(id){
  currentCategory=id;
  lastCatalog=id;
-
  document.getElementById("search").value="";
-
  const c=categories.find(x=>x.id===id);
-
  document.getElementById("catalogTitle").textContent=c.name;
  document.getElementById("catalogDesc").textContent=c.desc;
-
  renderCatalog();
  show("catalog");
 }
-
 function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase();
  let list=[];
-
  if(currentCategory==="game"){
   list=products.filter(p=>p.name.toLowerCase().includes(query));
  }else{
-  list=(providers[currentCategory]||[])
-   .filter(p=>p[0].toLowerCase().includes(query))
-   .map(p=>({
-    name:p[0],
-    domain:p[1],
-    cat:currentCategory,
-    fields:[
-     currentCategory==="pln"
-      ?"Nomor Meter / ID Pelanggan"
-      :"Nomor HP"
-    ],
-    nom:[]
-   }));
+  list=(providers[currentCategory]||[]).filter(p=>p[0].toLowerCase().includes(query)).map(p=>({
+   name:p[0],domain:p[1],cat:currentCategory,
+   fields:[currentCategory==="pln"?"Nomor Meter / ID Pelanggan":"Nomor HP"],nom:[]
+  }));
  }
-
  const grid=document.getElementById("catalogGrid");
  grid.innerHTML="";
-
- document.getElementById("empty").classList.toggle(
-  "hidden",
-  list.length>0
- );
-
+ document.getElementById("empty").classList.toggle("hidden",list.length>0);
  list.forEach(p=>{
   const el=document.createElement("div");
   el.className="card center";
-
-  el.innerHTML=
-   logo(p.domain,p.name)+
-   `<b>${p.name}</b><small>${p.cat||"Layanan digital"}</small>`;
-
+  el.innerHTML=`<div class="logo-box"><img src="${asset(p.domain)}" alt="${p.name}"></div><b>${p.name}</b><small>${p.cat||"Layanan digital"}</small>`;
   el.onclick=()=>openProduct(p);
   grid.appendChild(el);
  });
 }
 
+// FORM PRODUK DAN PETUNJUK VALIDASI
+function getFieldRule(product,index,field){
+ const name=product.name.toLowerCase();
+ const f=field.toLowerCase();
+
+ if(["pulsa","data","ewallet"].includes(product.cat)){
+  return {type:"phone",hint:"Masukkan nomor Indonesia, contoh 081234567890."};
+ }
+ if(product.cat==="pln"){
+  return {type:"pln",hint:"Masukkan ID pelanggan atau nomor meter berupa angka."};
+ }
+ if(name==="mobile legends"){
+  return index===0
+   ?{type:"mlid",hint:"User ID Mobile Legends: masukkan angka saja."}
+   :{type:"mlzone",hint:"Zone ID Mobile Legends: masukkan angka saja."};
+ }
+ if(name.includes("free fire")){
+  return {type:"ffid",hint:"Player ID Free Fire: masukkan angka saja."};
+ }
+ if(name.includes("pubg")){
+  return {type:"pubgid",hint:"Character ID PUBG: masukkan angka saja."};
+ }
+ if(name.includes("genshin")){
+  return index===0
+   ?{type:"genshin",hint:"UID Genshin Impact: masukkan 9 angka."}
+   :{type:"server",hint:"Masukkan server akun yang benar."};
+ }
+ if(name.includes("honkai: star rail")){
+  return index===0
+   ?{type:"hsr",hint:"UID biasanya terdiri dari 9 angka."}
+   :{type:"server",hint:"Masukkan server akun yang benar."};
+ }
+ if(name.includes("roblox")||name.includes("steam")||name.includes("minecraft")){
+  return {type:"username",hint:"Masukkan username atau akun dengan benar."};
+ }
+ if(f.includes("server")||f.includes("tag")){
+  return {type:"text",hint:"Masukkan informasi akun yang sesuai."};
+ }
+ if(f.includes("id")||f.includes("uid")||f.includes("player")||f.includes("character")){
+  return {type:"numeric",hint:"Masukkan angka saja, tanpa spasi atau simbol."};
+ }
+ return {type:"text",hint:"Periksa kembali data tujuan sebelum melanjutkan."};
+}
+
 function openProduct(p){
  selected=p;
  selectedNominal="";
-
- document.getElementById("detailName").textContent=p.name;
- document.getElementById("detailCategory").textContent=
-  p.cat||"NEXTMART DIGITAL";
-
- document.getElementById("detailLogo").src=asset(p.domain);
-
  const fields=document.getElementById("fields");
  fields.innerHTML="";
+ document.getElementById("detailName").textContent=p.name;
+ document.getElementById("detailCategory").textContent=p.cat||"NEXTMART DIGITAL";
+ document.getElementById("detailLogo").src=asset(p.domain);
 
  p.fields.forEach((f,i)=>{
+  const rule=getFieldRule(p,i,f);
+  const group=document.createElement("div");
   const label=document.createElement("label");
   label.textContent=f;
-
   const input=document.createElement("input");
   input.id="field"+i;
   input.placeholder="Masukkan "+f;
+  input.autocomplete="off";
+  input.dataset.rule=rule.type;
+  input.addEventListener("input",()=>validateOneField(i,false));
 
-  fields.append(label,input);
+  const hint=document.createElement("div");
+  hint.className="field-hint";
+  hint.textContent=rule.hint;
+
+  const error=document.createElement("div");
+  error.className="field-error";
+  error.id="error"+i;
+
+  group.append(label,input,hint,error);
+  fields.appendChild(group);
  });
 
  const box=document.getElementById("nominals");
  box.innerHTML="";
-
  if(p.nom.length){
   p.nom.forEach(n=>{
    const el=document.createElement("div");
    el.className="nominal";
    el.textContent=n;
-
    el.onclick=()=>{
     selectedNominal=n;
-
-    document.querySelectorAll(".nominal").forEach(x=>
-     x.classList.remove("active")
-    );
-
+    document.querySelectorAll(".nominal").forEach(x=>x.classList.remove("active"));
     el.classList.add("active");
    };
-
    box.appendChild(el);
   });
  }else{
-  box.innerHTML=
-   "<div class='muted'>Nominal akan tersedia setelah API supplier terhubung.</div>";
+  box.innerHTML="<div class='muted'>Nominal akan tersedia setelah API supplier terhubung.</div>";
  }
-
  show("detail");
 }
 
-function catalogBack(){
- openCategory(lastCatalog);
+// MESIN VALIDASI
+function validateValue(value,type){
+ const v=value.trim();
+
+ if(!v)return {ok:false,message:"Kolom ini wajib diisi."};
+
+ switch(type){
+  case "phone":{
+   const digits=v.replace(/[\s-]/g,"");
+   if(!/^(08[0-9]{7,11}|628[0-9]{7,11}|\+628[0-9]{7,11})$/.test(digits)){
+    return {ok:false,message:"Nomor HP tidak sesuai. Gunakan 08xxxxxxxxxx atau 628xxxxxxxxxx."};
+   }
+   return {ok:true};
+  }
+  case "pln":
+   if(!/^[0-9]{11,13}$/.test(v))return {ok:false,message:"ID PLN harus terdiri dari 11–13 angka."};
+   return {ok:true};
+
+  case "mlid":
+   if(!/^[0-9]{5,15}$/.test(v))return {ok:false,message:"User ID harus berupa 5–15 angka."};
+   return {ok:true};
+
+  case "mlzone":
+   if(!/^[0-9]{1,6}$/.test(v))return {ok:false,message:"Zone ID harus berupa 1–6 angka."};
+   return {ok:true};
+
+  case "ffid":
+   if(!/^[0-9]{6,15}$/.test(v))return {ok:false,message:"Player ID harus berupa 6–15 angka."};
+   return {ok:true};
+
+  case "pubgid":
+   if(!/^[0-9]{5,15}$/.test(v))return {ok:false,message:"Character ID harus berupa 5–15 angka."};
+   return {ok:true};
+
+  case "genshin":
+  case "hsr":
+   if(!/^[0-9]{9,10}$/.test(v))return {ok:false,message:"UID harus berupa 9–10 angka."};
+   return {ok:true};
+
+  case "numeric":
+   if(!/^[0-9]{4,20}$/.test(v))return {ok:false,message:"Masukkan 4–20 angka tanpa simbol."};
+   return {ok:true};
+
+  case "username":
+   if(!/^[a-zA-Z0-9_.-]{3,40}$/.test(v))return {ok:false,message:"Username harus 3–40 karakter dan tanpa spasi."};
+   return {ok:true};
+
+  case "server":
+  case "text":
+   if(v.length<2||v.length>40)return {ok:false,message:"Isi minimal 2 dan maksimal 40 karakter."};
+   return {ok:true};
+
+  default:
+   return {ok:false,message:"Format belum dikenali. Periksa kembali data."};
+ }
 }
 
-// ========================================
-// WAJIB LOGIN SEBELUM MEMESAN
-// ========================================
+function validateOneField(index,showError=true){
+ const input=document.getElementById("field"+index);
+ const error=document.getElementById("error"+index);
+ if(!input||!error)return false;
 
+ const result=validateValue(input.value,input.dataset.rule);
+ input.classList.toggle("invalid",!result.ok);
+ error.textContent=result.ok?"":(showError?result.message:"");
+ return result.ok;
+}
+
+function validateAllFields(){
+ let valid=true;
+ selected.fields.forEach((_,i)=>{
+  if(!validateOneField(i,true))valid=false;
+ });
+ return valid;
+}
+
+// PEMESANAN: WAJIB LOGIN DAN VALIDASI
 async function order(){
-
  const button=document.getElementById("orderButton");
-
- // Periksa sesi langsung ke Supabase
  button.disabled=true;
-
  try{
   const {data,error}=await sb.auth.getSession();
-
   if(error)throw error;
 
   currentUser=data.session?.user||null;
   updateAccountUI();
 
-  // BELUM LOGIN: SIMPAN KONDISI PESANAN DAN BUKA LOGIN
   if(!currentUser){
    pendingOrder=true;
    openAuth();
-
-   document.getElementById("authMessage").textContent=
-    "🔒 Kamu harus login atau daftar terlebih dahulu sebelum membeli.";
-
+   document.getElementById("authMessage").textContent="🔒 Login atau daftar dahulu sebelum membeli.";
    return;
   }
 
-  // VALIDASI DATA TUJUAN
-  const vals=selected.fields.map((f,i)=>
-   document.getElementById("field"+i).value.trim()
-  );
-
-  if(vals.some(v=>!v)){
-   alert("Lengkapi data tujuan terlebih dahulu.");
+  if(!validateAllFields()){
+   alert("Ada data tujuan yang belum benar. Periksa pesan merah pada kolom input.");
    return;
   }
 
@@ -748,7 +605,7 @@ async function order(){
    return;
   }
 
-  // BUAT RINGKASAN
+  const vals=selected.fields.map((_,i)=>document.getElementById("field"+i).value.trim());
   const orderCode="NX"+Date.now().toString().slice(-8);
 
   document.getElementById("summaryText").textContent=
@@ -757,80 +614,55 @@ async function order(){
    "\nNominal: "+selectedNominal+
    "\nTujuan: "+vals.join(" / ")+
    "\nAkun: "+currentUser.email+
-   "\nStatus: Menunggu konfirmasi nominal admin";
+   "\nStatus: Menunggu konfirmasi admin";
 
   pendingOrder=false;
   show("summary");
 
  }catch(error){
-  alert("Tidak dapat memeriksa login: "+error.message);
+  alert("Tidak dapat memeriksa akun: "+error.message);
  }finally{
   button.disabled=false;
  }
 }
 
-// ========================================
-// LANJUTKAN PESANAN SETELAH LOGIN
-// ========================================
-
 function continuePendingOrder(){
  if(!pendingOrder)return;
-
  pendingOrder=false;
-
- // Tetap di halaman detail, lalu jalankan proses pesanan lagi
  show("detail");
-
- setTimeout(()=>{
-  order();
- },300);
+ setTimeout(()=>order(),300);
 }
+function catalogBack(){openCategory(lastCatalog)}
 
-// ========================================
-// PEMBAYARAN DANA DAN QRIS
-// ========================================
-
+// PEMBAYARAN
 function openPayment(){
  document.getElementById("payQRIS").classList.add("hidden");
  document.getElementById("payDANA").classList.add("hidden");
  show("payment");
 }
-
 function choosePayment(method){
  const qris=document.getElementById("payQRIS");
  const dana=document.getElementById("payDANA");
-
  qris.classList.add("hidden");
  dana.classList.add("hidden");
-
  if(method==="dana"){
   dana.classList.remove("hidden");
   dana.scrollIntoView({behavior:"smooth",block:"center"});
- }else if(method==="qris"){
+ }else{
   qris.classList.remove("hidden");
   qris.scrollIntoView({behavior:"smooth",block:"center"});
  }
 }
-
 function copyDana(){
  const nomor="089514575634";
-
  if(navigator.clipboard&&navigator.clipboard.writeText){
-  navigator.clipboard.writeText(nomor)
-   .then(()=>alert("Nomor DANA berhasil disalin!"))
-   .catch(()=>prompt("Salin nomor DANA berikut:",nomor));
- }else{
-  prompt("Salin nomor DANA berikut:",nomor);
- }
+  navigator.clipboard.writeText(nomor).then(()=>alert("Nomor DANA berhasil disalin!")).catch(()=>prompt("Salin nomor DANA:",nomor));
+ }else prompt("Salin nomor DANA:",nomor);
 }
 
-// ========================================
-// JALANKAN WEBSITE
-// ========================================
-
+// MULAI
 drawCategories();
 initializeAuth();
-
 </script>
 </body>
 </html>

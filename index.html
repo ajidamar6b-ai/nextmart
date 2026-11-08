@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -44,41 +43,17 @@ button{cursor:pointer}
 .panel{background:#141f35;border:1px solid #293a58;border-radius:14px;padding:15px;margin-top:13px}
 label{display:block;font-size:12px;color:#c8d5e9;margin:12px 0 6px}
 input,select{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;background:#0c172b;color:white;font-size:13px}
-
-/* NOMINAL TRANSAKSI - SCROLL VERTIKAL */
-.nominals{
- display:flex;
- flex-direction:column;
- gap:8px;
- margin-top:12px;
- max-height:270px;
- overflow-y:auto;
- padding:2px 5px 2px 0;
- scrollbar-width:thin;
- scrollbar-color:#42658f #101b30;
-}
-.nominal{
- flex:0 0 auto;
- width:100%;
- background:#192842;
- border:1px solid #344968;
- border-radius:9px;
- padding:14px;
- text-align:left;
- font-size:12px;
- color:#f5f7ff;
- cursor:pointer;
-}
+.nominals{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:270px;overflow-y:auto;padding:2px 5px 2px 0;scrollbar-width:thin;scrollbar-color:#42658f #101b30}
+.nominal{flex:0 0 auto;width:100%;background:#192842;border:1px solid #344968;border-radius:9px;padding:14px;text-align:left;font-size:12px;color:#f5f7ff;cursor:pointer}
 .nominal:after{content:"Pilih";float:right;color:#8faed2;font-size:11px}
 .nominal.active{border:2px solid #55aaff;background:#1b3c66}
 .nominal.active:after{content:"✓ Dipilih";color:#70bdff}
 .notice{background:#1d2b43;border-radius:10px;padding:12px;color:#aebfda;font-size:11px;line-height:1.6;margin-top:14px}
-.primary{width:100%;padding:14px;border:0;border-radius:11px;background:linear-gradient(90deg,#2185f5,#6255e8);color:white;font-weight:bold;margin-top:14px}
+.primary{display:block;width:100%;padding:14px;border:0;border-radius:11px;background:linear-gradient(90deg,#2185f5,#6255e8);color:white;font-weight:bold;margin-top:14px;text-align:center;text-decoration:none}
+.qris-image{display:block;width:min(100%,320px);height:auto;margin:14px auto;border-radius:12px;background:#fff;padding:8px}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
 .cs span{margin-right:6px}
 footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
-
-/* MENU SAMPING */
 .menu-overlay{position:fixed;inset:0;background:#0009;z-index:20}
 .drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21;box-shadow:-10px 0 30px #0006}
 .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
@@ -97,7 +72,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
     <div class="brand">NEXT<span>MART</span></div>
     <div class="subtitle">YOUR DIGITAL STORE • TOP UP & MORE</div>
    </div>
-   <button class="menu-btn" onclick="toggleMenu(true)" aria-label="Buka menu">☰</button>
+   <button class="menu-btn" onclick="toggleMenu(true)">☰</button>
   </div>
  </div>
 </header>
@@ -147,7 +122,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
  <p class="muted" id="catalogDesc"></p>
  <input id="search" class="search" placeholder="Cari produk..." oninput="renderCatalog()">
  <div class="grid" id="catalogGrid"></div>
- <div class="empty hidden" id="empty">Produk tidak ditemukan.</div>
+ <div class="notice hidden" id="empty">Produk tidak ditemukan.</div>
 </section>
 
 <section id="detail" class="hidden">
@@ -172,10 +147,50 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 </section>
 
 <section id="summary" class="hidden">
- <button class="back" onclick="detailBack()">← Kembali</button>
+ <button class="back" onclick="show('detail')">← Kembali</button>
  <h3>Ringkasan Pesanan</h3>
  <div class="panel" id="summaryText"></div>
- <div class="notice">Ini masih pratinjau pesanan. Belum ada transaksi atau pembayaran sungguhan.</div>
+ <div class="notice">Pastikan data tujuan sudah benar. Harga supplier belum terhubung, jadi konfirmasi total pembayaran ke admin sebelum membayar.</div>
+ <button class="primary" onclick="openPayment()">Lanjut ke Pembayaran QRIS</button>
+</section>
+
+<section id="payment" class="hidden">
+ <button class="back" onclick="show('summary')">← Kembali</button>
+ <h3>Pembayaran QRIS DANA Bisnis</h3>
+
+ <div class="panel center">
+  <p class="muted">Scan QRIS resmi NEXTMART menggunakan aplikasi pembayaran pilihan kamu.</p>
+
+  <img
+   src="./IMG_4665.jpeg"
+   alt="QRIS DANA Bisnis NEXTMART"
+   class="qris-image"
+   onerror="this.style.display='none';document.getElementById('qrisError').classList.remove('hidden')"
+  >
+
+  <div id="qrisError" class="notice hidden">
+   Gambar QRIS belum berhasil dimuat. Pastikan file IMG_4665.jpeg berada di folder yang sama dengan index.html.
+  </div>
+
+  <div class="notice" style="text-align:left">
+   <b>PENTING:</b><br>
+   Harga otomatis belum tersedia. Jangan melakukan pembayaran sebelum admin mengonfirmasi nominal total pesanan melalui Telegram.
+  </div>
+
+  <a
+   class="primary"
+   href="https://t.me/lovdmxzz"
+   target="_blank"
+   rel="noopener"
+  >Hubungi Admin untuk Total &amp; Verifikasi</a>
+ </div>
+
+ <div class="notice">
+  <b>Verifikasi pembayaran:</b><br>
+  Untuk sementara admin akan memeriksa transaksi masuk secara manual melalui aplikasi DANA Bisnis. Setelah pembayaran cocok, admin akan memproses pesanan.
+  <br><br>
+  Website ini masih menggunakan halaman statis. Pesanan belum tersimpan ke server dan pembayaran belum terverifikasi otomatis.
+ </div>
 </section>
 
 </main>
@@ -264,7 +279,7 @@ function menuAction(name){
 }
 
 function show(id){
- ["home","catalog","detail","summary"].forEach(x=>{
+ ["home","catalog","detail","summary","payment"].forEach(x=>{
   document.getElementById(x).classList.add("hidden");
  });
  document.getElementById(id).classList.remove("hidden");
@@ -274,7 +289,7 @@ function show(id){
 function logo(domain,name){
  return `<div class="logo-box">
  <img src="${asset(domain)}" alt="${name}"
- onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'logo-fallback\\'>${name.slice(0,2).toUpperCase()}</span>'">
+ onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\\\'logo-fallback\\\\'>${name.slice(0,2).toUpperCase()}</span>'">
  </div>`;
 }
 
@@ -391,10 +406,6 @@ function catalogBack(){
  openCategory(lastCatalog);
 }
 
-function detailBack(){
- show("detail");
-}
-
 function order(){
  const vals=selected.fields.map((f,i)=>
   document.getElementById("field"+i).value.trim()
@@ -410,13 +421,20 @@ function order(){
   return;
  }
 
+ const orderCode="NX"+Date.now().toString().slice(-8);
+
  document.getElementById("summaryText").textContent=
-  "Produk: "+selected.name+
+  "Kode pesanan: "+orderCode+
+  "\nProduk: "+selected.name+
   "\nNominal: "+selectedNominal+
   "\nTujuan: "+vals.join(" / ")+
-  "\nStatus: Pratinjau pesanan";
+  "\nStatus: Menunggu konfirmasi nominal admin";
 
  show("summary");
+}
+
+function openPayment(){
+ show("payment");
 }
 
 drawCategories();

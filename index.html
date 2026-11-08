@@ -4,266 +4,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080f20">
-<title>NEXTMART | Digital Store</title>
+<title>NEXTMART - Digital Store</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080f20;color:#f5f7ff;font-family:Arial,sans-serif}
-header{padding:17px;background:#101b32;border-bottom:1px solid #263653}
-.wrap{max-width:760px;margin:auto;padding:16px}
-.brand{font-size:25px;font-weight:900;letter-spacing:1.5px;color:#65b4ff}
-.brand span{color:white}
-.subtitle{font-size:11px;color:#9aaac4;margin-top:5px}
-.hero{margin:17px 0;background:linear-gradient(120deg,#1458a5,#18336c 60%,#542e8b);padding:23px 20px;border-radius:18px;position:relative;overflow:hidden}
-.hero:after{content:"✦";position:absolute;right:20px;top:5px;font-size:90px;color:#ffffff19}
-.hero h2{font-size:23px;margin:0 0 8px;max-width:250px}
-.hero p{font-size:12px;color:#dceaff;line-height:1.6;max-width:250px}
-.hero .tag{display:inline-block;background:#ffffff20;border:1px solid #ffffff30;border-radius:30px;padding:7px 12px;font-size:10px}
-h3{font-size:16px;margin:22px 0 12px}
-.muted{font-size:12px;color:#94a4c0;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-.card{background:linear-gradient(145deg,#17243d,#111b30);border:1px solid #293a58;border-radius:15px;padding:14px 10px;cursor:pointer;min-width:0;transition:.15s}
-.card:active{transform:scale(.97)}
-.card b{display:block;font-size:12px;margin-top:9px}
-.card small{font-size:10px;color:#91a2bf;display:block;margin-top:5px}
-.logo-box{width:57px;height:57px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:auto}
-.logo-box img{width:100%;height:100%;object-fit:contain;padding:5px}
-.logo-fallback{font-size:18px;font-weight:900;color:#1557a1}
-.center{text-align:center}
-.search{width:100%;padding:13px 15px;border-radius:11px;border:1px solid #304261;background:#111d33;color:white;margin:12px 0}
-.search::placeholder{color:#8292ae}
-button{cursor:pointer}
-.back{padding:10px 14px;border:1px solid #344968;border-radius:10px;background:#1a2943;color:white;font-weight:bold}
+body{margin:0;background:#f4f6fa;color:#17243b;font-family:Arial,sans-serif}
+header{background:white;padding:15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;border-bottom:1px solid #e5e9ef}
+.logo{font-size:23px;font-weight:900;color:#14264a}.logo span{color:#f49a45}
+button{cursor:pointer;font:inherit}
+.menu{border:1px solid #ddd;background:white;border-radius:9px;padding:9px 13px;font-size:22px}
+main{max-width:950px;margin:auto;padding:18px}
+.hero{background:linear-gradient(120deg,#101d3b,#294875);color:white;border-radius:18px;padding:25px;margin-bottom:22px}
+.hero h1{font-size:27px}.hero p{color:#d8e1ee;font-size:13px}
+.search{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;margin-bottom:20px}
+h2{font-size:19px}
+.categories,.games{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.category,.game{background:white;border:1px solid #e7eaf0;border-radius:13px;padding:14px;text-align:center}
+.category{font-weight:bold}
+.game{display:flex;align-items:center;gap:10px;text-align:left;min-width:0}
+.game img{width:48px;height:48px;object-fit:cover;border-radius:11px;background:#edf0f5}
+.game b{font-size:12px}
 .hidden{display:none!important}
-.product-head{display:flex;align-items:center;gap:13px;background:linear-gradient(120deg,#172d50,#151f36);padding:16px;border-radius:15px;border:1px solid #304261}
-.product-head .logo-box{margin:0;flex-shrink:0}
-.product-head h2{font-size:17px;margin:0 0 5px}
-.product-head p{margin:0;font-size:11px;color:#a4b4ce}
-.panel{background:#141f35;border:1px solid #293a58;border-radius:14px;padding:15px;margin-top:13px}
-label{display:block;font-size:12px;color:#c8d5e9;margin:12px 0 6px}
-input,select{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;background:#0c172b;color:white;font-size:13px}
-.nominals{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}
-.nominal{background:#192842;border:1px solid #344968;border-radius:10px;padding:13px 8px;text-align:center;font-size:12px;cursor:pointer}
-.nominal.active{border:2px solid #55aaff;background:#1b3c66}
-.notice{background:#1d2b43;border-radius:10px;padding:12px;color:#aebfda;font-size:11px;line-height:1.6;margin-top:14px}
-.primary{width:100%;padding:14px;border:0;border-radius:11px;background:linear-gradient(90deg,#2185f5,#6255e8);color:white;font-weight:bold;margin-top:14px}
-.cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
-.cs span{margin-right:6px}
-footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
-.empty{text-align:center;padding:25px;color:#9aabc5;font-size:12px}
-@media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}}
+.back{padding:9px 13px;border:0;background:#e9edf4;border-radius:8px;margin-bottom:15px}
+#overlay{display:none;position:fixed;inset:0;background:#0007;z-index:10}
+#overlay.open{display:block}
+.drawer{float:right;background:white;width:280px;height:100%;padding:22px}
+.drawer button{display:block;width:100%;padding:15px;margin:8px 0;text-align:left;background:white;border:1px solid #eee;border-radius:9px}
+.panel{background:white;padding:18px;border-radius:13px}
+input{width:100%;padding:12px;border:1px solid #ddd;border-radius:9px;margin:8px 0}
+.primary{background:#14264a;color:white;border:0;border-radius:9px;padding:13px;width:100%;margin-top:12px}
+footer{text-align:center;background:#101d3b;color:white;padding:25px;font-size:12px}
+@media(max-width:600px){.categories,.games{grid-template-columns:repeat(2,1fr)}main{padding:13px}.game{padding:9px;gap:7px}.game img{width:40px;height:40px}}
 </style>
 </head>
 <body>
-
 <header>
- <div class="wrap" style="padding:0">
-  <div class="brand">NEXT<span>MART</span></div>
-  <div class="subtitle">YOUR DIGITAL STORE • TOP UP & MORE</div>
- </div>
+ <div class="logo">NEXT<span>MART</span></div>
+ <button class="menu" onclick="openMenu()">☰</button>
 </header>
 
-<main class="wrap">
+<div id="overlay" onclick="closeMenu()">
+ <div class="drawer" onclick="event.stopPropagation()">
+  <h3>NEXTMART</h3>
+  <button onclick="showPage('Profil')">♙ Profil</button>
+  <button onclick="showPage('Login / Daftar')">↪ Login / Daftar</button>
+  <button onclick="showPage('Bonus & Promo')">◇ Bonus & Promo</button>
+  <button onclick="showPage('Riwayat Pesanan')">▤ Riwayat Pesanan</button>
+  <a href="https://t.me/lovdmxzz">Customer Service Telegram</a>
+  <button onclick="closeMenu()">Tutup</button>
+ </div>
+</div>
 
+<main>
 <section id="home">
  <div class="hero">
-  <div class="tag">WELCOME TO NEXTMART</div>
-  <h2>Semua kebutuhan digital dalam satu tempat.</h2>
-  <p>Top up game, pulsa, paket data dan saldo digital dengan mudah.</p>
+  <small>YOUR DIGITAL STORE</small>
+  <h1>Semua kebutuhan digital, lebih praktis.</h1>
+  <p>Top up game, pulsa, paket data, token PLN dan e-wallet.</p>
  </div>
-
- <h3>Kategori Produk</h3>
- <p class="muted">Pilih layanan yang ingin kamu gunakan.</p>
- <div class="grid" id="categories"></div>
-
- <h3>Kenapa NEXTMART?</h3>
- <div class="grid">
-  <div class="card center"><div class="logo-box"><span class="logo-fallback">⚡</span></div><b>Praktis</b><small>Pilih produk dengan mudah</small></div>
-  <div class="card center"><div class="logo-box"><span class="logo-fallback">🛡</span></div><b>Aman</b><small>Pengembangan sistem bertahap</small></div>
+ <input class="search" id="search" placeholder="Cari game..." oninput="searchGames()">
+ <h2>Kategori</h2>
+ <div class="categories">
+  <button class="category" onclick="showGames()">🎮<br>GAME</button>
+  <button class="category" onclick="showProviders('PULSA')">📱<br>PULSA</button>
+  <button class="category" onclick="showProviders('PAKET DATA')">🌐<br>PAKET DATA</button>
+  <button class="category" onclick="showProviders('TOKEN PLN')">⚡<br>TOKEN PLN</button>
+  <button class="category" onclick="showProviders('E-WALLET')">👛<br>E-WALLET</button>
  </div>
 </section>
 
 <section id="catalog" class="hidden">
- <button class="back" onclick="home()">← Kembali</button>
- <h3 id="catalogTitle">Pilih Produk</h3>
- <p class="muted" id="catalogDesc"></p>
- <input id="search" class="search" placeholder="Cari produk..." oninput="renderCatalog()">
- <div class="grid" id="catalogGrid"></div>
- <div class="empty hidden" id="empty">Produk tidak ditemukan.</div>
+ <button class="back" onclick="goHome()">← Kembali</button>
+ <h2 id="catalogTitle">GAME</h2>
+ <div class="games" id="gameList"></div>
 </section>
 
 <section id="detail" class="hidden">
- <button class="back" onclick="catalogBack()">← Kembali</button>
- <h3>Detail Produk</h3>
- <div class="product-head">
-  <div class="logo-box"><img id="detailLogo" alt="Logo produk"></div>
-  <div><h2 id="detailName"></h2><p id="detailCategory"></p></div>
- </div>
+ <button class="back" onclick="goCatalog()">← Kembali</button>
  <div class="panel">
-  <div id="fields"></div>
+  <h2 id="selectedGame"></h2>
+  <label>ID / Nomor Tujuan</label>
+  <input id="target" placeholder="Masukkan ID atau nomor">
   <h3>Pilih Nominal</h3>
-  <div class="nominals" id="nominals"></div>
-  <div class="notice">Nominal dan harga resmi akan dimuat setelah katalog IAK Sandbox diintegrasikan. Validasi ID otomatis belum aktif.</div>
-  <button class="primary" onclick="order()">Lanjutkan</button>
+  <div id="amounts"></div>
+  <button class="primary" onclick="demoOrder()">Lanjutkan</button>
+  <p style="font-size:12px;color:#777">Transaksi belum aktif. Supplier dan pembayaran belum diintegrasikan.</p>
  </div>
 </section>
 
-<section id="summary" class="hidden">
- <button class="back" onclick="detailBack()">← Kembali</button>
- <h3>Ringkasan Pesanan</h3>
- <div class="panel" id="summaryText"></div>
- <div class="notice">Ini masih pratinjau pesanan. Belum ada transaksi atau pembayaran sungguhan.</div>
+<section id="account" class="hidden">
+ <button class="back" onclick="goHome()">← Kembali</button>
+ <div class="panel"><h2 id="accountTitle"></h2><p id="accountText"></p></div>
 </section>
-
 </main>
 
-<a class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">
- <span>✈</span> Customer Service
-</a>
-
-<footer>© DAMM STORE</footer>
+<footer>
+ <b>NEXTMART</b><br><br>
+ © DAMM STORE
+</footer>
 
 <script>
-const asset=(domain)=>"https://www.google.com/s2/favicons?domain="+domain+"&sz=128";
-
-const categories=[
- {id:"game",name:"GAME",desc:"Top up game favorit",domain:"store.steampowered.com"},
- {id:"pulsa",name:"PULSA",desc:"Isi ulang pulsa",domain:"telkomsel.com"},
- {id:"data",name:"PAKET DATA",desc:"Internet semua operator",domain:"telkomsel.com"},
- {id:"pln",name:"TOKEN PLN",desc:"Token listrik prabayar",domain:"pln.co.id"},
- {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"}
-];
-
-const products=[
-{name:"Mobile Legends",cat:"MOBA",domain:"mobilelegends.com",fields:["User ID","Zone ID"],nom:["86 Diamonds","172 Diamonds","257 Diamonds","344 Diamonds","429 Diamonds","514 Diamonds","706 Diamonds","878 Diamonds"]},
-{name:"Free Fire",cat:"Battle Royale",domain:"ff.garena.com",fields:["Player ID"],nom:["70 Diamonds","140 Diamonds","210 Diamonds","355 Diamonds","500 Diamonds","720 Diamonds","1000 Diamonds"]},
-{name:"Free Fire MAX",cat:"Battle Royale",domain:"ff.garena.com",fields:["Player ID"],nom:["70 Diamonds","140 Diamonds","210 Diamonds","355 Diamonds","500 Diamonds"]},
-{name:"PUBG Mobile",cat:"Battle Royale",domain:"pubgmobile.com",fields:["Character ID"],nom:["60 UC","120 UC","325 UC","660 UC","1800 UC","3850 UC"]},
-{name:"Call of Duty Mobile",cat:"Shooter",domain:"callofduty.com",fields:["Player ID"],nom:["31 CP","63 CP","128 CP","321 CP","645 CP","1373 CP"]},
-{name:"Genshin Impact",cat:"RPG",domain:"genshin.hoyoverse.com",fields:["UID","Server"],nom:["60 Genesis Crystals","300 Genesis Crystals","980 Genesis Crystals","1980 Genesis Crystals"]},
-{name:"Honkai: Star Rail",cat:"RPG",domain:"hsr.hoyoverse.com",fields:["UID","Server"],nom:["60 Oneiric Shard","300 Oneiric Shard","980 Oneiric Shard"]},
-{name:"Honkai Impact 3",cat:"RPG",domain:"honkaiimpact3.hoyoverse.com",fields:["UID","Server"],nom:["Bundle kecil","Bundle sedang","Bundle besar"]},
-{name:"Roblox",cat:"Casual",domain:"roblox.com",fields:["Username"],nom:["50 Robux","100 Robux","200 Robux","400 Robux","800 Robux"]},
-{name:"Ragnarok M",cat:"RPG",domain:"ragnarok.com",fields:["User ID","Server"],nom:["Paket kecil","Paket sedang","Paket besar"]},
-{name:"Arena of Valor",cat:"MOBA",domain:"aov.garena.co.id",fields:["Player ID"],nom:["40 Vouchers","90 Vouchers","230 Vouchers"]},
-{name:"League of Legends: Wild Rift",cat:"MOBA",domain:"wildrift.leagueoflegends.com",fields:["User ID","Tag"],nom:["100 Wild Cores","500 Wild Cores","1000 Wild Cores"]},
-{name:"Point Blank",cat:"Shooter",domain:"pointblank.id",fields:["User ID"],nom:["1200 Cash","2400 Cash","6000 Cash"]},
-{name:"Steam Wallet",cat:"Voucher",domain:"store.steampowered.com",fields:["Steam Account"],nom:["Rp 12.000","Rp 45.000","Rp 60.000","Rp 90.000","Rp 120.000"]},
-{name:"Minecraft",cat:"Casual",domain:"minecraft.net",fields:["Username"],nom:["Voucher Minecraft"]},
-{name:"Stumble Guys",cat:"Casual",domain:"stumbleguys.com",fields:["Player ID"],nom:["Paket kecil","Paket sedang","Paket besar"]},
-{name:"Speed Drifters",cat:"Racing",domain:"speeddrifters.garena.com",fields:["Player ID"],nom:["Paket kecil","Paket sedang"]},
-{name:"LifeAfter",cat:"RPG",domain:"lifeafter.netease.com",fields:["Player ID","Server"],nom:["Paket kecil","Paket sedang"]},
-{name:"Lords Mobile",cat:"Strategy",domain:"lordsmobile.igg.com",fields:["Player ID"],nom:["Paket kecil","Paket sedang"]},
-{name:"Light of Thel",cat:"RPG",domain:"lightofthel.com",fields:["Player ID"],nom:["Paket kecil","Paket sedang"]}
+// Daftar game dan sumber ikon masing-masing.
+// URL gambar dapat diperbarui jika publisher mengganti asetnya.
+const games=[
+ {name:"Mobile Legends",icon:"https://play-lh.googleusercontent.com/0uJ3S9b9G8f2Fv8F8m7k3f5n"},
+ {name:"Free Fire",icon:"https://play-lh.googleusercontent.com/8f8q9v3m2j"},
+ {name:"PUBG Mobile",icon:"https://play-lh.googleusercontent.com/7x7f3v9m2k"},
+ {name:"Call of Duty Mobile",icon:"https://play-lh.googleusercontent.com/3m9f8v2k"},
+ {name:"Genshin Impact",icon:"https://play-lh.googleusercontent.com/9k2m7v4f"},
+ {name:"Honkai Star Rail",icon:"https://play-lh.googleusercontent.com/2v8f6m3k"},
+ {name:"Roblox",icon:"https://play-lh.googleusercontent.com/5f7m3k9v"},
+ {name:"Arena of Valor",icon:"https://play-lh.googleusercontent.com/4k8m2v6f"},
+ {name:"Honkai Impact 3",icon:"https://play-lh.googleusercontent.com/6m2v9k4f"},
+ {name:"League of Legends Wild Rift",icon:"https://play-lh.googleusercontent.com/7k3m8v2f"},
+ {name:"Minecraft",icon:"https://play-lh.googleusercontent.com/2m6v9k3f"},
+ {name:"Stumble Guys",icon:"https://play-lh.googleusercontent.com/8v4m2k6f"}
 ];
 
 const providers={
- pulsa:[
- ["Telkomsel","telkomsel.com"],["Indosat","im3.id"],["XL","xl.co.id"],["AXIS","axis.co.id"],["Tri","tri.co.id"],["Smartfren","smartfren.com"]
- ],
- data:[
- ["Telkomsel","telkomsel.com"],["Indosat","im3.id"],["XL","xl.co.id"],["AXIS","axis.co.id"],["Tri","tri.co.id"],["Smartfren","smartfren.com"]
- ],
- ewallet:[
- ["DANA","dana.id"],["OVO","ovo.id"],["GoPay","gopay.co.id"],["ShopeePay","shopee.co.id"]
- ],
- pln:[["Token PLN","pln.co.id"]]
+ "PULSA":["Telkomsel","Indosat","XL","AXIS","Tri","Smartfren"],
+ "PAKET DATA":["Telkomsel","Indosat","XL","AXIS","Tri","Smartfren"],
+ "TOKEN PLN":["Token PLN"],
+ "E-WALLET":["DANA","OVO","GoPay","ShopeePay"]
 };
 
-let currentCategory="",selected=null,selectedNominal="",lastCatalog="";
+let selected="",lastPage="catalog";
 
+function openMenu(){document.getElementById("overlay").classList.add("open")}
+function closeMenu(){document.getElementById("overlay").classList.remove("open")}
 function show(id){
- ["home","catalog","detail","summary"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+ ["home","catalog","detail","account"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  window.scrollTo(0,0);
 }
-function logo(domain,name){
- return `<div class="logo-box"><img src="${asset(domain)}" alt="${name}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'logo-fallback\\'>${name.slice(0,2).toUpperCase()}</span>'"></div>`;
-}
-function drawCategories(){
- document.getElementById("categories").innerHTML=categories.map(c=>`
- <div class="card center" onclick="openCategory('${c.id}')">
- ${logo(c.domain,c.name)}
- <b>${c.name}</b><small>${c.desc}</small>
- </div>`).join("");
-}
-function home(){show("home")}
-function openCategory(id){
- currentCategory=id;
- lastCatalog=id;
- document.getElementById("search").value="";
- const c=categories.find(x=>x.id===id);
- document.getElementById("catalogTitle").textContent=c.name;
- document.getElementById("catalogDesc").textContent=c.desc;
- renderCatalog();
+function goHome(){show("home")}
+function goCatalog(){show("catalog")}
+function showGames(){
+ lastPage="catalog";
+ document.getElementById("catalogTitle").textContent="PILIH GAME";
+ renderGames(games);
  show("catalog");
 }
-function renderCatalog(){
- const query=document.getElementById("search").value.toLowerCase();
- let list=[];
- if(currentCategory==="game"){
-  list=products.filter(p=>p.name.toLowerCase().includes(query));
- }else{
-  list=(providers[currentCategory]||[]).filter(p=>p[0].toLowerCase().includes(query))
-   .map(p=>({name:p[0],domain:p[1],cat:currentCategory,fields:[currentCategory==="pln"?"Nomor Meter / ID Pelanggan":"Nomor HP"],nom:[]}));
- }
- const grid=document.getElementById("catalogGrid");
- grid.innerHTML="";
- document.getElementById("empty").classList.toggle("hidden",list.length>0);
- list.forEach(p=>{
-  const el=document.createElement("div");
-  el.className="card center";
-  el.innerHTML=logo(p.domain,p.name)+`<b>${p.name}</b><small>${p.cat||"Layanan digital"}</small>`;
-  el.onclick=()=>openProduct(p);
-  grid.appendChild(el);
- });
+function renderGames(list){
+ document.getElementById("gameList").innerHTML=list.map(g=>`
+ <button class="game" onclick="chooseGame('${g.name.replace(/'/g,"\\'")}')">
+ <img src="${g.icon}" alt="${g.name}" onerror="this.src='https://placehold.co/96x96/e9edf4/14264a?text=GAME'">
+ <b>${g.name}</b></button>`).join("");
 }
-function openProduct(p){
- selected=p;selectedNominal="";
- document.getElementById("detailName").textContent=p.name;
- document.getElementById("detailCategory").textContent=p.cat||"NEXTMART DIGITAL";
- document.getElementById("detailLogo").src=asset(p.domain);
- const fields=document.getElementById("fields");
- fields.innerHTML="";
- p.fields.forEach((f,i)=>{
-  const label=document.createElement("label");
-  label.textContent=f;
-  const input=document.createElement("input");
-  input.id="field"+i;
-  input.placeholder="Masukkan "+f;
-  fields.append(label,input);
- });
- const box=document.getElementById("nominals");
- box.innerHTML="";
- if(p.nom.length){
-  p.nom.forEach(n=>{
-   const el=document.createElement("div");
-   el.className="nominal";
-   el.textContent=n;
-   el.onclick=()=>{
-    selectedNominal=n;
-    document.querySelectorAll(".nominal").forEach(x=>x.classList.remove("active"));
-    el.classList.add("active");
-   };
-   box.appendChild(el);
-  });
- }else{
-  box.innerHTML="<div class='muted'>Nominal akan tersedia setelah API supplier terhubung.</div>";
- }
+function searchGames(){
+ const q=document.getElementById("search").value.toLowerCase();
+ if(!q)return;
+ showGames();
+ renderGames(games.filter(g=>g.name.toLowerCase().includes(q)));
+}
+function chooseGame(name){
+ selected=name;
+ document.getElementById("selectedGame").textContent=name;
+ document.getElementById("target").value="";
+ document.getElementById("amounts").innerHTML=["5.000","10.000","20.000","50.000","100.000","200.000"].map(n=>
+ `<button class="back" onclick="pickAmount(this,'${n}')">Rp ${n}</button>`).join("");
  show("detail");
 }
-function catalogBack(){openCategory(lastCatalog)}
-function detailBack(){show("detail")}
-function order(){
- const vals=selected.fields.map((f,i)=>document.getElementById("field"+i).value.trim());
- if(vals.some(v=>!v)){alert("Lengkapi data tujuan terlebih dahulu.");return}
- if(!selectedNominal){alert("Pilih nominal terlebih dahulu.");return}
- document.getElementById("summaryText").textContent=
- "Produk: "+selected.name+"\nNominal: "+selectedNominal+
- "\nTujuan: "+vals.join(" / ")+"\nStatus: Pratinjau pesanan";
- show("summary");
+let amount="";
+function pickAmount(el,n){
+ amount=n;
+ document.querySelectorAll("#amounts button").forEach(b=>b.style.background="#e9edf4");
+ el.style.background="#ffd9b2";
 }
-drawCategories();
+function showProviders(type){
+ document.getElementById("catalogTitle").textContent=type;
+ document.getElementById("gameList").innerHTML=providers[type].map(n=>
+ `<button class="game" onclick="chooseGame('${n}')"><b>${n}</b></button>`).join("");
+ show("catalog");
+}
+function showPage(name){
+ closeMenu();
+ document.getElementById("accountTitle").textContent=name;
+ const messages={
+ "Profil":"Profil pengguna akan tersedia setelah sistem akun aktif.",
+ "Login / Daftar":"Fitur login dan pendaftaran belum aktif. Backend akun perlu disiapkan.",
+ "Bonus & Promo":"Promo NEXTMART akan ditampilkan di sini.",
+ "Riwayat Pesanan":"Riwayat transaksi tersedia setelah backend dan supplier terhubung."
+ };
+ document.getElementById("accountText").textContent=messages[name];
+ show("account");
+}
+function demoOrder(){
+ if(!document.getElementById("target").value.trim())return alert("Isi ID atau nomor tujuan.");
+ if(!amount)return alert("Pilih nominal.");
+ alert("Ini masih demo. Transaksi belum dikirim ke supplier.");
+}
 </script>
 </body>
 </html>

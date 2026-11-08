@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXTMART - Top Up Digital</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#17233d}
+header{background:#101d3b;color:white;padding:22px 18px}
+.logo{font-size:25px;font-weight:bold;color:#ff9d32}
+header p{margin:7px 0 0;color:#dce4f5}
+main{max-width:650px;margin:auto;padding:20px}
+.hero{background:#172c55;color:white;padding:25px;border-radius:16px}
+.hero h2{margin-top:0}
+.hero p{color:#dce4f5}
+h3{margin-top:26px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.item{background:white;padding:20px 12px;border-radius:13px;text-align:center;font-weight:bold;box-shadow:0 2px 8px #0000000b}
+.item span{display:block;font-size:28px;margin-bottom:8px}
+.note{background:#fff2df;padding:14px;border-radius:10px;color:#754500;font-size:13px;margin-top:20px}
+footer{text-align:center;padding:25px;color:#78839a;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">NEXTMART</div>
+<p>Everything You Need, One Place.</p>
+</header>
+<main>
+<section class="hero">
+<h2>Top Up Digital Lebih Mudah!</h2>
+<p>Penuhi kebutuhan digitalmu dengan NEXTMART.</p>
+</section>
+<h3>Pilih Layanan</h3>
+<div class="grid">
+<div class="item"><span>📱</span>Pulsa</div>
+<div class="item"><span>🌐</span>Paket Data</div>
+<div class="item"><span>⚡</span>Token PLN</div>
+<div class="item"><span>💳</span>E-Wallet</div>
+<div class="item"><span>🎮</span>Voucher Game</div>
+<div class="item"><span>🧾</span>Pembayaran</div>
+</div>
+<div class="note">
+<strong>Informasi:</strong> NEXTMART sedang dalam tahap pengembangan. Transaksi belum tersedia.
+</div>
+</main>
+<footer>© 2026 NEXTMART. All Rights Reserved.</footer>
+</body>
+</html>

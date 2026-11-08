@@ -1,73 +1,137 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NEXTMART - Top Up Digital</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      color: #17233d;
-    }
-    header {
-      background: #101d3a;
-      color: white;
-      padding: 28px 20px;
-      text-align: center;
-    }
-    header h1 { margin: 0; font-size: 32px; }
-    header p { color: #ff9b35; }
-    main { max-width: 700px; margin: 35px auto; padding: 20px; }
-    h2 { text-align: center; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-    .item {
-      background: white;
-      padding: 25px 12px;
-      border-radius: 14px;
-      text-align: center;
-      font-weight: bold;
-      box-shadow: 0 3px 12px #00000010;
-    }
-    .notice {
-      margin-top: 25px;
-      padding: 16px;
-      background: #fff1df;
-      border-radius: 12px;
-      text-align: center;
-    }
-    footer { text-align: center; padding: 25px; color: #68738a; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXTMART - Top Up Digital</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f4f6fb;color:#17233d}
+header{background:#101d3a;color:white;padding:28px 15px;text-align:center}
+header h1{margin:0;font-size:32px}
+header p{color:#ff9b35}
+main{max-width:700px;margin:25px auto;padding:18px}
+h2{text-align:center}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.item{background:white;border:2px solid transparent;padding:24px 10px;border-radius:14px;font-weight:bold;font-size:15px;cursor:pointer}
+.item.active{border-color:#ff9b35;background:#fff7ed}
+.item:active{transform:scale(.97)}
+.panel{background:white;padding:20px;border-radius:14px;margin-top:22px;box-shadow:0 3px 12px #00000010}
+label{display:block;margin:14px 0 7px;font-weight:bold}
+input,select{width:100%;padding:13px;border:1px solid #ccd2df;border-radius:9px;font-size:15px}
+button.submit{width:100%;padding:15px;background:#101d3a;color:white;border:0;border-radius:10px;font-size:16px;font-weight:bold;margin-top:20px;cursor:pointer}
+button:disabled{opacity:.5}
+.notice{margin-top:20px;padding:15px;background:#fff1df;border-radius:12px;text-align:center}
+#result{display:none;margin-top:20px;padding:15px;background:#e9f8ee;border-radius:12px;overflow-wrap:anywhere}
+footer{text-align:center;padding:25px;color:#68738a}
+</style>
 </head>
 <body>
-  <header>
-    <h1>NEXTMART</h1>
-    <p>Everything You Need, One Place.</p>
-  </header>
-  <main>
-    <h2>Layanan Digital</h2>
-    <div class="grid">
-      <div class="item">📱 Pulsa</div>
-      <div class="item">📶 Paket Data</div>
-      <div class="item">⚡ Token PLN</div>
-      <div class="item">💳 E-Wallet</div>
-      <div class="item">🎮 Voucher Game</div>
-      <div class="item">🧾 Tagihan PPOB</div>
-    </div>
-    <div class="notice">
-      <strong>NEXTMART sedang dalam persiapan.</strong>
-      <p>Layanan transaksi akan segera hadir.</p>
-    </div>
-  </main>
-  <footer>© 2026 NEXTMART</footer>
-<div style="position:fixed;bottom:10px;right:12px;font-size:11px;font-weight:bold;letter-spacing:2px;color:#17233d;opacity:0.45;z-index:9999;pointer-events:none;">
-  DAMM STORE
+<header>
+<h1>NEXTMART</h1>
+<p>Everything You Need, One Place.</p>
+</header>
+
+<main>
+<h2>Pilih Layanan Digital</h2>
+
+<div class="grid">
+<button class="item" data-service="Pulsa">📱<br>Pulsa</button>
+<button class="item" data-service="Paket Data">📶<br>Paket Data</button>
+<button class="item" data-service="Token PLN">⚡<br>Token PLN</button>
+<button class="item" data-service="E-Wallet">💳<br>E-Wallet</button>
+<button class="item" data-service="Voucher Game">🎮<br>Voucher Game</button>
+<button class="item" data-service="Tagihan PPOB">🧾<br>Tagihan PPOB</button>
 </div>
+
+<div class="panel">
+<h2>Detail Pesanan</h2>
+
+<form id="orderForm">
+<label>Layanan dipilih</label>
+<input id="service" placeholder="Pilih layanan di atas" readonly required>
+
+<label>Nomor HP / ID Pelanggan / ID Game</label>
+<input id="customerId" placeholder="Masukkan nomor atau ID tujuan" required>
+
+<label>Nominal / Produk</label>
+<select id="nominal" required>
+<option value="">Pilih nominal / produk</option>
+<option>10.000</option>
+<option>20.000</option>
+<option>50.000</option>
+<option>100.000</option>
+</select>
+
+<label>Nomor WhatsApp</label>
+<input id="whatsapp" type="tel" placeholder="08xxxxxxxxxx" required>
+
+<button class="submit" type="submit">Lanjut Checkout</button>
+</form>
+
+<div id="result"></div>
+</div>
+
+<div class="notice">
+<strong>NEXTMART</strong>
+<p>Sistem transaksi sedang dikembangkan.</p>
+</div>
+</main>
+
+<footer>© damm store</footer>
+
+<script>
+const items=document.querySelectorAll('.item');
+const service=document.getElementById('service');
+const form=document.getElementById('orderForm');
+const result=document.getElementById('result');
+
+items.forEach(button=>{
+  button.addEventListener('click',()=>{
+    items.forEach(item=>item.classList.remove('active'));
+    button.classList.add('active');
+    service.value=button.dataset.service;
+    result.style.display='none';
+  });
+});
+
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+
+  if(!service.value){
+    alert('Pilih layanan terlebih dahulu!');
+    return;
+  }
+
+  const id=document.getElementById('customerId').value.trim();
+  const nominal=document.getElementById('nominal').value;
+  const wa=document.getElementById('whatsapp').value.trim();
+
+  if(!id || !nominal || !wa){
+    alert('Lengkapi semua data!');
+    return;
+  }
+
+  result.style.display='block';
+  result.innerHTML=`
+    <h3>Konfirmasi Pesanan</h3>
+    <p>Layanan: ${escapeHTML(service.value)}</p>
+    <p>ID Tujuan: ${escapeHTML(id)}</p>
+    <p>Produk: ${escapeHTML(nominal)}</p>
+    <p>WhatsApp: ${escapeHTML(wa)}</p>
+    <hr>
+    <strong>Pesanan berhasil disiapkan!</strong>
+    <p>Status: Menunggu integrasi pembayaran dan supplier API.</p>
+  `;
+});
+
+function escapeHTML(value){
+  return value.replace(/[&<>"']/g,char=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;',
+    '"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+</script>
 </body>
 </html>

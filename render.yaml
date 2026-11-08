@@ -1,0 +1,27 @@
+databases:
+  - name: nextmart-db
+    plan: free
+    databaseName: nextmart
+    user: nextmart
+
+services:
+  - type: web
+    name: nextmart
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nextmart-db
+          property: connectionString
+      - key: IAK_ENV
+        value: sandbox
+      - key: IAK_BASE_URL
+        value: https://prepaid.iak.dev
+      - key: IAK_ORDERS_ENABLED
+        value: "false"
+      - key: ADMIN_API_TOKEN
+        generateValue: true

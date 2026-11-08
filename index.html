@@ -14,17 +14,16 @@ header{padding:17px;background:#101b32;border-bottom:1px solid #263653}
 .brand{font-size:25px;font-weight:900;letter-spacing:1.5px;color:#65b4ff}
 .brand span{color:white}
 .subtitle{font-size:11px;color:#9aaac4;margin-top:5px}
-.menu-btn{background:#1a2943;color:white;border:1px solid #344968;border-radius:9px;padding:9px 13px;font-size:21px}
-.hero{margin:17px 0;background:linear-gradient(120deg,#1458a5,#18336c 60%,#542e8b);padding:23px 20px;border-radius:18px;position:relative;overflow:hidden}
-.hero:after{content:"✦";position:absolute;right:20px;top:5px;font-size:90px;color:#ffffff19}
+.menu-btn,.back{background:#1a2943;color:white;border:1px solid #344968;border-radius:9px;padding:10px 13px}
+.menu-btn{font-size:21px}
+.hero{margin:17px 0;background:linear-gradient(120deg,#1458a5,#18336c 60%,#542e8b);padding:23px 20px;border-radius:18px}
 .hero h2{font-size:23px;margin:0 0 8px;max-width:250px}
 .hero p{font-size:12px;color:#dceaff;line-height:1.6;max-width:250px}
 .hero .tag{display:inline-block;background:#ffffff20;border:1px solid #ffffff30;border-radius:30px;padding:7px 12px;font-size:10px}
 h3{font-size:16px;margin:22px 0 12px}
 .muted{font-size:12px;color:#94a4c0;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-.card{background:linear-gradient(145deg,#17243d,#111b30);border:1px solid #293a58;border-radius:15px;padding:14px 10px;cursor:pointer;min-width:0;transition:.15s}
-.card:active{transform:scale(.97)}
+.card{background:linear-gradient(145deg,#17243d,#111b30);border:1px solid #293a58;border-radius:15px;padding:14px 10px;cursor:pointer;min-width:0}
 .card b{display:block;font-size:12px;margin-top:9px}
 .card small{font-size:10px;color:#91a2bf;display:block;margin-top:5px}
 .logo-box{width:57px;height:57px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:auto}
@@ -32,9 +31,7 @@ h3{font-size:16px;margin:22px 0 12px}
 .logo-fallback{font-size:18px;font-weight:900;color:#1557a1}
 .center{text-align:center}
 .search{width:100%;padding:13px 15px;border-radius:11px;border:1px solid #304261;background:#111d33;color:white;margin:12px 0}
-.search::placeholder{color:#8292ae}
 button{cursor:pointer}
-.back{padding:10px 14px;border:1px solid #344968;border-radius:10px;background:#1a2943;color:white;font-weight:bold}
 .hidden{display:none!important}
 .product-head{display:flex;align-items:center;gap:13px;background:linear-gradient(120deg,#172d50,#151f36);padding:16px;border-radius:15px;border:1px solid #304261}
 .product-head .logo-box{margin:0;flex-shrink:0}
@@ -43,8 +40,8 @@ button{cursor:pointer}
 .panel{background:#141f35;border:1px solid #293a58;border-radius:14px;padding:15px;margin-top:13px}
 label{display:block;font-size:12px;color:#c8d5e9;margin:12px 0 6px}
 input{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;background:#0c172b;color:white;font-size:13px}
-.nominals{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:270px;overflow-y:auto;padding:2px 5px 2px 0;scrollbar-width:thin;scrollbar-color:#42658f #101b30}
-.nominal{flex:0 0 auto;width:100%;background:#192842;border:1px solid #344968;border-radius:9px;padding:14px;text-align:left;font-size:12px;color:#f5f7ff;cursor:pointer}
+.nominals{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:270px;overflow-y:auto;padding:2px 5px 2px 0;scrollbar-width:thin}
+.nominal{width:100%;background:#192842;border:1px solid #344968;border-radius:9px;padding:14px;text-align:left;font-size:12px;color:#f5f7ff}
 .nominal:after{content:"Pilih";float:right;color:#8faed2;font-size:11px}
 .nominal.active{border:2px solid #55aaff;background:#1b3c66}
 .nominal.active:after{content:"✓ Dipilih";color:#70bdff}
@@ -55,12 +52,11 @@ input{width:100%;padding:13px;border:1px solid #344968;border-radius:10px;backgr
 .payment-option small{display:block;color:#aebfda;margin-top:6px;font-size:11px}
 .payment-option:active{border-color:#65b4ff}
 .qris-image{display:block;width:min(100%,320px);height:auto;margin:14px auto;border-radius:12px;background:#fff;padding:8px}
-.dana-number{font-size:24px;font-weight:900;letter-spacing:1px;color:#65b4ff;padding:20px 5px}
+.dana-number{font-size:26px;font-weight:900;letter-spacing:2px;color:#65b4ff;padding:20px 5px;overflow-wrap:anywhere}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
-.cs span{margin-right:6px}
 footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .menu-overlay{position:fixed;inset:0;background:#0009;z-index:20}
-.drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21;box-shadow:-10px 0 30px #0006}
+.drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21}
 .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
 .drawer-title{font-weight:bold;color:#65b4ff;font-size:18px}
 .drawer button.item{display:block;width:100%;text-align:left;background:#17243d;color:#f5f7ff;border:1px solid #293a58;border-radius:10px;padding:14px;margin:9px 0;font-size:13px}
@@ -103,21 +99,13 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
   <h2>Semua kebutuhan digital dalam satu tempat.</h2>
   <p>Top up game, pulsa, paket data dan saldo digital dengan mudah.</p>
  </div>
-
  <h3>Kategori Produk</h3>
  <p class="muted">Pilih layanan yang ingin kamu gunakan.</p>
  <div class="grid" id="categories"></div>
-
  <h3>Kenapa NEXTMART?</h3>
  <div class="grid">
-  <div class="card center">
-   <div class="logo-box"><span class="logo-fallback">⚡</span></div>
-   <b>Praktis</b><small>Pilih produk dengan mudah</small>
-  </div>
-  <div class="card center">
-   <div class="logo-box"><span class="logo-fallback">🛡</span></div>
-   <b>Aman</b><small>Pengembangan sistem bertahap</small>
-  </div>
+  <div class="card center"><div class="logo-box"><span class="logo-fallback">⚡</span></div><b>Praktis</b><small>Pilih produk dengan mudah</small></div>
+  <div class="card center"><div class="logo-box"><span class="logo-fallback">🛡</span></div><b>Aman</b><small>Pengembangan sistem bertahap</small></div>
  </div>
 </section>
 
@@ -135,12 +123,8 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
  <h3>Detail Produk</h3>
  <div class="product-head">
   <div class="logo-box"><img id="detailLogo" alt="Logo produk"></div>
-  <div>
-   <h2 id="detailName"></h2>
-   <p id="detailCategory"></p>
-  </div>
+  <div><h2 id="detailName"></h2><p id="detailCategory"></p></div>
  </div>
-
  <div class="panel">
   <div id="fields"></div>
   <h3>Pilih Nominal</h3>
@@ -169,7 +153,6 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
    <strong>▦　QRIS DANA Bisnis</strong>
    <small>Bayar dengan scan kode QR dari aplikasi pembayaran.</small>
   </button>
-
   <button class="payment-option" onclick="choosePayment('dana')">
    <strong>●　Transfer DANA</strong>
    <small>Transfer langsung ke nomor DANA NEXTMART.</small>
@@ -179,48 +162,34 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
  <div id="payQRIS" class="panel center hidden">
   <h3>QRIS DANA Bisnis</h3>
   <p class="muted">Scan kode QR berikut untuk membayar.</p>
-
-  <img src="./IMG_4665.jpeg"
-   alt="QRIS DANA Bisnis NEXTMART"
-   class="qris-image"
+  <img src="./IMG_4665.jpeg" alt="QRIS DANA Bisnis NEXTMART" class="qris-image"
    onerror="this.style.display='none';document.getElementById('qrisError').classList.remove('hidden')">
-
-  <div id="qrisError" class="notice hidden">
-   QRIS tidak ditemukan. Pastikan IMG_4665.jpeg berada satu folder dengan index.html.
-  </div>
+  <div id="qrisError" class="notice hidden">QRIS tidak ditemukan. Pastikan IMG_4665.jpeg berada satu folder dengan index.html.</div>
  </div>
 
+ <!-- PANEL NOMOR DANA -->
  <div id="payDANA" class="panel center hidden">
   <h3>Transfer DANA</h3>
   <p class="muted">Kirim pembayaran ke nomor DANA berikut.</p>
-
   <div class="dana-number">089514575634</div>
-
   <button class="primary" onclick="copyDana()">Salin Nomor DANA</button>
  </div>
 
  <div class="notice">
   <b>PENTING:</b><br>
   Harga otomatis belum tersedia. Jangan membayar sebelum admin mengonfirmasi nominal total pesanan melalui Telegram.
-  <br><br>
-  Setelah membayar, hubungi admin untuk verifikasi manual.
+  <br><br>Setelah membayar, hubungi admin untuk verifikasi manual.
  </div>
-
- <a class="primary" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">
-  Hubungi Admin untuk Verifikasi
- </a>
+ <a class="primary" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">Hubungi Admin untuk Verifikasi</a>
 </section>
 
 </main>
 
-<a class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">
- <span>✈</span> Customer Service
-</a>
-
+<a class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">✈ Customer Service</a>
 <footer>© DAMM STORE</footer>
 
 <script>
-const asset=(domain)=>"https://www.google.com/s2/favicons?domain="+domain+"&sz=128";
+const asset=domain=>"https://www.google.com/s2/favicons?domain="+domain+"&sz=128";
 
 const categories=[
  {id:"game",name:"GAME",desc:"Top up game favorit",domain:"store.steampowered.com"},
@@ -284,25 +253,17 @@ function show(id){
 }
 
 function logo(domain,name){
- return `<div class="logo-box">
- <img src="${asset(domain)}" alt="${name}"
- onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\\\'logo-fallback\\\\'>${name.slice(0,2).toUpperCase()}</span>'">
- </div>`;
+ return `<div class="logo-box"><img src="${asset(domain)}" alt="${name}"></div>`;
 }
 
 function drawCategories(){
  document.getElementById("categories").innerHTML=categories.map(c=>`
  <div class="card center" onclick="openCategory('${c.id}')">
- ${logo(c.domain,c.name)}
- <b>${c.name}</b>
- <small>${c.desc}</small>
- </div>
- `).join("");
+ ${logo(c.domain,c.name)}<b>${c.name}</b><small>${c.desc}</small>
+ </div>`).join("");
 }
 
-function home(){
- show("home");
-}
+function home(){show("home")}
 
 function openCategory(id){
  currentCategory=id;
@@ -318,25 +279,17 @@ function openCategory(id){
 function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase();
  let list=[];
-
  if(currentCategory==="game"){
   list=products.filter(p=>p.name.toLowerCase().includes(query));
  }else{
   list=(providers[currentCategory]||[])
    .filter(p=>p[0].toLowerCase().includes(query))
-   .map(p=>({
-    name:p[0],
-    domain:p[1],
-    cat:currentCategory,
-    fields:[currentCategory==="pln"?"Nomor Meter / ID Pelanggan":"Nomor HP"],
-    nom:[]
-   }));
+   .map(p=>({name:p[0],domain:p[1],cat:currentCategory,
+    fields:[currentCategory==="pln"?"Nomor Meter / ID Pelanggan":"Nomor HP"],nom:[]}));
  }
-
  const grid=document.getElementById("catalogGrid");
  grid.innerHTML="";
  document.getElementById("empty").classList.toggle("hidden",list.length>0);
-
  list.forEach(p=>{
   const el=document.createElement("div");
   el.className="card center";
@@ -349,75 +302,52 @@ function renderCatalog(){
 function openProduct(p){
  selected=p;
  selectedNominal="";
-
  document.getElementById("detailName").textContent=p.name;
  document.getElementById("detailCategory").textContent=p.cat||"NEXTMART DIGITAL";
  document.getElementById("detailLogo").src=asset(p.domain);
-
  const fields=document.getElementById("fields");
  fields.innerHTML="";
-
  p.fields.forEach((f,i)=>{
   const label=document.createElement("label");
   label.textContent=f;
-
   const input=document.createElement("input");
   input.id="field"+i;
   input.placeholder="Masukkan "+f;
-
   fields.append(label,input);
  });
-
  const box=document.getElementById("nominals");
  box.innerHTML="";
-
  if(p.nom.length){
   p.nom.forEach(n=>{
    const el=document.createElement("div");
    el.className="nominal";
    el.textContent=n;
-
    el.onclick=()=>{
     selectedNominal=n;
     document.querySelectorAll(".nominal").forEach(x=>x.classList.remove("active"));
     el.classList.add("active");
    };
-
    box.appendChild(el);
   });
  }else{
   box.innerHTML="<div class='muted'>Nominal akan tersedia setelah API supplier terhubung.</div>";
  }
-
  show("detail");
 }
 
-function catalogBack(){
- openCategory(lastCatalog);
-}
+function catalogBack(){openCategory(lastCatalog)}
 
 function order(){
  const vals=selected.fields.map((f,i)=>document.getElementById("field"+i).value.trim());
-
- if(vals.some(v=>!v)){
-  alert("Lengkapi data tujuan terlebih dahulu.");
-  return;
- }
-
- if(!selectedNominal){
-  alert("Pilih nominal terlebih dahulu.");
-  return;
- }
-
+ if(vals.some(v=>!v)){alert("Lengkapi data tujuan terlebih dahulu.");return}
+ if(!selectedNominal){alert("Pilih nominal terlebih dahulu.");return}
  const orderCode="NX"+Date.now().toString().slice(-8);
-
  document.getElementById("summaryText").textContent=
   "Kode pesanan: "+orderCode+
   "\nProduk: "+selected.name+
   "\nNominal: "+selectedNominal+
   "\nTujuan: "+vals.join(" / ")+
   "\nStatus: Menunggu konfirmasi nominal admin";
-
  show("summary");
 }
 
@@ -427,14 +357,31 @@ function openPayment(){
  show("payment");
 }
 
+/* PERBAIKAN: panel nomor DANA dipaksa tampil saat tombol dipilih */
 function choosePayment(method){
- document.getElementById("payQRIS").classList.toggle("hidden",method!=="qris");
- document.getElementById("payDANA").classList.toggle("hidden",method!=="dana");
+ const qris=document.getElementById("payQRIS");
+ const dana=document.getElementById("payDANA");
+
+ qris.classList.add("hidden");
+ dana.classList.add("hidden");
+
+ if(method==="dana"){
+  dana.classList.remove("hidden");
+  dana.style.display="block";
+  setTimeout(()=>{
+   dana.scrollIntoView({behavior:"smooth",block:"center"});
+  },100);
+ }else if(method==="qris"){
+  qris.classList.remove("hidden");
+  qris.style.display="block";
+  setTimeout(()=>{
+   qris.scrollIntoView({behavior:"smooth",block:"center"});
+  },100);
+ }
 }
 
 function copyDana(){
  const nomor="089514575634";
-
  if(navigator.clipboard && navigator.clipboard.writeText){
   navigator.clipboard.writeText(nomor)
    .then(()=>alert("Nomor DANA berhasil disalin!"))

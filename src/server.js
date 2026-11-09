@@ -169,11 +169,31 @@ async function initDb() {
       updated_at TIMESTAMP DEFAULT NOW()
     );
 
+    ALTER TABLE payment_orders
+      ADD COLUMN IF NOT EXISTS melo_transaction_id VARCHAR(100);
+
+    ALTER TABLE payment_orders
+      ADD COLUMN IF NOT EXISTS serial_number TEXT;
+
     CREATE INDEX IF NOT EXISTS payment_orders_status_idx
       ON payment_orders(status);
 
     CREATE INDEX IF NOT EXISTS payment_orders_supplier_idx
       ON payment_orders(supplier_status);
+
+    CREATE INDEX IF NOT EXISTS payment_orders_melo_id_idx
+      ON payment_orders(melo_transaction_id);
+
+    -- Migrasi data transaksi Melo yang sudah ada.
+    UPDATE payment_orders p
+    SET melo_transaction_id = o.melo_transaction_id,
+        serial_number = COALESCE(p.serial_number, o.serial_number)
+    FROM orders o
+    WHERE o.buyer_trx_id = p.order_id
+      AND (
+        p.melo_transaction_id IS NULL
+        OR p.serial_number IS NULL
+      );
   `);
 }
 
@@ -432,6 +452,9 @@ async function fulfillPaidOrder(orderId, allowRetry = false) {
       throw new Error("Respons transaksi Melo tidak lengkap.");
     }
 
+    const supplierStatus =
+      String(data.status || "processing").toLowerCase();
+
     await pool.query(
       `UPDATE orders
        SET melo_transaction_id = $2,
@@ -444,7 +467,7 @@ async function fulfillPaidOrder(orderId, allowRetry = false) {
       [
         payment.order_id,
         data.id,
-        String(data.status || "processing").toLowerCase(),
+        supplierStatus,
         Number(data.price ?? payment.modal_price),
         data.serial_number || null,
         data.message || null
@@ -455,19 +478,23 @@ async function fulfillPaidOrder(orderId, allowRetry = false) {
       `UPDATE payment_orders
        SET supplier_status = $2,
            supplier_message = $3,
+           melo_transaction_id = $4,
+           serial_number = $5,
            updated_at = NOW()
        WHERE order_id = $1`,
       [
         payment.order_id,
-        String(data.status || "processing").toLowerCase(),
-        data.message || null
+        supplierStatus,
+        data.message || null,
+        data.id,
+        data.serial_number || null
       ]
     );
 
     console.log(
       "Melo order submitted:",
       payment.order_id,
-      data.status
+      supplierStatus
     );
 
   } catch (error) {
@@ -1046,7 +1073,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       signature_key
     } = notification;
 
-    // Test notification tidak membuat order atau memanggil Melo.
     if (
       typeof order_id === "string" &&
       order_id.startsWith("payment_notif_test_")
@@ -1146,7 +1172,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
 
 // =====================================================
 // ADMIN: REKONSILIASI PEMBAYARAN
-// Cek status langsung ke Midtrans, bukan percaya input user.
 // =====================================================
 
 app.post(
@@ -1177,7 +1202,6 @@ app.post(
 
       const payment = paymentResult.rows[0];
 
-      // Jangan mengulang order supplier yang sudah diproses.
       if (
         payment.status === "paid" &&
         payment.supplier_status !== "waiting_payment"
@@ -1202,7 +1226,8 @@ app.post(
 
       const updated = await pool.query(
         `SELECT order_id, status, payment_type,
-                supplier_status, supplier_message
+                supplier_status, supplier_message,
+                melo_transaction_id, serial_number
          FROM payment_orders
          WHERE order_id = $1`,
         [orderId]
@@ -1227,7 +1252,7 @@ app.post(
 );
 
 // =====================================================
-// CEK STATUS PESANAN
+// CEK STATUS PESANAN + SINKRONISASI MELO
 // =====================================================
 
 app.get("/api/orders/:id", async (req, res) => {
@@ -1238,52 +1263,138 @@ app.get("/api/orders/:id", async (req, res) => {
       });
     }
 
-    const payment = await pool.query(
-      `SELECT order_id, sku_code, customer_target,
-              selling_price, status, payment_type,
-              supplier_status, supplier_message,
-              snap_redirect_url, created_at, updated_at
+    const orderId = req.params.id;
+
+    let result = await pool.query(
+      `SELECT *
        FROM payment_orders
        WHERE order_id = $1`,
-      [req.params.id]
+      [orderId]
     );
 
-    if (payment.rows.length) {
-      return res.json({
-        ok: true,
-        order: payment.rows[0]
-      });
-    }
-
-    const { rows } = await pool.query(
-      `SELECT *
-       FROM orders
-       WHERE buyer_trx_id = $1
-          OR melo_transaction_id = $1
-       LIMIT 1`,
-      [req.params.id]
-    );
-
-    if (!rows.length) {
+    if (!result.rows.length) {
       return res.status(404).json({
         error: "Pesanan tidak ditemukan."
       });
     }
 
-    const order = rows[0];
+    let order = result.rows[0];
 
-    if (order.melo_transaction_id) {
-      const result = await meloRequest(
-        `/transaction/${encodeURIComponent(order.melo_transaction_id)}`
+    // Jika ID Melo belum tersimpan di payment_orders,
+    // ambil dari tabel orders yang lama.
+    if (!order.melo_transaction_id) {
+      const oldOrder = await pool.query(
+        `SELECT melo_transaction_id, serial_number
+         FROM orders
+         WHERE buyer_trx_id = $1
+         LIMIT 1`,
+        [orderId]
       );
 
-      return res.json(result);
+      if (oldOrder.rows.length && oldOrder.rows[0].melo_transaction_id) {
+        await pool.query(
+          `UPDATE payment_orders
+           SET melo_transaction_id = $2,
+               serial_number = COALESCE(serial_number, $3),
+               updated_at = NOW()
+           WHERE order_id = $1`,
+          [
+            orderId,
+            oldOrder.rows[0].melo_transaction_id,
+            oldOrder.rows[0].serial_number
+          ]
+        );
+
+        order.melo_transaction_id =
+          oldOrder.rows[0].melo_transaction_id;
+      }
     }
 
-    res.json(order);
+    // Cek status langsung ke Melo jika transaksi sudah dikirim.
+    if (
+      order.status === "paid" &&
+      order.melo_transaction_id &&
+      ["processing", "pending", "review"].includes(order.supplier_status)
+    ) {
+      try {
+        const response = await meloRequest(
+          `/transaction/${encodeURIComponent(order.melo_transaction_id)}`
+        );
+
+        const data = response.data || response;
+        const supplierStatus = String(data.status || "").toLowerCase();
+
+        if (
+          ["success", "failed", "processing", "pending"].includes(supplierStatus)
+        ) {
+          const serial = data.serial_number || null;
+          const message = data.message || null;
+
+          await pool.query(
+            `UPDATE payment_orders
+             SET supplier_status = $2,
+                 supplier_message = COALESCE($3, supplier_message),
+                 serial_number = COALESCE($4, serial_number),
+                 updated_at = NOW()
+             WHERE order_id = $1`,
+            [
+              orderId,
+              supplierStatus,
+              message,
+              serial
+            ]
+          );
+
+          await pool.query(
+            `UPDATE orders
+             SET status = $2,
+                 serial_number = COALESCE($3, serial_number),
+                 message = COALESCE($4, message),
+                 updated_at = NOW()
+             WHERE buyer_trx_id = $1`,
+            [
+              orderId,
+              supplierStatus,
+              serial,
+              message
+            ]
+          );
+
+          console.log(
+            "Melo status synchronized:",
+            orderId,
+            supplierStatus
+          );
+        }
+
+      } catch (error) {
+        console.error(
+          "Melo status sync error:",
+          error.message
+        );
+      }
+    }
+
+    const updated = await pool.query(
+      `SELECT order_id, sku_code, customer_target,
+              selling_price, status, payment_type,
+              supplier_status, supplier_message,
+              melo_transaction_id, serial_number,
+              snap_redirect_url, created_at, updated_at
+       FROM payment_orders
+       WHERE order_id = $1`,
+      [orderId]
+    );
+
+    return res.json({
+      ok: true,
+      order: updated.rows[0]
+    });
 
   } catch (error) {
-    res.status(502).json({
+    console.error("Order status error:", error.message);
+
+    return res.status(502).json({
       error: error.message
     });
   }
@@ -1358,7 +1469,7 @@ function validAction(action) {
 }
 
 // =====================================================
-// MELO WEBHOOK
+// MELO WEBHOOK - UPDATE ORDERS + PAYMENT_ORDERS
 // =====================================================
 
 app.post("/api/melo/webhook", async (req, res) => {
@@ -1384,7 +1495,10 @@ app.post("/api/melo/webhook", async (req, res) => {
 
   const received = Buffer.from(String(signature), "hex");
 
-  if (!crypto.timingSafeEqual(expected, received)) {
+  if (
+    received.length !== expected.length ||
+    !crypto.timingSafeEqual(expected, received)
+  ) {
     return res.status(401).json({
       error: "Signature tidak valid."
     });
@@ -1415,7 +1529,9 @@ app.post("/api/melo/webhook", async (req, res) => {
       typeof event.event_id !== "string" ||
       !uuid.test(event.event_id) ||
       !validAction(event.action) ||
-      !["pending", "processing", "success", "failed"].includes(event.status) ||
+      !["pending", "processing", "success", "failed"].includes(
+        String(event.status).toLowerCase()
+      ) ||
       event.need_action !== (event.action.state === "required")
     ) {
       return res.status(422).json({
@@ -1425,7 +1541,9 @@ app.post("/api/melo/webhook", async (req, res) => {
 
   } else if (
     event.event ||
-    !["success", "failed"].includes(event.status)
+    !["success", "failed"].includes(
+      String(event.status).toLowerCase()
+    )
   ) {
     return res.status(422).json({
       error: "Event hasil akhir tidak valid."
@@ -1438,9 +1556,11 @@ app.post("/api/melo/webhook", async (req, res) => {
     });
   }
 
+  const status = String(event.status).toLowerCase();
+
   const eventKey = actionEvent
     ? `action:${event.event_id}:${event.action.version}`
-    : `${event.id}:${event.status}`;
+    : `${event.id}:${status}`;
 
   const client = await pool.connect();
 
@@ -1455,53 +1575,116 @@ app.post("/api/melo/webhook", async (req, res) => {
       [eventKey, JSON.stringify(event)]
     );
 
-    if (inserted.rowCount > 0) {
-      if (event.action) {
+    if (inserted.rowCount === 0) {
+      await client.query("COMMIT");
+
+      return res.status(200).json({
+        ok: true,
+        duplicate: true
+      });
+    }
+
+    if (event.action) {
+      await client.query(
+        `INSERT INTO melo_action_state
+          (transaction_id, action_id, version, payload)
+         VALUES ($1, $2, $3, $4::jsonb)
+         ON CONFLICT (transaction_id) DO UPDATE SET
+           action_id = EXCLUDED.action_id,
+           version = EXCLUDED.version,
+           payload = EXCLUDED.payload
+         WHERE melo_action_state.action_id = EXCLUDED.action_id
+           AND melo_action_state.version < EXCLUDED.version`,
+        [
+          event.id,
+          event.action.id,
+          event.action.version,
+          JSON.stringify(event.action)
+        ]
+      );
+    }
+
+    if (!actionEvent) {
+      const buyerTrxId = event.buyer_trx_id || "";
+
+      const serial = event.serial_number || null;
+      const message = event.message || null;
+      const price = event.price_charged ?? null;
+
+      // Update tabel orders.
+      await client.query(
+        `UPDATE orders
+         SET melo_transaction_id = COALESCE($2, melo_transaction_id),
+             status = $3,
+             serial_number = COALESCE($4, serial_number),
+             price = COALESCE($5, price),
+             message = COALESCE($6, message),
+             updated_at = NOW()
+         WHERE buyer_trx_id = $1
+            OR melo_transaction_id = $2`,
+        [
+          buyerTrxId,
+          event.id,
+          status,
+          serial,
+          price,
+          message
+        ]
+      );
+
+      // Update payment_orders berdasarkan Buyer Trx ID.
+      const paymentUpdate = await client.query(
+        `UPDATE payment_orders
+         SET supplier_status = $2,
+             supplier_message = COALESCE($3, supplier_message),
+             melo_transaction_id = $4,
+             serial_number = COALESCE($5, serial_number),
+             updated_at = NOW()
+         WHERE order_id = $1`,
+        [
+          buyerTrxId,
+          status,
+          message,
+          event.id,
+          serial
+        ]
+      );
+
+      // Fallback jika Buyer Trx ID tidak dikirim.
+      if (paymentUpdate.rowCount === 0) {
         await client.query(
-          `INSERT INTO melo_action_state
-            (transaction_id, action_id, version, payload)
-           VALUES ($1, $2, $3, $4::jsonb)
-           ON CONFLICT (transaction_id) DO UPDATE SET
-             action_id = EXCLUDED.action_id,
-             version = EXCLUDED.version,
-             payload = EXCLUDED.payload
-           WHERE melo_action_state.action_id = EXCLUDED.action_id
-             AND melo_action_state.version < EXCLUDED.version`,
+          `UPDATE payment_orders p
+           SET supplier_status = $2,
+               supplier_message = COALESCE($3, p.supplier_message),
+               melo_transaction_id = $1,
+               serial_number = COALESCE($4, p.serial_number),
+               updated_at = NOW()
+           FROM orders o
+           WHERE o.buyer_trx_id = p.order_id
+             AND o.melo_transaction_id = $1`,
           [
             event.id,
-            event.action.id,
-            event.action.version,
-            JSON.stringify(event.action)
+            status,
+            message,
+            serial
           ]
         );
       }
 
-      if (!actionEvent) {
-        await client.query(
-          `UPDATE orders
-           SET melo_transaction_id = COALESCE($2, melo_transaction_id),
-               status = $3,
-               serial_number = COALESCE($4, serial_number),
-               price = COALESCE($5, price),
-               message = COALESCE($6, message),
-               updated_at = NOW()
-           WHERE buyer_trx_id = $1
-              OR melo_transaction_id = $2`,
-          [
-            event.buyer_trx_id || "",
-            event.id,
-            String(event.status).toLowerCase(),
-            event.serial_number || null,
-            event.price_charged ?? null,
-            event.message || null
-          ]
-        );
-      }
+      console.log(
+        "Melo webhook synchronized:",
+        buyerTrxId || event.id,
+        status,
+        serial || "no SN"
+      );
     }
 
     await client.query("COMMIT");
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({
+      ok: true,
+      message: "Melo callback processed."
+    });
 
   } catch (error) {
     await client.query("ROLLBACK");

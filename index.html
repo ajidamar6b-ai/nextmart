@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,6 +10,7 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080f20;color:#f5f7ff;font-family:Arial,sans-serif}
+body.loading{overflow:hidden}
 header{padding:17px;background:#101b32;border-bottom:1px solid #263653}
 .wrap{max-width:760px;margin:auto;padding:16px}
 .top{display:flex;align-items:center;justify-content:space-between}
@@ -66,17 +68,83 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .drawer button.item{display:block;width:100%;text-align:left;background:#17243d;color:#f5f7ff;border:1px solid #293a58;border-radius:10px;padding:14px;margin:9px 0;font-size:13px}
 .drawer .close{background:transparent;color:white;border:0;font-size:23px}
 .auth-status{font-size:12px;color:#aebfda;line-height:1.6;margin-top:12px}
-@media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+/* LOGO NMART */
+.brand-area{display:flex;align-items:center;gap:10px}
+.nmart-logo{width:43px;height:43px;border-radius:12px;background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:1000;color:white;box-shadow:0 5px 18px #187ce755;letter-spacing:-1px}
+.brand{line-height:1}
+
+/* LOADING SCREEN */
+#loadingScreen{position:fixed;inset:0;z-index:1000;background:#080f20;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease,visibility .4s ease}
+#loadingScreen.done{opacity:0;visibility:hidden;pointer-events:none}
+.loading-content{text-align:center}
+.loading-logo{width:82px;height:82px;margin:0 auto 17px;border-radius:23px;background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:1000;box-shadow:0 0 45px #248cff55}
+.loading-name{font-size:25px;font-weight:900;letter-spacing:2px}
+.loading-name span{color:#65b4ff}
+.loading-caption{font-size:10px;color:#8499b9;letter-spacing:2px;margin-top:8px}
+.loading-track{width:145px;height:4px;background:#1c2d49;border-radius:10px;margin:24px auto 0;overflow:hidden}
+.loading-progress{height:100%;width:40%;border-radius:10px;background:#65b4ff;animation:loadingMove 1.1s ease-in-out infinite alternate}
+@keyframes loadingMove{from{transform:translateX(-5%)}to{transform:translateX(155%)}}
+
+/* 5 BANNER SLIDE */
+.slider{position:relative;margin:17px 0 21px;overflow:hidden;border-radius:18px}
+.slider-track{display:flex;transition:transform .45s ease}
+.slide{position:relative;flex:0 0 100%;min-height:205px;padding:22px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.slide:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:#ffffff12;right:-75px;top:-65px}
+.slide-content{position:relative;z-index:2;max-width:65%}
+.slide-label{display:inline-block;padding:6px 10px;border-radius:20px;background:#ffffff22;border:1px solid #ffffff40;font-size:9px;font-weight:bold;letter-spacing:1px}
+.slide h2{font-size:23px;line-height:1.15;margin:13px 0 7px}
+.slide p{font-size:11px;color:#e2edff;line-height:1.5;margin:0}
+.slide-cta{display:inline-block;margin-top:14px;padding:9px 13px;border-radius:8px;background:#ffffff;color:#14233e;font-size:10px;font-weight:bold}
+.slide-art{position:relative;z-index:2;width:100px;height:100px;flex-shrink:0;border-radius:23px;background:#ffffff20;border:1px solid #ffffff55;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px #0003}
+.slide-art img{width:75px;height:75px;object-fit:contain;border-radius:15px}
+.slide-1{background:linear-gradient(115deg,#0752a5,#168bd0 60%,#222d78)}
+.slide-2{background:linear-gradient(115deg,#a52c13,#e56c18 60%,#7c241f)}
+.slide-3{background:linear-gradient(115deg,#174b42,#188d75 60%,#173d65)}
+.slide-4{background:linear-gradient(115deg,#4a287f,#8055c5 60%,#263e81)}
+.slide-5{background:linear-gradient(115deg,#8b3c9b,#d45c9c 60%,#6b438e)}
+.slider-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:29px;height:29px;border:1px solid #ffffff55;border-radius:50%;background:#07162a99;color:white;font-size:18px;display:flex;align-items:center;justify-content:center}
+.slider-arrow.prev{left:9px}
+.slider-arrow.next{right:9px}
+.slider-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:5}
+.slider-dot{width:6px;height:6px;padding:0;border:0;border-radius:10px;background:#ffffff70;transition:all .25s}
+.slider-dot.active{width:20px;background:#fff}
+.slide-hint{text-align:center;color:#8094b4;font-size:9px;margin-top:-12px;margin-bottom:15px}
+
+@media(min-width:550px){
+ .grid{grid-template-columns:repeat(3,1fr)}
+ .slide{min-height:230px;padding:28px}
+ .slide-art{width:120px;height:120px}
+ .slide-art img{width:90px;height:90px}
+}
+@media(max-width:380px){
+ .slide{min-height:190px;padding:17px}
+ .slide h2{font-size:20px}
+ .slide-art{width:78px;height:78px}
+ .slide-art img{width:60px;height:60px}
+}
 </style>
 </head>
-<body>
+<body class="loading">
+
+<div id="loadingScreen">
+ <div class="loading-content">
+  <div class="loading-logo">NM</div>
+  <div class="loading-name">NEXT<span>MART</span></div>
+  <div class="loading-caption">YOUR DIGITAL STORE</div>
+  <div class="loading-track"><div class="loading-progress"></div></div>
+ </div>
+</div>
 
 <header>
  <div class="wrap" style="padding:0">
   <div class="top">
-   <div>
-    <div class="brand">NEXT<span>MART</span></div>
-    <div class="subtitle">YOUR DIGITAL STORE • TOP UP & MORE</div>
+   <div class="brand-area">
+    <div class="nmart-logo">NM</div>
+    <div>
+     <div class="brand">NEXT<span>MART</span></div>
+     <div class="subtitle">YOUR DIGITAL STORE • TOP UP & MORE</div>
+    </div>
    </div>
    <button class="menu-btn" onclick="toggleMenu(true)">☰</button>
   </div>
@@ -98,11 +166,72 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 <main class="wrap">
 
 <section id="home">
- <div class="hero">
-  <div class="tag">WELCOME TO NEXTMART</div>
-  <h2>Semua kebutuhan digital dalam satu tempat.</h2>
-  <p>Top up game, pulsa, paket data dan saldo digital dengan mudah.</p>
+ <div class="slider" id="mainSlider">
+  <div class="slider-track" id="sliderTrack">
+
+   <div class="slide slide-1" onclick="openBannerProduct('Mobile Legends')">
+    <div class="slide-content">
+     <span class="slide-label">GAME FAVORIT</span>
+     <h2>Mobile Legends</h2>
+     <p>Top up Diamond Mobile Legends dengan mudah di NEXTMART.</p>
+     <span class="slide-cta">TOP UP SEKARANG →</span>
+    </div>
+    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=mobilelegends.com&sz=128" alt="Mobile Legends"></div>
+   </div>
+
+   <div class="slide slide-2" onclick="openBannerProduct('Free Fire')">
+    <div class="slide-content">
+     <span class="slide-label">BOOYAH!</span>
+     <h2>Free Fire</h2>
+     <p>Diamond Free Fire untuk melengkapi kebutuhan permainanmu.</p>
+     <span class="slide-cta">PILIH DIAMOND →</span>
+    </div>
+    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=ff.garena.com&sz=128" alt="Free Fire"></div>
+   </div>
+
+   <div class="slide slide-3" onclick="openBannerProduct('PUBG Mobile')">
+    <div class="slide-content">
+     <span class="slide-label">BATTLE ROYALE</span>
+     <h2>PUBG Mobile</h2>
+     <p>Temukan pilihan UC PUBG Mobile di katalog NEXTMART.</p>
+     <span class="slide-cta">LIHAT PRODUK →</span>
+    </div>
+    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=pubgmobile.com&sz=128" alt="PUBG Mobile"></div>
+   </div>
+
+   <div class="slide slide-4" onclick="openBannerProduct('Genshin Impact')">
+    <div class="slide-content">
+     <span class="slide-label">ADVENTURE</span>
+     <h2>Genshin Impact</h2>
+     <p>Jelajahi pilihan Genesis Crystals untuk petualanganmu.</p>
+     <span class="slide-cta">TOP UP SEKARANG →</span>
+    </div>
+    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=genshin.hoyoverse.com&sz=128" alt="Genshin Impact"></div>
+   </div>
+
+   <div class="slide slide-5" onclick="openBannerProduct('Roblox')">
+    <div class="slide-content">
+     <span class="slide-label">PLAY YOUR WAY</span>
+     <h2>Roblox</h2>
+     <p>Temukan pilihan Robux di katalog produk NEXTMART.</p>
+     <span class="slide-cta">LIHAT PRODUK →</span>
+    </div>
+    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=roblox.com&sz=128" alt="Roblox"></div>
+   </div>
+
+  </div>
+  <button class="slider-arrow prev" onclick="changeSlide(-1,event)">‹</button>
+  <button class="slider-arrow next" onclick="changeSlide(1,event)">›</button>
+  <div class="slider-dots" id="sliderDots">
+   <button class="slider-dot active" onclick="goSlide(0,event)"></button>
+   <button class="slider-dot" onclick="goSlide(1,event)"></button>
+   <button class="slider-dot" onclick="goSlide(2,event)"></button>
+   <button class="slider-dot" onclick="goSlide(3,event)"></button>
+   <button class="slider-dot" onclick="goSlide(4,event)"></button>
+  </div>
  </div>
+ <div class="slide-hint">GESER UNTUK MELIHAT PROMO LAINNYA</div>
+
  <h3>Kategori Produk</h3>
  <p class="muted">Pilih layanan yang ingin kamu gunakan.</p>
  <div class="grid" id="categories"></div>
@@ -201,7 +330,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 </main>
 
 <a class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">✈ Customer Service</a>
-<footer>© DAMM STORE</footer>
+<footer>© NMART DIGITAL STORE</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -660,9 +789,79 @@ function copyDana(){
  }else prompt("Salin nomor DANA:",nomor);
 }
 
+// SLIDER 5 BANNER - FITUR TAMBAHAN
+let activeSlide=0;
+let slideTimer=null;
+const totalSlides=5;
+
+function updateSlider(){
+ const track=document.getElementById("sliderTrack");
+ if(!track)return;
+ track.style.transform="translateX(-"+(activeSlide*100)+"%)";
+ document.querySelectorAll(".slider-dot").forEach((dot,i)=>{
+  dot.classList.toggle("active",i===activeSlide);
+ });
+}
+function goSlide(index,event){
+ if(event)event.stopPropagation();
+ activeSlide=(index+totalSlides)%totalSlides;
+ updateSlider();
+ restartSliderTimer();
+}
+function changeSlide(direction,event){
+ if(event)event.stopPropagation();
+ activeSlide=(activeSlide+direction+totalSlides)%totalSlides;
+ updateSlider();
+ restartSliderTimer();
+}
+function restartSliderTimer(){
+ clearInterval(slideTimer);
+ slideTimer=setInterval(()=>{
+  activeSlide=(activeSlide+1)%totalSlides;
+  updateSlider();
+ },5000);
+}
+function openBannerProduct(name){
+ const product=products.find(p=>p.name===name);
+ if(!product)return;
+ currentCategory="game";
+ lastCatalog="game";
+ openProduct(product);
+}
+function setupSliderSwipe(){
+ const slider=document.getElementById("mainSlider");
+ let startX=0;
+ let endX=0;
+ slider.addEventListener("touchstart",e=>{
+  startX=e.changedTouches[0].screenX;
+ },{passive:true});
+ slider.addEventListener("touchend",e=>{
+  endX=e.changedTouches[0].screenX;
+  const distance=endX-startX;
+  if(Math.abs(distance)>45){
+   activeSlide=(activeSlide+(distance<0?1:-1)+totalSlides)%totalSlides;
+   updateSlider();
+   restartSliderTimer();
+  }
+ },{passive:true});
+}
+
+// LOADING SCREEN
+function finishLoading(){
+ const screen=document.getElementById("loadingScreen");
+ screen.classList.add("done");
+ document.body.classList.remove("loading");
+ setTimeout(()=>screen.remove(),500);
+}
+
 // MULAI
 drawCategories();
 initializeAuth();
+updateSlider();
+setupSliderSwipe();
+restartSliderTimer();
+window.addEventListener("load",()=>setTimeout(finishLoading,1100));
+setTimeout(finishLoading,3000);
 </script>
 </body>
 </html>

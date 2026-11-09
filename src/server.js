@@ -1,3 +1,4 @@
+
 import express from "express";
 import pg from "pg";
 import crypto from "node:crypto";
@@ -10,6 +11,42 @@ const app = express();
 const BASE_URL = "https://api.melostore.id/api/v1/h2h";
 const PORT = process.env.PORT || 3000;
 
+// =====================================================
+// CORS - GITHUB PAGES NEXTMART
+// =====================================================
+
+const allowedOrigins = [
+  "https://ajidamar6b-ai.github.io"
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+    res.setHeader("Access-Control-Max-Age", "86400");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
+// =====================================================
+// MIDTRANS CONFIGURATION
+// =====================================================
+
 const MIDTRANS_PRODUCTION =
   process.env.MIDTRANS_IS_PRODUCTION === "true";
 
@@ -20,6 +57,10 @@ const MIDTRANS_SNAP_URL = MIDTRANS_PRODUCTION
 const MIDTRANS_STATUS_URL = MIDTRANS_PRODUCTION
   ? "https://api.midtrans.com/v2"
   : "https://api.sandbox.midtrans.com/v2";
+
+// =====================================================
+// DATABASE
+// =====================================================
 
 const pool = process.env.DATABASE_URL
   ? new pg.Pool({
@@ -50,10 +91,6 @@ app.get("/api/health-check", (_req, res) => {
     status: "running"
   });
 });
-
-// =====================================================
-// DATABASE
-// =====================================================
 
 async function initDb() {
   if (!pool) return;
@@ -163,10 +200,10 @@ const adminOnly = (req, res, next) => {
 
 // =====================================================
 // HARGA JUAL
-// =====================================================
-
 // Modal + 10%, minimal keuntungan Rp1.500,
 // lalu dibulatkan ke atas kelipatan Rp500.
+// =====================================================
+
 function calculateSellingPrice(modalPrice) {
   const modal = Number(modalPrice);
 
@@ -1437,6 +1474,11 @@ initDb()
 
       console.log(
         `Midtrans mode: ${MIDTRANS_PRODUCTION ? "PRODUCTION" : "SANDBOX"}`
+      );
+
+      console.log(
+        "CORS enabled for:",
+        allowedOrigins.join(", ")
       );
     });
   })

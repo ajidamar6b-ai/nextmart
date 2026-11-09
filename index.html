@@ -10,17 +10,16 @@
 *{box-sizing:border-box}
 body{margin:0;background:#080f20;color:#f5f7ff;font-family:Arial,sans-serif}
 body.loading{overflow:hidden}
-header{padding:17px;background:#101b32;border-bottom:1px solid #263653}
+header{padding:17px;background:linear-gradient(120deg,#17142d,#111a35);border-bottom:1px solid #3b3263}
 .wrap{max-width:760px;margin:auto;padding:16px}
 .top{display:flex;align-items:center;justify-content:space-between}
-.brand{font-size:25px;font-weight:900;letter-spacing:1.5px;color:#65b4ff;line-height:1}
+.brand{font-size:25px;font-weight:900;letter-spacing:1.5px;color:#c4a1ff;line-height:1}
 .brand span{color:white}
 .subtitle{font-size:11px;color:#9aaac4;margin-top:5px}
 .brand-area{display:flex;align-items:center;gap:10px}
-.nmart-logo,.loading-logo{background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-weight:1000;color:white;box-shadow:0 5px 18px #187ce755}
+.nmart-logo,.loading-logo{background:linear-gradient(135deg,#9d6bff,#655ce8 55%,#d36ce9);display:flex;align-items:center;justify-content:center;font-weight:1000;color:white;box-shadow:0 5px 22px #a45cff66}
 .nmart-logo{width:43px;height:43px;border-radius:12px;font-size:17px}
-.menu-btn,.back{background:#1a2943;color:white;border:1px solid #344968;border-radius:9px;padding:10px 13px}
-.menu-btn{font-size:21px}
+.back{background:#1a2943;color:white;border:1px solid #344968;border-radius:9px;padding:10px 13px}
 .hero{margin:17px 0;background:linear-gradient(120deg,#1458a5,#18336c 60%,#542e8b);padding:23px 20px;border-radius:18px}
 .hero h2{font-size:23px;margin:0 0 8px;max-width:250px}
 .hero p{font-size:12px;color:#dceaff;line-height:1.6;max-width:250px}
@@ -60,20 +59,27 @@ input.invalid,select.invalid{border:1px solid #ff6464}
 .payment-option strong{font-size:14px}
 .payment-option small{display:block;color:#aebfda;margin-top:6px;font-size:11px}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
-footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
+footer{text-align:center;padding:28px 10px 120px;color:#8790ad;font-size:10px}
+body{padding-bottom:94px}
+.bottom-dock{position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
+.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9;transition:--rainbow-angle .12s}
+.dock-item{position:relative;z-index:2;height:58px;border:0;background:transparent;color:#c9c3e8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;border-radius:19px;transition:color .2s,transform .2s}
+.dock-item .dock-icon{font-size:21px;line-height:1;filter:drop-shadow(0 2px 6px #0005)}
+.dock-item.active{color:#fff;text-shadow:0 0 12px #c6a5ff}
+.dock-item.active:before{content:"";position:absolute;inset:2px;background:linear-gradient(145deg,rgba(163,115,255,.42),rgba(86,115,255,.22),rgba(255,119,226,.22));border:1px solid rgba(220,195,255,.34);border-radius:17px;box-shadow:inset 0 1px 1px #ffffff55,0 4px 18px #9c5cff33;z-index:-1}
+.dock-item.home-dock{height:62px;margin-top:-19px;border-radius:21px;color:white;background:linear-gradient(145deg,rgba(164,112,255,.85),rgba(86,100,226,.8) 55%,rgba(206,94,226,.8));border:1px solid #ffffff65;box-shadow:0 7px 24px #965cff70,inset 0 1px 2px #ffffff80}
+.dock-item.home-dock .dock-icon{font-size:25px}
+.dock-item:active{transform:scale(.93)}
+@media(min-width:700px){.bottom-dock{bottom:20px}}
 .menu-overlay{position:fixed;inset:0;background:#0009;z-index:20}
-.drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21;overflow-y:auto}
-.drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
-.drawer-title{font-weight:bold;color:#65b4ff;font-size:18px}
-.drawer button.item{display:block;width:100%;text-align:left;background:#17243d;color:#f5f7ff;border:1px solid #293a58;border-radius:10px;padding:14px;margin:9px 0;font-size:13px}
-.drawer .close{background:transparent;color:white;border:0;font-size:23px}
+
 .auth-status{font-size:12px;color:#aebfda;line-height:1.6;margin-top:12px}
 #loadingScreen{position:fixed;inset:0;z-index:1000;background:#080f20;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease,visibility .4s ease}
 #loadingScreen.done{opacity:0;visibility:hidden;pointer-events:none}
 .loading-content{text-align:center}
 .loading-logo{width:82px;height:82px;margin:0 auto 17px;border-radius:23px;font-size:30px;box-shadow:0 0 45px #248cff55}
 .loading-name{font-size:25px;font-weight:900;letter-spacing:2px}
-.loading-name span{color:#65b4ff}
+.loading-name span{color:#c4a1ff}
 .loading-caption{font-size:10px;color:#8499b9;letter-spacing:2px;margin-top:8px}
 .loading-track{width:145px;height:4px;background:#1c2d49;border-radius:10px;margin:24px auto 0;overflow:hidden}
 .loading-progress{height:100%;width:40%;border-radius:10px;background:#65b4ff;animation:loadingMove 1.1s ease-in-out infinite alternate}
@@ -102,9 +108,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .slider-dot.active{width:20px;background:#fff}
 .slide-hint{text-align:center;color:#8094b4;font-size:9px;margin-top:-12px;margin-bottom:15px}
 .loading-category{grid-column:1/-1;text-align:center;padding:35px 10px;color:#aebfda;font-size:12px}
-.category-spinner{width:29px;height:29px;border:3px solid #304261;border-top-color:#65b4ff;border-radius:50%;margin:0 auto 12px;animation:spin .7s linear infinite}
+.category-spinner{width:29px;height:29px;border:3px solid #304261;border-top-color:#c4a1ff;border-radius:50%;margin:0 auto 12px;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.game-heading{grid-column:1/-1;font-size:13px;font-weight:bold;color:#65b4ff;margin:12px 0 0;padding:10px 0 0;border-top:1px solid #293a58}
+.game-heading{grid-column:1/-1;font-size:13px;font-weight:bold;color:#c4a1ff;margin:12px 0 0;padding:10px 0 0;border-top:1px solid #293a58}
 .catalog-more{grid-column:1/-1;width:100%;padding:13px;border:1px solid #45658e;border-radius:11px;background:#172c4b;color:#dceaff;font-weight:bold;margin:10px 0 4px}
 .catalog-count{grid-column:1/-1;color:#91a2bf;font-size:11px;text-align:center;padding:8px}
 .history-item{background:#17243d;border:1px solid #293a58;border-radius:12px;padding:13px;margin:10px 0}
@@ -141,26 +147,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <div class="subtitle">YOUR DIGITAL STORE • TOP UP & MORE</div>
     </div>
    </div>
-   <button class="menu-btn" onclick="toggleMenu(true)">☰</button>
   </div>
  </div>
 </header>
-
-<div id="menuOverlay" class="menu-overlay hidden" onclick="toggleMenu(false)"></div>
-
-<nav id="drawer" class="drawer hidden">
- <div class="drawer-head">
-  <div class="drawer-title">MENU NEXTMART</div>
-  <button class="close" onclick="toggleMenu(false)">×</button>
- </div>
- <button class="item" onclick="home();toggleMenu(false)">🏠　Beranda</button>
- <button class="item" onclick="menuAction('profile')">👤　Profil</button>
- <button class="item" onclick="menuAction('login')">🔐　Login / Daftar</button>
- <button class="item" onclick="openHistory();toggleMenu(false)">📜　Riwayat Transaksi</button>
- <a class="item" href="https://t.me/lovdmxzz" target="_blank" rel="noopener" style="display:block;text-decoration:none">✈　Customer Service</a>
- <button class="item" onclick="menuAction('logout')">↪　Logout</button>
- <div class="notice" id="menuAccountStatus">Memeriksa akun...</div>
-</nav>
 
 <main class="wrap">
 
@@ -338,6 +327,12 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 
 <a id="csButton" class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">✈ Customer Service</a>
 <footer>© DAMM STORE · BY AJI DAMAR S</footer>
+<nav class="bottom-dock" id="bottomDock" aria-label="Navigasi utama">
+ <button class="dock-item" data-dock="categories" onclick="openCategory('game')"><span class="dock-icon">▦</span><span>Kategori</span></button>
+ <button class="dock-item" data-dock="history" onclick="openHistory()"><span class="dock-icon">◷</span><span>Transaksi</span></button>
+ <button class="dock-item home-dock active" data-dock="home" onclick="home()"><span class="dock-icon">⌂</span><span>Beranda</span></button>
+ <button class="dock-item" data-dock="account" onclick="openAccountTab()"><span class="dock-icon">♙</span><span>Akun</span></button>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -380,7 +375,8 @@ const categories=[
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"},
  {id:"giftcard",name:"GIFT CARD",desc:"Voucher dan gift card digital",domain:""},
  {id:"social",name:"SOCIAL MEDIA",desc:"Layanan media sosial",domain:""},
- {id:"apps",name:"APLIKASI & LANGGANAN",desc:"Aplikasi dan layanan premium",domain:""}
+ {id:"apps",name:"APLIKASI & LANGGANAN",desc:"Aplikasi dan layanan premium",domain:""},
+ {id:"other",name:"LAINNYA",desc:"Produk digital lainnya",domain:""}
 ];
 
 const recommendedGames=[
@@ -415,47 +411,27 @@ const gameInfo=[
 // =====================================================
 
 const gameArtwork={};
-
 async function getGameArtwork(name){
  if(gameArtwork[name])return gameArtwork[name];
-
- const query=encodeURIComponent(name);
  try{
-  const response=await fetch(
-   "https://itunes.apple.com/search?term="+query+"&entity=software&limit=8"
-  );
+  const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(name)+"&entity=software&limit=20");
   const data=await response.json();
-
-  if(data.results&&data.results.length){
-   const found=data.results.find(item=>
-    String(item.trackName||"").toLowerCase().includes(name.toLowerCase().split(" ")[0])
-   )||data.results[0];
-
-   const image=found.artworkUrl512||found.artworkUrl100;
-   if(image){
-    gameArtwork[name]=image;
-    return image;
-   }
-  }
- }catch(error){
-  console.log("Artwork tidak tersedia:",name);
- }
+  const wanted=name.toLowerCase().replace(/[^a-z0-9]/g,"");
+  const candidates=(data.results||[]).map(item=>({item,track:String(item.trackName||"").toLowerCase().replace(/[^a-z0-9]/g,"")}));
+  const found=candidates.find(x=>x.track===wanted)||candidates.find(x=>x.track.includes(wanted)||wanted.includes(x.track)&&x.track.length>5);
+  const image=found&&(found.item.artworkUrl512||found.item.artworkUrl100);
+  if(image){gameArtwork[name]=image;return image;}
+ }catch(error){console.log("Logo tidak tersedia:",name);}
  return "";
 }
-
-async function loadGameArtworks(){
- const names=[
-  "Mobile Legends","Free Fire","PUBG Mobile",
-  "Genshin Impact","Roblox","Arena Breakout"
- ];
-
- await Promise.all(names.map(async name=>{
+async function loadGameArtworks(names){
+ await Promise.all([...new Set(names||[])].map(async name=>{
   const url=await getGameArtwork(name);
   if(!url)return;
-  document.querySelectorAll('[data-game-logo="'+name+'"]').forEach(img=>{img.src=url;});
-  const index=recommendedGames.findIndex(g=>g.name===name);
-  const target=document.getElementById("recommendedLogo"+index);
-  if(target)target.src=url;
+  document.querySelectorAll('[data-game-logo="'+CSS.escape(name)+'"]').forEach(img=>{
+   img.src=url;img.style.display="block";
+   const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";
+  });
  }));
 }
 
@@ -463,42 +439,16 @@ async function loadGameArtworks(){
 // NAVIGASI
 // =====================================================
 
-function toggleMenu(open){
- document.getElementById("drawer").classList.toggle("hidden",!open);
- document.getElementById("menuOverlay").classList.toggle("hidden",!open);
-}
-
-function menuAction(action){
- toggleMenu(false);
-
- if(action==="login"||action==="profile"){
-  if(currentUser)show("profile");
-  else openAuth();
- }
-
- if(action==="logout"){
-  if(currentUser)logout();
-  else openAuth();
- }
-}
 
 function show(id){
- const sections=[
-  "home","catalog","detail","summary",
-  "payment","account","profile","history"
- ];
-
- sections.forEach(x=>{
-  document.getElementById(x).classList.add("hidden");
- });
-
+ const sections=["home","catalog","detail","summary","payment","account","profile","history"];
+ sections.forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
-
  const cs=document.getElementById("csButton");
  cs.classList.toggle("hidden",id!=="home");
-
  if(id!=="catalog")catalogLoadToken++;
-
+ const active=id==="home"?"home":id==="history"?"history":(["account","profile"].includes(id)?"account":(["catalog"].includes(id)?"categories":""));
+ document.querySelectorAll(".dock-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.dock===active));
  window.scrollTo(0,0);
 }
 
@@ -509,6 +459,10 @@ function home(){
 // =====================================================
 // LOGIN SUPABASE
 // =====================================================
+
+function openAccountTab(){
+ if(currentUser)show("profile");else openAuth();
+}
 
 function openAuth(){
  authMode="login";
@@ -602,15 +556,8 @@ async function submitAuth(){
 }
 
 function updateAccountUI(){
- const status=document.getElementById("menuAccountStatus");
-
- if(currentUser){
-  status.textContent="Login sebagai: "+currentUser.email;
-  document.getElementById("profileEmail").textContent=currentUser.email;
- }else{
-  status.textContent="Kamu belum login.";
-  document.getElementById("profileEmail").textContent="-";
- }
+ if(currentUser)document.getElementById("profileEmail").textContent=currentUser.email;
+ else document.getElementById("profileEmail").textContent="-";
 }
 
 async function logout(){
@@ -649,36 +596,71 @@ function classifyProduct(p){
  const name=String(p?.name||"").toLowerCase();
  const cat=String(p?.category||"").toLowerCase();
  const sku=String(p?.sku_code||"").toLowerCase();
-
- // Klasifikasi berdasarkan SKU supplier terlebih dahulu agar tidak tertukar.
- if(/^d(n|gc)g?l|^dgcggln/.test(sku)||name.includes("discord")||name.includes("spotify")||name.includes("netflix")||name.includes("youtube premium")||name.includes("canva")||name.includes("capcut")||name.includes("viu premium"))return "apps";
- if(sku.startsWith("rgcglu")||name.includes("gift card")||name.includes("google play")||name.includes("apple gift")||name.includes("itunes")||name.includes("steam wallet")||name.includes("voucher steam"))return "giftcard";
- if(name.includes("instagram")||name.includes("tiktok")||name.includes("facebook")||name.includes("youtube views")||name.includes("followers")||name.includes("likes")||cat.includes("social media")||cat.includes("sosial media"))return "social";
- if(name.includes("token pln")||name.includes("pln")||cat.includes("pln"))return "pln";
- if(name.includes("dana")||name.includes("gopay")||name.includes("ovo")||name.includes("shopeepay")||name.includes("linkaja")||name.includes("ewallet")||name.includes("e-wallet")||cat.includes("e-wallet")||cat.includes("ewallet"))return "ewallet";
- if(name.includes("paket data")||name.includes("data flash")||name.includes("internet")||name.includes("kuota")||(cat.includes("data")&&!name.includes("pulsa")))return "data";
- if(name.includes("pulsa")||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
-
- // Game SKU supplier
- if(/^ml/.test(sku)||/^ff/.test(sku)||/^pubgmi?/.test(sku)||/^giggl/.test(sku)||/^abi/.test(sku)||/^ab\d/.test(sku)||/^rvl/.test(sku)||(/^rgc/.test(sku)&&/rv/.test(sku))||/^codm/.test(sku))return "game";
+ // Explicit non-game products override misleading words/SKU fragments.
+ if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||/^d(n|gc)g?l|^dgcggln/.test(sku)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
+ if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
+ if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "social";
+ if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
+ if(/dana|gopay|ovo|shopeepay|linkaja|ewallet|e-wallet/.test(name)||cat.includes("ewallet"))return "ewallet";
+ if(/paket data|data flash|internet|kuota/.test(name)||(cat.includes("data")&&!name.includes("pulsa")))return "data";
+ if(/pulsa/.test(name)||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
+ // Respect supplier category: only actual Game products can enter GAME.
  if(cat.includes("game")||cat.includes("games")||cat.includes("topup game"))return "game";
- if(name.includes("mobile legends")||name.includes("mobile legend")||name.includes("mlbb")||name.includes("free fire")||name.includes("freefire")||name.includes("pubg")||name.includes("genshin")||name.includes("roblox")||name.includes("robux")||name.includes("arena breakout")||name.includes("call of duty")||name.includes("codm")||name.includes("honkai")||name.includes("ragnarok"))return "game";
- return "game";
+ // Explicit SKU/name detection for games accidentally mislabeled by supplier.
+ if(/^(ml|mcgg|ff|f\d|pubgmi?|pubgmgl|giggl|abi|ab\d|rvl|codm|val|vtth|vpph|hok|aov)/.test(sku))return "game";
+ if(/mobile legends?|mlbb|free ?fire|pubg|genshin|roblox|robux|arena breakout|call of duty|codm|honkai|star rail|valorant|wild rift|ragnarok|stumble guys|point blank|minecraft/.test(name))return "game";
+ return "other";
 }
 
 function getGameName(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
- if(/^ml/.test(sku))return "Mobile Legends";
- if(/^ff/.test(sku))return "Free Fire";
- if(/^pubgmi?/.test(sku)||name.includes("pubg"))return "PUBG Mobile";
- if(/^giggl/.test(sku)||name.includes("genshin"))return "Genshin Impact";
- if(/^abi/.test(sku)||/^ab\d/.test(sku)||name.includes("arena breakout")||name.includes("arena break out"))return "Arena Breakout";
+ // SKU families first: supplier names often only say "5 Diamonds".
+ if(/^(ml|mcgg)/.test(sku))return "Mobile Legends";
+ if(/^(ff|f\d)/.test(sku))return "Free Fire";
+ if(/^pubgmi?|^pubgmgl/.test(sku)||name.includes("pubg"))return "PUBG Mobile";
+ if(/^giggl/.test(sku)||name.includes("genshin")||name.includes("genesis crystal"))return "Genshin Impact";
+ if(/^abi|^ab\d/.test(sku)||name.includes("arena breakout"))return "Arena Breakout";
  if(/^rvl/.test(sku)||(/^rgc/.test(sku)&&/rv/.test(sku))||name.includes("roblox")||name.includes("robux"))return "Roblox";
- if(name.includes("honkai")||name.includes("star rail"))return "Honkai: Star Rail";
- if(name.includes("call of duty")||name.includes("codm"))return "Call of Duty";
- for(const game of gameInfo){if(game.keys.some(key=>name.includes(key)))return game.name;}
+ if(/^(val|vtth|vpph)/.test(sku)||name.includes("valorant")||/\bvp\b/.test(name))return "VALORANT";
+ if(/^codm/.test(sku)||name.includes("call of duty")||name.includes("codm"))return "Call of Duty: Mobile";
+ if(/^hok/.test(sku)||name.includes("honor of kings"))return "Honor of Kings";
+ if(/^aov/.test(sku)||name.includes("arena of valor"))return "Arena of Valor";
+ const known=[
+  ["Honkai: Star Rail",["honkai","star rail","oneiric"]],
+  ["Wuthering Waves",["wuthering waves","lunite","echo bead"]],
+  ["Ragnarok",["ragnarok"]],
+  ["Stumble Guys",["stumble guys"]],
+  ["Point Blank",["point blank","pb cash"]],
+  ["Minecraft",["minecraft"]],
+  ["LifeAfter",["lifeafter","life after"]],
+  ["Mobile Legends",["mobile legends","mobile legend","mlbb"]],
+  ["Free Fire",["free fire","freefire","ff max"]],
+  ["PUBG Mobile",["pubg mobile","pubgm"]],
+  ["Genshin Impact",["genshin","genesis crystal"]]
+ ];
+ for(const [title,keys] of known){if(keys.some(k=>name.includes(k)))return title;}
  return "Game Lainnya";
+}
+
+function normalizeProductName(name){
+ return String(name||"").toLowerCase().normalize("NFKD")
+  .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+
+function deduplicateProducts(products){
+ const chosen=new Map();
+ for(const p of products){
+  const meta=productMeta.get(p)||{};
+  const sku=String(p.sku_code||"").toLowerCase();
+  const family=meta.game==="Game Lainnya"?(sku.match(/^[a-z]+/)||[sku])[0]:"";
+  const key=[meta.category,meta.game||"",family,normalizeProductName(p.name)].join("|");
+  const old=chosen.get(key);
+  const price=Number(p.selling_price??p.price)||Infinity;
+  const oldPrice=old?(Number(old.selling_price??old.price)||Infinity):Infinity;
+  if(!old||price<oldPrice||(price===oldPrice&&String(p.sku_code)<String(old.sku_code)))chosen.set(key,p);
+ }
+ return [...chosen.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),"id"));
 }
 
 function productDomain(p){
@@ -703,22 +685,19 @@ function drawCategories(){
 
 function drawRecommendedGames(){
  const container=document.getElementById("recommendedGames");
-
- container.innerHTML=recommendedGames.map((game,index)=>`
-  <div class="card center" onclick="openRecommendedGame(${index})">
-   <div class="logo-box">
-    <img id="recommendedLogo${index}" alt="${escapeHTML(game.name)}"
-     src="data:image/svg+xml,${encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#e8efff"/><text x="50" y="58" font-size="32" text-anchor="middle" fill="#1557a1">🎮</text></svg>'
-     )}">
-   </div>
-   <b>${escapeHTML(game.name)}</b>
-   <small>Lihat produk top up</small>
-  </div>
- `).join("");
-
- loadGameArtworks();
+ container.innerHTML=recommendedGames.map((game,index)=>gameTileHTML(game.name,index)).join("");
+ loadGameArtworks(recommendedGames.map(g=>g.name));
 }
+
+function gameTileHTML(name,index){
+ const safe=escapeHTML(name);
+ return `<div class="card center game-tile" onclick="openGameByName('${safe.replace(/'/g,"\\'")}')">
+  <div class="logo-box"><img data-game-logo="${safe}" alt="Logo ${safe}" loading="lazy"><span class="logo-fallback">${escapeHTML(gameInitials(name))}</span></div>
+  <b>${safe}</b><small>Lihat produk ${safe}</small>
+ </div>`;
+}
+
+function gameInitials(name){return String(name).split(/[:\s]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"🎮";}
 
 // =====================================================
 // MEMUAT PRODUK
@@ -733,14 +712,18 @@ async function loadProducts(){
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
   allProducts=raw.filter(p=>p&&p.sku_code&&p.name&&String(p.status||"active").toLowerCase()==="active"&&Number(p.selling_price??p.price)>0);
-  productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],social:[],apps:[]};
+  productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],social:[],apps:[],other:[]};
   productMeta=new WeakMap();
+  const grouped={};
   for(const p of allProducts){
    const category=classifyProduct(p);
    const game=category==="game"?getGameName(p):"";
-   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")).toLowerCase();
+   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game).toLowerCase();
    productMeta.set(p,{category,game,search});
-   (productBuckets[category]||(productBuckets.game)).push(p);
+   (grouped[category]||(grouped[category]=[])).push(p);
+  }
+  for(const category of Object.keys(productBuckets)){
+   productBuckets[category]=category==="game"?deduplicateProducts(grouped[category]||[]):(grouped[category]||[]);
   }
   drawCategories();
   console.log("NEXTMART products loaded:",allProducts.length,productBuckets);
@@ -854,36 +837,36 @@ function scheduleCatalogSearch(){
 function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase().trim();
  const source=productBuckets[currentCategory]||[];
- let list=source.filter(p=>{
-  const meta=productMeta.get(p);
-  return !query||(meta&&meta.search.includes(query));
- });
- if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>matchesRecommendedGame(p,selectedGameFilter));
-
- const grid=document.getElementById("catalogGrid");
- grid.replaceChildren();
- document.getElementById("empty").classList.toggle("hidden",list.length>0);
- if(currentCategory==="game"&&selectedGameFilter){
-  const reset=document.createElement("button");
-  reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Tampilkan Semua Game";reset.onclick=resetGameFilter;
-  grid.appendChild(reset);
- }
- if(!list.length){
-  const message=document.createElement("div");message.className="notice";message.style.gridColumn="1/-1";
-  message.textContent=selectedGameFilter?"Produk "+selectedGameFilter+" belum tersedia dari supplier.":"Produk aktif belum ditemukan di kategori ini.";
-  grid.appendChild(message);return;
- }
- catalogEntries=[];
+ let list=source.filter(p=>{const meta=productMeta.get(p);return !query||(meta&&meta.search.includes(query));});
  if(currentCategory==="game"&&!selectedGameFilter){
   const groups=new Map();
-  for(const p of list){const group=(productMeta.get(p)||{}).game||getGameName(p);if(!groups.has(group))groups.set(group,[]);groups.get(group).push(p);}
-  for(const [group,items] of groups){catalogEntries.push({type:"heading",label:group});for(const p of items)catalogEntries.push({type:"product",product:p});}
- }else{
-  for(const p of list)catalogEntries.push({type:"product",product:p});
+  for(const p of list){const game=(productMeta.get(p)||{}).game||"Game Lainnya";if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
+  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
+  document.getElementById("empty").classList.toggle("hidden",groups.size>0);
+  if(!groups.size){grid.innerHTML='<div class="notice" style="grid-column:1/-1">Belum ada game yang cocok.</div>';return;}
+  const order=["Mobile Legends","Free Fire","Roblox","Genshin Impact","Arena Breakout","PUBG Mobile","VALORANT"];
+  const names=[...groups.keys()].sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b);});
+  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="lazy"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
+  loadGameArtworks(names);
+  return;
  }
- catalogCursor=0;
- catalogProductCount=list.length;
- renderMoreCatalog();
+ if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>(productMeta.get(p)||{}).game===selectedGameFilter);
+ const grid=document.getElementById("catalogGrid");grid.replaceChildren();
+ document.getElementById("empty").classList.toggle("hidden",list.length>0);
+ if(currentCategory==="game"&&selectedGameFilter){
+  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua Game";reset.onclick=resetGameFilter;grid.appendChild(reset);
+ }
+ if(!list.length){const message=document.createElement("div");message.className="notice";message.style.gridColumn="1/-1";message.textContent="Produk tidak ditemukan.";grid.appendChild(message);return;}
+ catalogEntries=list.map(p=>({type:"product",product:p}));catalogCursor=0;catalogProductCount=list.length;renderMoreCatalog();
+}
+
+function openGameByName(name){
+ currentCategory="game";lastCatalog="game";selectedGameFilter=name;
+ document.getElementById("search").value="";
+ document.getElementById("catalogTitle").textContent=name;
+ document.getElementById("catalogDesc").textContent="Produk resmi supplier untuk "+name+".";
+ const token=++catalogLoadToken;showCategoryLoading(name);show("catalog");
+ requestAnimationFrame(()=>{if(token===catalogLoadToken)renderCatalog();});
 }
 
 function renderMoreCatalog(){
@@ -910,16 +893,17 @@ function renderMoreCatalog(){
 
 function createProductCard(p){
  const el=document.createElement("div");el.className="card center";
- const meta=productMeta.get(p)||{};
- const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
- const logoText=gameName==="Mobile Legends"?"ML":gameName==="Free Fire"?"FF":gameName==="Roblox"?"R":gameName==="Genshin Impact"?"GI":gameName==="Arena Breakout"?"AB":gameName==="Game Lainnya"?"🎮":"NM";
+ const meta=productMeta.get(p)||{};const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
  const logo=document.createElement("div");logo.className="logo-box";
- const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent=logoText;logo.appendChild(fallback);
+ if(gameName){
+  const img=document.createElement("img");img.alt="Logo "+gameName;img.loading="lazy";img.dataset.gameLogo=gameName;
+  const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent=gameInitials(gameName);
+  logo.append(img,fallback);
+  if(!gameArtwork[gameName])getGameArtwork(gameName).then(url=>{if(url){gameArtwork[gameName]=url;document.querySelectorAll('[data-game-logo="'+CSS.escape(gameName)+'"]').forEach(i=>{i.src=url;i.style.display="block";const f=i.parentElement.querySelector(".logo-fallback");if(f)f.style.display="none";});}});
+ }else{const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent="NM";logo.appendChild(fallback);}
  const title=document.createElement("b");title.textContent=p.name;
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
- el.append(logo,title,price);
- el.addEventListener("click",()=>openProduct(p),{passive:true});
- return el;
+ el.append(logo,title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
 }
 
 function appendProductCard(grid,p){grid.appendChild(createProductCard(p));}
@@ -1366,6 +1350,16 @@ function openPayment(){
 
  show("payment");
 }
+
+
+// Liquid Glass: pantulan ungu-rainbow mengikuti gerakan jari di dock.
+(function setupGlassDock(){
+ const dock=document.getElementById("bottomDock");if(!dock)return;
+ const move=e=>{const r=dock.getBoundingClientRect();const x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));dock.style.setProperty("--rainbow-angle",(x*300)+"deg");dock.style.setProperty("--glow-x",(x*100)+"%");};
+ dock.addEventListener("pointermove",move,{passive:true});
+ dock.addEventListener("pointerdown",move,{passive:true});
+ dock.addEventListener("pointerleave",()=>dock.style.setProperty("--rainbow-angle","35deg"),{passive:true});
+})();
 
 // =====================================================
 // SLIDER

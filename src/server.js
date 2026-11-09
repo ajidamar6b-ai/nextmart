@@ -50,6 +50,7 @@ async function meloRequest(endpoint, options = {}) {
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
+    signal: options.signal || AbortSignal.timeout(30000),
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -130,6 +131,9 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE product_sync_jobs
+      ADD COLUMN IF NOT EXISTS sync_cursor TEXT;
   `);
 }
 
@@ -165,25 +169,58 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-// Sinkronisasi katalog di background.
+// Mencegah worker yang sama berjalan dua kali dalam satu proses.
+const activeSyncWorkers = new Set();
+
+// Sinkronisasi katalog dengan penyimpanan progres.
 async function runProductSyncJob(jobId) {
   try {
-    await pool.query(
-      `UPDATE product_sync_jobs
-       SET status = 'running', updated_at = NOW()
+    const savedJob = await pool.query(
+      `SELECT sync_cursor, fetched, synced
+       FROM product_sync_jobs
        WHERE id = $1`,
       [jobId]
     );
 
-    let cursor = "";
-    let fetched = 0;
-    let synced = 0;
+    if (!savedJob.rows.length) {
+      throw new Error("Job sinkronisasi tidak ditemukan.");
+    }
+
+    const saved = savedJob.rows[0];
+
+    // Job lama tanpa cursor dimulai ulang dari halaman pertama.
+    // Produk yang sudah tersimpan tidak dihapus.
+    let cursor = saved.sync_cursor || "";
+
+    let fetched = saved.sync_cursor
+      ? Number(saved.fetched || 0)
+      : 0;
+
+    let synced = saved.sync_cursor
+      ? Number(saved.synced || 0)
+      : 0;
+
+    await pool.query(
+      `UPDATE product_sync_jobs
+       SET status = 'running',
+           fetched = $2,
+           synced = $3,
+           message = NULL,
+           updated_at = NOW()
+       WHERE id = $1`,
+      [jobId, fetched, synced]
+    );
+
     let hasMore = true;
 
     while (hasMore) {
-      const params = new URLSearchParams({ limit: "500" });
+      const params = new URLSearchParams({
+        limit: "500"
+      });
 
-      if (cursor) params.set("cursor", cursor);
+      if (cursor) {
+        params.set("cursor", cursor);
+      }
 
       const result = await meloRequest(
         `/pricelists?${params.toString()}`
@@ -225,13 +262,15 @@ async function runProductSyncJob(jobId) {
       hasMore = pagination.has_more === true;
       cursor = pagination.next_cursor || "";
 
+      // Simpan progres dan cursor setiap selesai mengambil satu halaman.
       await pool.query(
         `UPDATE product_sync_jobs
          SET fetched = $2,
              synced = $3,
+             sync_cursor = $4,
              updated_at = NOW()
          WHERE id = $1`,
-        [jobId, fetched, synced]
+        [jobId, fetched, synced, cursor || null]
       );
 
       if (hasMore && !cursor) {
@@ -250,6 +289,10 @@ async function runProductSyncJob(jobId) {
       [jobId, fetched, synced]
     );
 
+    console.log(
+      `Melo product sync completed: ${synced} products`
+    );
+
   } catch (error) {
     console.error("Melo product sync failed:", error.message);
 
@@ -261,9 +304,26 @@ async function runProductSyncJob(jobId) {
        WHERE id = $1`,
       [jobId, error.message]
     ).catch((dbError) => {
-      console.error("Could not update sync job:", dbError.message);
+      console.error(
+        "Could not update sync job:",
+        dbError.message
+      );
     });
   }
+}
+
+function startProductSyncJob(jobId) {
+  if (!pool || activeSyncWorkers.has(jobId)) return;
+
+  activeSyncWorkers.add(jobId);
+
+  runProductSyncJob(jobId)
+    .catch((error) => {
+      console.error("Sync worker error:", error.message);
+    })
+    .finally(() => {
+      activeSyncWorkers.delete(jobId);
+    });
 }
 
 // Memulai sinkronisasi.
@@ -289,9 +349,12 @@ app.post(
       if (active.rows.length) {
         const jobId = active.rows[0].id;
 
+        // Jika belum ada worker lokal, jalankan kembali.
+        startProductSyncJob(jobId);
+
         return res.status(202).json({
           ok: true,
-          message: "Sinkronisasi sudah berjalan.",
+          message: "Sinkronisasi sudah berjalan atau dilanjutkan.",
           job_id: jobId,
           status_url: `/api/admin/melo/sync-products/${jobId}`
         });
@@ -306,7 +369,7 @@ app.post(
       );
 
       setImmediate(() => {
-        runProductSyncJob(jobId);
+        startProductSyncJob(jobId);
       });
 
       return res.status(202).json({
@@ -329,6 +392,12 @@ app.get(
   "/api/admin/melo/sync-products/:id",
   adminOnly,
   async (req, res) => {
+    if (!pool) {
+      return res.status(503).json({
+        error: "Database belum tersedia."
+      });
+    }
+
     try {
       const { rows } = await pool.query(
         `SELECT id, status, fetched, synced, message,
@@ -724,9 +793,29 @@ app.post("/api/melo/webhook", async (req, res) => {
   }
 });
 
-// Jalankan server.
+// Jalankan server dan lanjutkan job yang tertinggal setelah restart.
 initDb()
-  .then(() => {
+  .then(async () => {
+    if (pool) {
+      const active = await pool.query(
+        `SELECT id
+         FROM product_sync_jobs
+         WHERE status IN ('queued', 'running')
+         ORDER BY created_at DESC
+         LIMIT 1`
+      );
+
+      if (active.rows.length) {
+        const jobId = active.rows[0].id;
+
+        console.log("Resuming product sync:", jobId);
+
+        setImmediate(() => {
+          startProductSyncJob(jobId);
+        });
+      }
+    }
+
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`NEXTMART backend listening on port ${PORT}`);
     });

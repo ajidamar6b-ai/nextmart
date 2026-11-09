@@ -20,7 +20,7 @@ const pool = process.env.DATABASE_URL
     })
   : null;
 
-// Simpan raw body untuk verifikasi webhook Melo.
+// Raw body untuk verifikasi webhook.
 app.use(express.json({
   limit: "1mb",
   verify(req, res, buffer) {
@@ -30,11 +30,24 @@ app.use(express.json({
 
 app.use(express.static(path.join(__dirname, "../public")));
 
+// Health check platform hosting.
+app.get("/", (_req, res) => {
+  res.status(200).send("NEXTMART backend is running");
+});
+
+app.get("/api/health-check", (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "NEXTMART",
+    status: "running"
+  });
+});
+
 async function meloRequest(endpoint, options = {}) {
   const { MELO_API_KEY, MELO_SECRET_KEY } = process.env;
 
   if (!MELO_API_KEY || !MELO_SECRET_KEY) {
-    throw new Error("Kredensial Melo belum diatur di Render.");
+    throw new Error("Kredensial Melo belum diatur.");
   }
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -122,7 +135,7 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-// Pemeriksaan koneksi backend dan Melo.
+// Pemeriksaan koneksi Melo.
 app.get("/api/health", async (_req, res) => {
   try {
     const profile = await meloRequest("/profile");
@@ -144,7 +157,7 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-// Ambil seluruh katalog reguler Melo.
+// Ambil katalog Melo.
 async function getMeloPriceList() {
   let cursor = "";
   const allProducts = [];
@@ -177,7 +190,7 @@ async function getMeloPriceList() {
   return allProducts;
 }
 
-// Sinkronisasi katalog ke database.
+// Sinkronisasi katalog.
 app.post(
   "/api/admin/melo/sync-products",
   adminOnly,
@@ -219,8 +232,7 @@ app.post(
 
       res.json({
         ok: true,
-        synced,
-        note: "Katalog Melo berhasil disinkronkan."
+        synced
       });
     } catch (error) {
       res.status(502).json({ error: error.message });
@@ -356,13 +368,24 @@ app.post("/api/orders", async (req, res) => {
       sandbox: true
     });
   } catch (error) {
+    await pool.query(
+      `UPDATE orders
+       SET status = 'review',
+           message = $2,
+           updated_at = NOW()
+       WHERE buyer_trx_id = $1`,
+      [buyer_trx_id, error.message]
+    );
+
     res.status(502).json({
+      buyer_trx_id,
+      status: "review",
       error: error.message
     });
   }
 });
 
-// Cek status transaksi melalui UUID atau buyer_trx_id.
+// Cek status pesanan.
 app.get("/api/orders/:id", async (req, res) => {
   try {
     if (!pool) {
@@ -400,7 +423,6 @@ app.get("/api/orders/:id", async (req, res) => {
   }
 });
 
-// Verifikasi format action 2FA dari webhook.
 function validAction(action) {
   const uuid =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -416,7 +438,7 @@ function validAction(action) {
     typeof action.message === "string";
 }
 
-// Webhook Melo dengan verifikasi HMAC dan deduplikasi.
+// Webhook Melo.
 app.post("/api/melo/webhook", async (req, res) => {
   const secret = process.env.MELO_WEBHOOK_SECRET;
   const signature = req.headers["x-h2h-signature"];
@@ -452,15 +474,7 @@ app.post("/api/melo/webhook", async (req, res) => {
     });
   }
 
-  let event;
-
-  try {
-    event = JSON.parse(req.rawBody.toString("utf8"));
-  } catch {
-    return res.status(400).json({
-      error: "JSON webhook tidak valid."
-    });
-  }
+  const event = req.body || {};
 
   if (!event || typeof event.id !== "string") {
     return res.status(422).json({
@@ -517,10 +531,7 @@ app.post("/api/melo/webhook", async (req, res) => {
       [eventKey, JSON.stringify(event)]
     );
 
-    // Hanya proses event baru.
     if (inserted.rowCount > 0) {
-      // Simpan snapshot tindakan secara terpisah.
-      // Event tindakan TIDAK mengubah status akhir pesanan.
       if (event.action) {
         await client.query(
           `INSERT INTO melo_action_state
@@ -541,7 +552,6 @@ app.post("/api/melo/webhook", async (req, res) => {
         );
       }
 
-      // Hanya callback success/failed yang mengubah hasil pesanan.
       if (!actionEvent) {
         await client.query(
           `UPDATE orders
@@ -580,10 +590,11 @@ app.post("/api/melo/webhook", async (req, res) => {
   }
 });
 
+// Jalankan server pada semua interface container.
 initDb()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`NEXTMART Melo H2H backend listening on ${PORT}`);
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`NEXTMART backend listening on port ${PORT}`);
     });
   })
   .catch((error) => {

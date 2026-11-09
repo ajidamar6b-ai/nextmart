@@ -20,7 +20,6 @@ const pool = process.env.DATABASE_URL
     })
   : null;
 
-// Raw body untuk verifikasi webhook.
 app.use(express.json({
   limit: "1mb",
   verify(req, res, buffer) {
@@ -30,13 +29,12 @@ app.use(express.json({
 
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Health check platform hosting.
 app.get("/", (_req, res) => {
   res.status(200).send("NEXTMART backend is running");
 });
 
 app.get("/api/health-check", (_req, res) => {
-  res.status(200).json({
+  res.json({
     ok: true,
     service: "NEXTMART",
     status: "running"
@@ -122,6 +120,16 @@ async function initDb() {
       version BIGINT NOT NULL,
       payload JSONB NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS product_sync_jobs (
+      id UUID PRIMARY KEY,
+      status VARCHAR(20) NOT NULL DEFAULT 'queued',
+      fetched INTEGER NOT NULL DEFAULT 0,
+      synced INTEGER NOT NULL DEFAULT 0,
+      message TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 }
 
@@ -135,7 +143,7 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-// Pemeriksaan koneksi Melo.
+// Pemeriksaan koneksi.
 app.get("/api/health", async (_req, res) => {
   try {
     const profile = await meloRequest("/profile");
@@ -157,55 +165,37 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-// Ambil katalog Melo.
-async function getMeloPriceList() {
-  let cursor = "";
-  const allProducts = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const params = new URLSearchParams({ limit: "500" });
-
-    if (cursor) params.set("cursor", cursor);
-
-    const result = await meloRequest(
-      `/pricelists?${params.toString()}`
+// Sinkronisasi katalog di background.
+async function runProductSyncJob(jobId) {
+  try {
+    await pool.query(
+      `UPDATE product_sync_jobs
+       SET status = 'running', updated_at = NOW()
+       WHERE id = $1`,
+      [jobId]
     );
 
-    if (!Array.isArray(result.data)) {
-      throw new Error("Format katalog Melo tidak valid.");
-    }
+    let cursor = "";
+    let fetched = 0;
+    let synced = 0;
+    let hasMore = true;
 
-    allProducts.push(...result.data);
+    while (hasMore) {
+      const params = new URLSearchParams({ limit: "500" });
 
-    const pagination = result.meta?.pagination || {};
-    hasMore = pagination.has_more === true;
-    cursor = pagination.next_cursor || "";
+      if (cursor) params.set("cursor", cursor);
 
-    if (hasMore && !cursor) {
-      throw new Error("Cursor katalog Melo tidak tersedia.");
-    }
-  }
+      const result = await meloRequest(
+        `/pricelists?${params.toString()}`
+      );
 
-  return allProducts;
-}
-
-// Sinkronisasi katalog.
-app.post(
-  "/api/admin/melo/sync-products",
-  adminOnly,
-  async (_req, res) => {
-    try {
-      if (!pool) {
-        return res.status(503).json({
-          error: "Database belum tersedia."
-        });
+      if (!Array.isArray(result.data)) {
+        throw new Error("Format katalog Melo tidak valid.");
       }
 
-      const products = await getMeloPriceList();
-      let synced = 0;
+      for (const product of result.data) {
+        fetched++;
 
-      for (const product of products) {
         if (!product.sku_code) continue;
 
         await pool.query(
@@ -230,12 +220,139 @@ app.post(
         synced++;
       }
 
-      res.json({
-        ok: true,
-        synced
+      const pagination = result.meta?.pagination || {};
+
+      hasMore = pagination.has_more === true;
+      cursor = pagination.next_cursor || "";
+
+      await pool.query(
+        `UPDATE product_sync_jobs
+         SET fetched = $2,
+             synced = $3,
+             updated_at = NOW()
+         WHERE id = $1`,
+        [jobId, fetched, synced]
+      );
+
+      if (hasMore && !cursor) {
+        throw new Error("Cursor katalog Melo tidak tersedia.");
+      }
+    }
+
+    await pool.query(
+      `UPDATE product_sync_jobs
+       SET status = 'completed',
+           fetched = $2,
+           synced = $3,
+           message = 'Sinkronisasi selesai',
+           updated_at = NOW()
+       WHERE id = $1`,
+      [jobId, fetched, synced]
+    );
+
+  } catch (error) {
+    console.error("Melo product sync failed:", error.message);
+
+    await pool.query(
+      `UPDATE product_sync_jobs
+       SET status = 'failed',
+           message = $2,
+           updated_at = NOW()
+       WHERE id = $1`,
+      [jobId, error.message]
+    ).catch((dbError) => {
+      console.error("Could not update sync job:", dbError.message);
+    });
+  }
+}
+
+// Memulai sinkronisasi.
+app.post(
+  "/api/admin/melo/sync-products",
+  adminOnly,
+  async (_req, res) => {
+    if (!pool) {
+      return res.status(503).json({
+        error: "Database belum tersedia."
       });
+    }
+
+    try {
+      const active = await pool.query(
+        `SELECT id
+         FROM product_sync_jobs
+         WHERE status IN ('queued', 'running')
+         ORDER BY created_at DESC
+         LIMIT 1`
+      );
+
+      if (active.rows.length) {
+        const jobId = active.rows[0].id;
+
+        return res.status(202).json({
+          ok: true,
+          message: "Sinkronisasi sudah berjalan.",
+          job_id: jobId,
+          status_url: `/api/admin/melo/sync-products/${jobId}`
+        });
+      }
+
+      const jobId = crypto.randomUUID();
+
+      await pool.query(
+        `INSERT INTO product_sync_jobs (id, status)
+         VALUES ($1, 'queued')`,
+        [jobId]
+      );
+
+      setImmediate(() => {
+        runProductSyncJob(jobId);
+      });
+
+      return res.status(202).json({
+        ok: true,
+        message: "Sinkronisasi katalog dimulai di background.",
+        job_id: jobId,
+        status_url: `/api/admin/melo/sync-products/${jobId}`
+      });
+
     } catch (error) {
-      res.status(502).json({ error: error.message });
+      return res.status(500).json({
+        error: error.message
+      });
+    }
+  }
+);
+
+// Memeriksa progres sinkronisasi.
+app.get(
+  "/api/admin/melo/sync-products/:id",
+  adminOnly,
+  async (req, res) => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, status, fetched, synced, message,
+                created_at, updated_at
+         FROM product_sync_jobs
+         WHERE id = $1`,
+        [req.params.id]
+      );
+
+      if (!rows.length) {
+        return res.status(404).json({
+          error: "Job sinkronisasi tidak ditemukan."
+        });
+      }
+
+      return res.json({
+        ok: true,
+        job: rows[0]
+      });
+
+    } catch (error) {
+      return res.status(500).json({
+        error: error.message
+      });
     }
   }
 );
@@ -262,8 +379,11 @@ app.get("/api/products", async (_req, res) => {
     );
 
     res.json(rows);
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message
+    });
   }
 });
 
@@ -294,10 +414,14 @@ app.post("/api/orders", async (req, res) => {
     });
   }
 
+  let buyer_trx_id = null;
+
   try {
     const product = await pool.query(
-      `SELECT price FROM products
-       WHERE product_code = $1 AND LOWER(status) = 'active'`,
+      `SELECT price
+       FROM products
+       WHERE product_code = $1
+         AND LOWER(status) = 'active'`,
       [sku_code]
     );
 
@@ -307,7 +431,7 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
-    const buyer_trx_id =
+    buyer_trx_id =
       `NM${Date.now()}${crypto.randomBytes(3).toString("hex")}`;
 
     await pool.query(
@@ -367,15 +491,18 @@ app.post("/api/orders", async (req, res) => {
       transaction: data,
       sandbox: true
     });
+
   } catch (error) {
-    await pool.query(
-      `UPDATE orders
-       SET status = 'review',
-           message = $2,
-           updated_at = NOW()
-       WHERE buyer_trx_id = $1`,
-      [buyer_trx_id, error.message]
-    );
+    if (buyer_trx_id) {
+      await pool.query(
+        `UPDATE orders
+         SET status = 'review',
+             message = $2,
+             updated_at = NOW()
+         WHERE buyer_trx_id = $1`,
+        [buyer_trx_id, error.message]
+      );
+    }
 
     res.status(502).json({
       buyer_trx_id,
@@ -395,8 +522,10 @@ app.get("/api/orders/:id", async (req, res) => {
     }
 
     const { rows } = await pool.query(
-      `SELECT * FROM orders
-       WHERE buyer_trx_id = $1 OR melo_transaction_id = $1
+      `SELECT *
+       FROM orders
+       WHERE buyer_trx_id = $1
+          OR melo_transaction_id = $1
        LIMIT 1`,
       [req.params.id]
     );
@@ -418,8 +547,11 @@ app.get("/api/orders/:id", async (req, res) => {
     }
 
     res.json(order);
+
   } catch (error) {
-    res.status(502).json({ error: error.message });
+    res.status(502).json({
+      error: error.message
+    });
   }
 });
 
@@ -578,6 +710,7 @@ app.post("/api/melo/webhook", async (req, res) => {
     await client.query("COMMIT");
 
     return res.status(200).json({ ok: true });
+
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Melo webhook error:", error.message);
@@ -585,12 +718,13 @@ app.post("/api/melo/webhook", async (req, res) => {
     return res.status(500).json({
       error: "Webhook gagal diproses."
     });
+
   } finally {
     client.release();
   }
 });
 
-// Jalankan server pada semua interface container.
+// Jalankan server.
 initDb()
   .then(() => {
     app.listen(PORT, "0.0.0.0", () => {

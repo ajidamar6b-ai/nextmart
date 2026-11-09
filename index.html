@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080f20">
 <title>NEXTMART | Digital Store</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080f20;color:#f5f7ff;font-family:Arial,sans-serif}
@@ -17,7 +17,8 @@ header{padding:17px;background:#101b32;border-bottom:1px solid #263653}
 .brand span{color:white}
 .subtitle{font-size:11px;color:#9aaac4;margin-top:5px}
 .brand-area{display:flex;align-items:center;gap:10px}
-.nmart-logo{width:43px;height:43px;border-radius:12px;background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:1000;color:white;box-shadow:0 5px 18px #187ce755;letter-spacing:-1px}
+.nmart-logo,.loading-logo{background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-weight:1000;color:white;box-shadow:0 5px 18px #187ce755}
+.nmart-logo{width:43px;height:43px;border-radius:12px;font-size:17px}
 .menu-btn,.back{background:#1a2943;color:white;border:1px solid #344968;border-radius:9px;padding:10px 13px}
 .menu-btn{font-size:21px}
 .hero{margin:17px 0;background:linear-gradient(120deg,#1458a5,#18336c 60%,#542e8b);padding:23px 20px;border-radius:18px}
@@ -61,7 +62,7 @@ input.invalid,select.invalid{border:1px solid #ff6464}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
 footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .menu-overlay{position:fixed;inset:0;background:#0009;z-index:20}
-.drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21}
+.drawer{position:fixed;right:0;top:0;height:100%;width:min(290px,85vw);background:#101b32;border-left:1px solid #304261;padding:20px;z-index:21;overflow-y:auto}
 .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
 .drawer-title{font-weight:bold;color:#65b4ff;font-size:18px}
 .drawer button.item{display:block;width:100%;text-align:left;background:#17243d;color:#f5f7ff;border:1px solid #293a58;border-radius:10px;padding:14px;margin:9px 0;font-size:13px}
@@ -70,7 +71,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 #loadingScreen{position:fixed;inset:0;z-index:1000;background:#080f20;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease,visibility .4s ease}
 #loadingScreen.done{opacity:0;visibility:hidden;pointer-events:none}
 .loading-content{text-align:center}
-.loading-logo{width:82px;height:82px;margin:0 auto 17px;border-radius:23px;background:linear-gradient(135deg,#36a4ff,#564de8);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:1000;box-shadow:0 0 45px #248cff55}
+.loading-logo{width:82px;height:82px;margin:0 auto 17px;border-radius:23px;font-size:30px;box-shadow:0 0 45px #248cff55}
 .loading-name{font-size:25px;font-weight:900;letter-spacing:2px}
 .loading-name span{color:#65b4ff}
 .loading-caption{font-size:10px;color:#8499b9;letter-spacing:2px;margin-top:8px}
@@ -87,7 +88,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .slide p{font-size:11px;color:#e2edff;line-height:1.5;margin:0}
 .slide-cta{display:inline-block;margin-top:14px;padding:9px 13px;border-radius:8px;background:#ffffff;color:#14233e;font-size:10px;font-weight:bold}
 .slide-art{position:relative;z-index:2;width:100px;height:100px;flex-shrink:0;border-radius:23px;background:#ffffff20;border:1px solid #ffffff55;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px #0003}
-.slide-art img{width:75px;height:75px;object-fit:contain;border-radius:15px}
+.slide-art img{width:75px;height:75px;object-fit:contain;border-radius:15px;background:white;padding:4px}
 .slide-1{background:linear-gradient(115deg,#0752a5,#168bd0 60%,#222d78)}
 .slide-2{background:linear-gradient(115deg,#a52c13,#e56c18 60%,#7c241f)}
 .slide-3{background:linear-gradient(115deg,#174b42,#188d75 60%,#173d65)}
@@ -100,20 +101,23 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 .slider-dot{width:6px;height:6px;padding:0;border:0;border-radius:10px;background:#ffffff70;transition:all .25s}
 .slider-dot.active{width:20px;background:#fff}
 .slide-hint{text-align:center;color:#8094b4;font-size:9px;margin-top:-12px;margin-bottom:15px}
-@media(min-width:550px){
-.grid{grid-template-columns:repeat(3,1fr)}
-.slide{min-height:230px;padding:28px}
-.slide-art{width:120px;height:120px}
-.slide-art img{width:90px;height:90px}
-}
-@media(max-width:380px){
-.slide{min-height:190px;padding:17px}
-.slide h2{font-size:20px}
-.slide-art{width:78px;height:78px}
-.slide-art img{width:60px;height:60px}
-}
+.loading-category{grid-column:1/-1;text-align:center;padding:35px 10px;color:#aebfda;font-size:12px}
+.category-spinner{width:29px;height:29px;border:3px solid #304261;border-top-color:#65b4ff;border-radius:50%;margin:0 auto 12px;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.game-heading{grid-column:1/-1;font-size:13px;font-weight:bold;color:#65b4ff;margin:12px 0 0;padding:10px 0 0;border-top:1px solid #293a58}
+.history-item{background:#17243d;border:1px solid #293a58;border-radius:12px;padding:13px;margin:10px 0}
+.history-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.history-item b{font-size:12px}
+.history-item small{display:block;color:#94a4c0;font-size:10px;margin-top:5px;line-height:1.5}
+.status-pill{font-size:10px;padding:5px 8px;border-radius:20px;background:#263957;color:#bcd9ff;white-space:nowrap}
+.status-success{background:#16452f;color:#7ff0b1}
+.status-pending{background:#59431b;color:#ffdc88}
+.status-failed{background:#542626;color:#ffaaaa}
+@media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}.slide{min-height:230px;padding:28px}.slide-art{width:120px;height:120px}.slide-art img{width:90px;height:90px}}
+@media(max-width:380px){.slide{min-height:190px;padding:17px}.slide h2{font-size:20px}.slide-art{width:78px;height:78px}.slide-art img{width:60px;height:60px}}
 </style>
 </head>
+
 <body class="loading">
 
 <div id="loadingScreen">
@@ -141,13 +145,17 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 </header>
 
 <div id="menuOverlay" class="menu-overlay hidden" onclick="toggleMenu(false)"></div>
+
 <nav id="drawer" class="drawer hidden">
  <div class="drawer-head">
   <div class="drawer-title">MENU NEXTMART</div>
   <button class="close" onclick="toggleMenu(false)">×</button>
  </div>
+ <button class="item" onclick="home();toggleMenu(false)">🏠　Beranda</button>
  <button class="item" onclick="menuAction('profile')">👤　Profil</button>
  <button class="item" onclick="menuAction('login')">🔐　Login / Daftar</button>
+ <button class="item" onclick="openHistory();toggleMenu(false)">📜　Riwayat Transaksi</button>
+ <a class="item" href="https://t.me/lovdmxzz" target="_blank" rel="noopener" style="display:block;text-decoration:none">✈　Customer Service</a>
  <button class="item" onclick="menuAction('logout')">↪　Logout</button>
  <div class="notice" id="menuAccountStatus">Memeriksa akun...</div>
 </nav>
@@ -157,6 +165,7 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 <section id="home">
  <div class="slider" id="mainSlider">
   <div class="slider-track" id="sliderTrack">
+
    <div class="slide slide-1" onclick="openBannerProduct('Mobile Legends')">
     <div class="slide-content">
      <span class="slide-label">GAME FAVORIT</span>
@@ -164,8 +173,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <p>Top up Diamond Mobile Legends dengan mudah di NEXTMART.</p>
      <span class="slide-cta">TOP UP SEKARANG →</span>
     </div>
-    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=mobilelegends.com&sz=128" alt="Mobile Legends"></div>
+    <div class="slide-art"><img data-game-logo="Mobile Legends" alt="Mobile Legends"></div>
    </div>
+
    <div class="slide slide-2" onclick="openBannerProduct('Free Fire')">
     <div class="slide-content">
      <span class="slide-label">BOOYAH!</span>
@@ -173,8 +183,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <p>Diamond Free Fire untuk melengkapi kebutuhan permainanmu.</p>
      <span class="slide-cta">PILIH DIAMOND →</span>
     </div>
-    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=ff.garena.com&sz=128" alt="Free Fire"></div>
+    <div class="slide-art"><img data-game-logo="Free Fire" alt="Free Fire"></div>
    </div>
+
    <div class="slide slide-3" onclick="openBannerProduct('PUBG Mobile')">
     <div class="slide-content">
      <span class="slide-label">BATTLE ROYALE</span>
@@ -182,8 +193,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <p>Temukan pilihan UC PUBG Mobile di katalog NEXTMART.</p>
      <span class="slide-cta">LIHAT PRODUK →</span>
     </div>
-    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=pubgmobile.com&sz=128" alt="PUBG Mobile"></div>
+    <div class="slide-art"><img data-game-logo="PUBG Mobile" alt="PUBG Mobile"></div>
    </div>
+
    <div class="slide slide-4" onclick="openBannerProduct('Genshin Impact')">
     <div class="slide-content">
      <span class="slide-label">ADVENTURE</span>
@@ -191,8 +203,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <p>Jelajahi pilihan Genesis Crystals untuk petualanganmu.</p>
      <span class="slide-cta">TOP UP SEKARANG →</span>
     </div>
-    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=genshin.hoyoverse.com&sz=128" alt="Genshin Impact"></div>
+    <div class="slide-art"><img data-game-logo="Genshin Impact" alt="Genshin Impact"></div>
    </div>
+
    <div class="slide slide-5" onclick="openBannerProduct('Roblox')">
     <div class="slide-content">
      <span class="slide-label">PLAY YOUR WAY</span>
@@ -200,8 +213,9 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
      <p>Temukan pilihan Robux di katalog produk NEXTMART.</p>
      <span class="slide-cta">LIHAT PRODUK →</span>
     </div>
-    <div class="slide-art"><img src="https://www.google.com/s2/favicons?domain=roblox.com&sz=128" alt="Roblox"></div>
+    <div class="slide-art"><img data-game-logo="Roblox" alt="Roblox"></div>
    </div>
+
   </div>
   <button class="slider-arrow prev" onclick="changeSlide(-1,event)">‹</button>
   <button class="slider-arrow next" onclick="changeSlide(1,event)">›</button>
@@ -213,7 +227,12 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
    <button class="slider-dot" onclick="goSlide(4,event)"></button>
   </div>
  </div>
+
  <div class="slide-hint">GESER UNTUK MELIHAT PROMO LAINNYA</div>
+
+ <h3>🔥 Rekomendasi Game</h3>
+ <p class="muted">Game populer pilihan NEXTMART.</p>
+ <div class="grid" id="recommendedGames"></div>
 
  <h3>Kategori Produk</h3>
  <p class="muted">Pilih layanan yang ingin kamu gunakan.</p>
@@ -249,8 +268,18 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
   <p class="muted">Email akun</p>
   <b id="profileEmail" style="overflow-wrap:anywhere">-</b>
   <p class="auth-status">Akun NEXTMART kamu.</p>
+  <button class="primary" onclick="openHistory()">📜 Lihat Riwayat Transaksi</button>
   <button class="primary" onclick="logout()">Logout</button>
  </div>
+</section>
+
+<section id="history" class="hidden">
+ <button class="back" onclick="home()">← Kembali</button>
+ <h3>📜 Riwayat Transaksi</h3>
+ <p class="muted">Daftar transaksi yang pernah dibuat dari perangkat ini.</p>
+ <div id="historyList"></div>
+ <div class="notice">Riwayat ini tersimpan di browser perangkat yang digunakan. Untuk melihat status pembayaran terbaru secara langsung, diperlukan endpoint riwayat transaksi dari backend.</div>
+ <button class="primary" style="background:#253957" onclick="clearHistory()">Hapus Riwayat Lokal</button>
 </section>
 
 <section id="catalog" class="hidden">
@@ -305,12 +334,16 @@ footer{text-align:center;padding:28px 10px 75px;color:#687994;font-size:10px}
 
 </main>
 
-<a class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">✈ Customer Service</a>
+<a id="csButton" class="cs" href="https://t.me/lovdmxzz" target="_blank" rel="noopener">✈ Customer Service</a>
 <footer>©by aji damar s</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+// =====================================================
 // KONFIGURASI
+// =====================================================
+
 const API_BASE="https://nextmart.ethiodeploy.app";
 const SUPABASE_URL="https://jbjrzvmpseunsgvpcozb.supabase.co";
 const SUPABASE_KEY="sb_publishable_2oUrPxCcEKkgQ68364e4Qw_viPYXtip";
@@ -326,9 +359,10 @@ let allProducts=[];
 let activeSlide=0;
 let slideTimer=null;
 let currentOrderPayload=null;
+let catalogLoadToken=0;
+let selectedGameFilter="";
 
 const totalSlides=5;
-const asset=domain=>"https://www.google.com/s2/favicons?domain="+domain+"&sz=128";
 
 const categories=[
  {id:"game",name:"GAME",desc:"Top up game favorit",domain:"store.steampowered.com"},
@@ -338,48 +372,137 @@ const categories=[
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"}
 ];
 
-const gameInfo=[
- ["Mobile Legends","mobilelegends.com"],
- ["Free Fire","ff.garena.com"],
- ["PUBG Mobile","pubgmobile.com"],
- ["Call of Duty","callofduty.com"],
- ["Genshin","genshin.hoyoverse.com"],
- ["Honkai","hoyoverse.com"],
- ["Roblox","roblox.com"],
- ["Ragnarok","ragnarok.com"],
- ["Arena of Valor","aov.garena.co.id"],
- ["Wild Rift","wildrift.leagueoflegends.com"],
- ["Point Blank","pointblank.id"],
- ["Steam","store.steampowered.com"],
- ["Minecraft","minecraft.net"],
- ["Stumble Guys","stumbleguys.com"],
- ["LifeAfter","lifeafter.netease.com"]
+const recommendedGames=[
+ {name:"Mobile Legends",keys:["mobile legends","mobile legend","mlbb","diamond ml"],search:"Mobile Legends"},
+ {name:"Free Fire",keys:["free fire","freefire","ff max","diamond ff"],search:"Free Fire"},
+ {name:"Roblox",keys:["roblox","robux"],search:"Roblox"},
+ {name:"Genshin Impact",keys:["genshin","genesis crystal"],search:"Genshin Impact"},
+ {name:"Arena Breakout",keys:["arena breakout","arena break out","bond arena"],search:"Arena Breakout"}
 ];
 
+const gameInfo=[
+ {name:"Mobile Legends",keys:["mobile legends","mobile legend","mlbb","diamond ml"]},
+ {name:"Free Fire",keys:["free fire","freefire","ff max","diamond ff"]},
+ {name:"PUBG Mobile",keys:["pubg mobile","pubgm","pubg uc"]},
+ {name:"Genshin Impact",keys:["genshin","genesis crystal"]},
+ {name:"Honkai: Star Rail",keys:["honkai","star rail","oneiric"]},
+ {name:"Roblox",keys:["roblox","robux"]},
+ {name:"Arena Breakout",keys:["arena breakout","arena break out","bond arena"]},
+ {name:"Call of Duty",keys:["call of duty","codm","cod mobile"]},
+ {name:"Ragnarok",keys:["ragnarok","ro mobile"]},
+ {name:"Arena of Valor",keys:["arena of valor","aov"]},
+ {name:"Wild Rift",keys:["wild rift"]},
+ {name:"Point Blank",keys:["point blank"]},
+ {name:"Steam",keys:["steam wallet","steam"]},
+ {name:"Minecraft",keys:["minecraft"]},
+ {name:"Stumble Guys",keys:["stumble guys"]},
+ {name:"LifeAfter",keys:["lifeafter","life after"]}
+];
+
+// =====================================================
+// LOGO GAME
+// =====================================================
+
+const gameArtwork={};
+
+async function getGameArtwork(name){
+ if(gameArtwork[name])return gameArtwork[name];
+
+ const query=encodeURIComponent(name);
+ try{
+  const response=await fetch(
+   "https://itunes.apple.com/search?term="+query+"&entity=software&limit=8"
+  );
+  const data=await response.json();
+
+  if(data.results&&data.results.length){
+   const found=data.results.find(item=>
+    String(item.trackName||"").toLowerCase().includes(name.toLowerCase().split(" ")[0])
+   )||data.results[0];
+
+   const image=found.artworkUrl512||found.artworkUrl100;
+   if(image){
+    gameArtwork[name]=image;
+    return image;
+   }
+  }
+ }catch(error){
+  console.log("Artwork tidak tersedia:",name);
+ }
+ return "";
+}
+
+async function loadGameArtworks(){
+ const names=[
+  "Mobile Legends","Free Fire","PUBG Mobile",
+  "Genshin Impact","Roblox","Arena Breakout"
+ ];
+
+ for(const name of names){
+  const url=await getGameArtwork(name);
+  if(!url)continue;
+
+  document.querySelectorAll('[data-game-logo="'+name+'"]').forEach(img=>{
+   img.src=url;
+  });
+
+  const index=recommendedGames.findIndex(g=>g.name===name);
+  const target=document.getElementById("recommendedLogo"+index);
+  if(target)target.src=url;
+ }
+}
+
+// =====================================================
 // NAVIGASI
+// =====================================================
+
 function toggleMenu(open){
  document.getElementById("drawer").classList.toggle("hidden",!open);
  document.getElementById("menuOverlay").classList.toggle("hidden",!open);
 }
+
 function menuAction(action){
  toggleMenu(false);
+
  if(action==="login"||action==="profile"){
-  if(currentUser)show("profile");else openAuth();
+  if(currentUser)show("profile");
+  else openAuth();
  }
+
  if(action==="logout"){
-  if(currentUser)logout();else openAuth();
+  if(currentUser)logout();
+  else openAuth();
  }
 }
+
 function show(id){
- ["home","catalog","detail","summary","payment","account","profile"].forEach(x=>
-  document.getElementById(x).classList.add("hidden")
- );
+ const sections=[
+  "home","catalog","detail","summary",
+  "payment","account","profile","history"
+ ];
+
+ sections.forEach(x=>{
+  document.getElementById(x).classList.add("hidden");
+ });
+
  document.getElementById(id).classList.remove("hidden");
+
+ const cs=document.getElementById("csButton");
+ cs.classList.toggle("hidden",id!=="home");
+
+ if(id!=="catalog")catalogLoadToken++;
+
  window.scrollTo(0,0);
 }
-function home(){show("home")}
 
+function home(){
+ show("home");
+}
+
+// =====================================================
 // LOGIN SUPABASE
+// =====================================================
+
 function openAuth(){
  authMode="login";
  updateAuthUI();
@@ -388,27 +511,47 @@ function openAuth(){
  document.getElementById("authMessage").textContent="";
  show("account");
 }
+
 function switchAuth(){
  authMode=authMode==="login"?"signup":"login";
  updateAuthUI();
  document.getElementById("authMessage").textContent="";
 }
+
 function updateAuthUI(){
  const signup=authMode==="signup";
- document.getElementById("authTitle").textContent=signup?"Daftar NEXTMART":"Login NEXTMART";
- document.getElementById("authDescription").textContent=signup?"Buat akun baru untuk menggunakan NEXTMART.":"Masuk ke akun NEXTMART kamu.";
- document.getElementById("authSubmit").textContent=signup?"Daftar Sekarang":"Login";
- document.getElementById("authSwitch").textContent=signup?"Sudah punya akun? Login":"Belum punya akun? Daftar";
- document.getElementById("authPassword").autocomplete=signup?"new-password":"current-password";
+
+ document.getElementById("authTitle").textContent=
+  signup?"Daftar NEXTMART":"Login NEXTMART";
+
+ document.getElementById("authDescription").textContent=
+  signup?"Buat akun baru untuk menggunakan NEXTMART.":"Masuk ke akun NEXTMART kamu.";
+
+ document.getElementById("authSubmit").textContent=
+  signup?"Daftar Sekarang":"Login";
+
+ document.getElementById("authSwitch").textContent=
+  signup?"Sudah punya akun? Login":"Belum punya akun? Daftar";
+
+ document.getElementById("authPassword").autocomplete=
+  signup?"new-password":"current-password";
 }
+
 async function submitAuth(){
  const email=document.getElementById("authEmail").value.trim();
  const password=document.getElementById("authPassword").value;
  const msg=document.getElementById("authMessage");
  const btn=document.getElementById("authSubmit");
 
- if(!email||!password){msg.textContent="Email dan password wajib diisi.";return}
- if(password.length<6){msg.textContent="Password minimal 6 karakter.";return}
+ if(!email||!password){
+  msg.textContent="Email dan password wajib diisi.";
+  return;
+ }
+
+ if(password.length<6){
+  msg.textContent="Password minimal 6 karakter.";
+  return;
+ }
 
  btn.disabled=true;
  btn.textContent="Memproses...";
@@ -421,8 +564,12 @@ async function submitAuth(){
    if(data.session){
     currentUser=data.user;
     updateAccountUI();
+
     if(pendingOrder)continuePendingOrder();
-    else{msg.textContent="Pendaftaran berhasil!";setTimeout(()=>show("profile"),500)}
+    else{
+     msg.textContent="Pendaftaran berhasil!";
+     setTimeout(()=>show("profile"),500);
+    }
    }else{
     msg.textContent="Pendaftaran berhasil. Cek email untuk konfirmasi, lalu login.";
    }
@@ -432,8 +579,12 @@ async function submitAuth(){
 
    currentUser=data.user;
    updateAccountUI();
+
    if(pendingOrder)continuePendingOrder();
-   else{msg.textContent="Login berhasil!";setTimeout(()=>show("profile"),500)}
+   else{
+    msg.textContent="Login berhasil!";
+    setTimeout(()=>show("profile"),500);
+   }
   }
  }catch(error){
   msg.textContent="Gagal: "+error.message;
@@ -442,8 +593,10 @@ async function submitAuth(){
   updateAuthUI();
  }
 }
+
 function updateAccountUI(){
  const status=document.getElementById("menuAccountStatus");
+
  if(currentUser){
   status.textContent="Login sebagai: "+currentUser.email;
   document.getElementById("profileEmail").textContent=currentUser.email;
@@ -452,18 +605,27 @@ function updateAccountUI(){
   document.getElementById("profileEmail").textContent="-";
  }
 }
+
 async function logout(){
  const {error}=await sb.auth.signOut();
- if(error){alert("Logout gagal: "+error.message);return}
+
+ if(error){
+  alert("Logout gagal: "+error.message);
+  return;
+ }
+
  currentUser=null;
  pendingOrder=false;
  updateAccountUI();
  home();
  alert("Kamu berhasil logout.");
 }
+
 async function initializeAuth(){
  const {data,error}=await sb.auth.getSession();
+
  if(!error)currentUser=data.session?.user||null;
+
  updateAccountUI();
 
  sb.auth.onAuthStateChange((_event,session)=>{
@@ -472,61 +634,114 @@ async function initializeAuth(){
  });
 }
 
-// KATEGORI DAN PRODUK
+// =====================================================
+// KATEGORI DAN KLASIFIKASI PRODUK
+// =====================================================
+
 function classifyProduct(p){
  const name=String(p.name||"").toLowerCase();
  const cat=String(p.category||"").toLowerCase();
 
- if(name.includes("token pln")||name.includes("pln")||cat.includes("pln"))return "pln";
+ if(name.includes("token pln")||name.includes("pln")||cat.includes("pln"))
+  return "pln";
 
  if(
-  name.includes("dana")||name.includes("gopay")||
-  name.includes("ovo")||name.includes("shopeepay")||
-  cat.includes("e-wallet")||cat.includes("ewallet")
+  name.includes("dana")||
+  name.includes("gopay")||
+  name.includes("ovo")||
+  name.includes("shopeepay")||
+  name.includes("linkaja")||
+  cat.includes("e-wallet")||
+  cat.includes("ewallet")
  )return "ewallet";
 
  if(
-  name.includes("paket data")||name.includes("data flash")||
-  name.includes("internet")||name.includes("kuota")||
+  name.includes("paket data")||
+  name.includes("data flash")||
+  name.includes("internet")||
+  name.includes("kuota")||
   (cat.includes("data")&&!name.includes("pulsa"))
  )return "data";
 
- if(name.includes("pulsa")||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
+ if(
+  name.includes("pulsa")||
+  cat.includes("airtime")||
+  cat.includes("pulsa")
+ )return "pulsa";
 
  return "game";
 }
 
-function productDomain(p){
- const name=String(p.name||"").toLowerCase();
- const match=gameInfo.find(item=>name.includes(item[0].toLowerCase()));
- if(match)return match[1];
+function getGameName(product){
+ const name=String(product.name||"").toLowerCase();
 
+ for(const game of gameInfo){
+  if(game.keys.some(key=>name.includes(key)))return game.name;
+ }
+
+ return "Game Lainnya";
+}
+
+function productDomain(p){
  const type=classifyProduct(p);
+
  if(type==="pulsa"||type==="data")return "telkomsel.com";
  if(type==="pln")return "pln.co.id";
  if(type==="ewallet")return "dana.id";
- return "google.com";
+
+ return "";
 }
 
 function drawCategories(){
- document.getElementById("categories").innerHTML=categories.map(c=>
-  `<div class="card center" onclick="openCategory('${c.id}')">
-   <div class="logo-box"><img src="${asset(c.domain)}" alt="${c.name}"></div>
-   <b>${c.name}</b><small>${c.desc}</small>
-  </div>`
- ).join("");
+ document.getElementById("categories").innerHTML=categories.map(c=>`
+  <div class="card center" onclick="openCategory('${c.id}')">
+   <div class="logo-box">
+    <span class="logo-fallback">${c.id==="game"?"🎮":c.id==="pulsa"?"📱":c.id==="data"?"🌐":c.id==="pln"?"⚡":"💳"}</span>
+   </div>
+   <b>${c.name}</b>
+   <small>${c.desc}</small>
+  </div>
+ `).join("");
 }
+
+function drawRecommendedGames(){
+ const container=document.getElementById("recommendedGames");
+
+ container.innerHTML=recommendedGames.map((game,index)=>`
+  <div class="card center" onclick="openRecommendedGame(${index})">
+   <div class="logo-box">
+    <img id="recommendedLogo${index}" alt="${escapeHTML(game.name)}"
+     src="data:image/svg+xml,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="#e8efff"/><text x="50" y="58" font-size="32" text-anchor="middle" fill="#1557a1">🎮</text></svg>'
+     )}">
+   </div>
+   <b>${escapeHTML(game.name)}</b>
+   <small>Lihat produk top up</small>
+  </div>
+ `).join("");
+
+ loadGameArtworks();
+}
+
+// =====================================================
+// MEMUAT PRODUK
+// =====================================================
 
 async function loadProducts(){
  const grid=document.getElementById("catalogGrid");
+
  grid.innerHTML="<div class='muted'>Memuat produk NEXTMART...</div>";
 
  try{
   const response=await fetch(API_BASE+"/api/products");
+
   if(!response.ok)throw new Error("HTTP "+response.status);
 
   const result=await response.json();
-  allProducts=Array.isArray(result)?result:(result.products||result.data||[]);
+
+  allProducts=Array.isArray(result)
+   ?result
+   :(result.products||result.data||[]);
 
   allProducts=allProducts.filter(p=>
    p&&p.sku_code&&p.name&&
@@ -534,42 +749,121 @@ async function loadProducts(){
    Number(p.selling_price??p.price)>0
   );
 
-  if(!allProducts.length)throw new Error("Belum ada produk aktif dari backend.");
-
   drawCategories();
   console.log("NEXTMART products loaded:",allProducts.length);
+
  }catch(error){
   console.error(error);
-  grid.innerHTML="<div class='notice'>Produk belum bisa dimuat. Periksa koneksi backend NEXTMART.</div>";
+  console.log("Produk belum bisa dimuat:",error.message);
  }
 }
 
 function rupiah(value){
  return new Intl.NumberFormat("id-ID",{
-  style:"currency",currency:"IDR",maximumFractionDigits:0
+  style:"currency",
+  currency:"IDR",
+  maximumFractionDigits:0
  }).format(Number(value)||0);
 }
 
 function escapeHTML(value){
  return String(value??"").replace(/[&<>"']/g,char=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#039;"
  })[char]);
+}
+
+// =====================================================
+// LOADING KATEGORI
+// =====================================================
+
+function showCategoryLoading(title){
+ const grid=document.getElementById("catalogGrid");
+
+ grid.innerHTML=`
+  <div class="loading-category">
+   <div class="category-spinner"></div>
+   <span>Memuat kategori ${escapeHTML(title)}...</span>
+  </div>
+ `;
+
+ document.getElementById("empty").classList.add("hidden");
 }
 
 function openCategory(id){
  currentCategory=id;
  lastCatalog=id;
+ selectedGameFilter="";
+
  document.getElementById("search").value="";
+
  const category=categories.find(c=>c.id===id);
+ if(!category)return;
+
  document.getElementById("catalogTitle").textContent=category.name;
  document.getElementById("catalogDesc").textContent=category.desc;
- renderCatalog();
+
+ const token=++catalogLoadToken;
+
+ showCategoryLoading(category.name);
  show("catalog");
+
+ setTimeout(()=>{
+  if(token!==catalogLoadToken)return;
+  if(currentCategory!==id)return;
+
+  renderCatalog();
+ },650);
 }
 
+// =====================================================
+// FILTER GAME REKOMENDASI
+// =====================================================
+
+function openRecommendedGame(index){
+ const game=recommendedGames[index];
+ if(!game)return;
+
+ currentCategory="game";
+ lastCatalog="game";
+ selectedGameFilter=game.name;
+
+ document.getElementById("search").value="";
+ document.getElementById("catalogTitle").textContent=game.name;
+ document.getElementById("catalogDesc").textContent=
+  "Produk "+game.name+" di katalog NEXTMART.";
+
+ const token=++catalogLoadToken;
+
+ showCategoryLoading(game.name);
+ show("catalog");
+
+ setTimeout(()=>{
+  if(token!==catalogLoadToken)return;
+  renderCatalog();
+ },650);
+}
+
+function resetGameFilter(){
+ selectedGameFilter="";
+ document.getElementById("search").value="";
+ document.getElementById("catalogTitle").textContent="GAME";
+ document.getElementById("catalogDesc").textContent="Semua produk game NEXTMART.";
+ renderCatalog();
+}
+
+// =====================================================
+// TAMPILKAN KATALOG
+// =====================================================
+
 function renderCatalog(){
- const query=document.getElementById("search").value.toLowerCase();
- const list=allProducts.filter(p=>
+ const searchInput=document.getElementById("search");
+ const query=searchInput.value.toLowerCase().trim();
+
+ let list=allProducts.filter(p=>
   classifyProduct(p)===currentCategory&&
   (
    String(p.name).toLowerCase().includes(query)||
@@ -577,41 +871,118 @@ function renderCatalog(){
   )
  );
 
+ if(currentCategory==="game"&&selectedGameFilter){
+  const game=recommendedGames.find(g=>g.name===selectedGameFilter);
+
+  if(game){
+   list=list.filter(p=>{
+    const name=String(p.name||"").toLowerCase();
+    return game.keys.some(key=>name.includes(key));
+   });
+  }
+ }
+
  const grid=document.getElementById("catalogGrid");
  grid.innerHTML="";
+
  document.getElementById("empty").classList.toggle("hidden",list.length>0);
 
+ if(currentCategory==="game"&&selectedGameFilter){
+  const reset=document.createElement("div");
+  reset.style.gridColumn="1/-1";
+  reset.innerHTML=`
+   <button class="back" onclick="resetGameFilter()">← Tampilkan Semua Game</button>
+  `;
+  grid.appendChild(reset);
+ }
+
  if(!list.length){
-  grid.innerHTML="<div class='notice'>Produk aktif belum ditemukan di kategori ini.</div>";
+  const message=document.createElement("div");
+  message.className="notice";
+  message.style.gridColumn="1/-1";
+  message.textContent=selectedGameFilter
+   ?"Produk "+selectedGameFilter+" belum tersedia dari supplier."
+   :"Produk aktif belum ditemukan di kategori ini.";
+
+  grid.appendChild(message);
   return;
  }
 
- list.forEach(p=>{
-  const el=document.createElement("div");
-  el.className="card center";
-  el.innerHTML=`
-   <div class="logo-box"><img src="${asset(productDomain(p))}" alt=""></div>
-   <b>${escapeHTML(p.name)}</b>
-   <small>${rupiah(p.selling_price??p.price)}</small>
-  `;
-  el.onclick=()=>openProduct(p);
-  grid.appendChild(el);
- });
+ if(currentCategory==="game"&&!selectedGameFilter){
+  const groups={};
+
+  list.forEach(p=>{
+   const group=getGameName(p);
+   if(!groups[group])groups[group]=[];
+   groups[group].push(p);
+  });
+
+  Object.keys(groups).forEach(group=>{
+   const heading=document.createElement("div");
+   heading.className="game-heading";
+   heading.textContent=group;
+   grid.appendChild(heading);
+
+   groups[group].forEach(p=>appendProductCard(grid,p));
+  });
+
+ }else{
+  list.forEach(p=>appendProductCard(grid,p));
+ }
 }
 
+function appendProductCard(grid,p){
+ const el=document.createElement("div");
+ el.className="card center";
+
+ const gameName=classifyProduct(p)==="game"?getGameName(p):"";
+ const logoText=gameName==="Game Lainnya"?"🎮":gameName==="Mobile Legends"?"ML":
+  gameName==="Free Fire"?"FF":gameName==="Roblox"?"R":
+  gameName==="Genshin Impact"?"GI":gameName==="Arena Breakout"?"AB":"🎮";
+
+ el.innerHTML=`
+  <div class="logo-box">
+   <span class="logo-fallback">${logoText}</span>
+  </div>
+  <b>${escapeHTML(p.name)}</b>
+  <small>${rupiah(p.selling_price??p.price)}</small>
+ `;
+
+ el.onclick=()=>openProduct(p);
+ grid.appendChild(el);
+}
+
+// =====================================================
 // FORM TUJUAN
+// =====================================================
+
 function getProductFields(p){
  const type=classifyProduct(p);
  const name=String(p.name||"").toLowerCase();
 
- if(type==="pulsa"||type==="data"||type==="ewallet")return ["Nomor HP"];
- if(type==="pln")return ["Nomor Meter / ID Pelanggan"];
- if(name.includes("mobile legends"))return ["User ID","Zone ID"];
- if(name.includes("free fire"))return ["Player ID"];
- if(name.includes("pubg"))return ["Character ID"];
- if(name.includes("genshin"))return ["UID","Server"];
- if(name.includes("honkai: star rail"))return ["UID","Server"];
- if(name.includes("roblox")||name.includes("minecraft")||name.includes("steam"))return ["Username"];
+ if(type==="pulsa"||type==="data"||type==="ewallet")
+  return ["Nomor HP"];
+
+ if(type==="pln")
+  return ["Nomor Meter / ID Pelanggan"];
+
+ if(name.includes("mobile legends")||name.includes("mobile legend")||name.includes("mlbb"))
+  return ["User ID","Zone ID"];
+
+ if(name.includes("free fire")||name.includes("freefire"))
+  return ["Player ID"];
+
+ if(name.includes("pubg"))
+  return ["Character ID"];
+
+ if(name.includes("genshin"))
+  return ["UID","Server"];
+
+ if(name.includes("honkai"))
+  return ["UID","Server"];
+
+ if(name.includes("roblox")||name.includes("minecraft")||name.includes("steam"))
+  return ["Username"];
 
  return ["User ID"];
 }
@@ -626,18 +997,18 @@ function getFieldRule(p,index,field){
  if(type==="pln")
   return {type:"pln",hint:"Masukkan ID pelanggan atau nomor meter."};
 
- if(name.includes("mobile legends"))
+ if(name.includes("mobile legends")||name.includes("mobile legend")||name.includes("mlbb"))
   return index===0
    ?{type:"mlid",hint:"Masukkan User ID Mobile Legends."}
    :{type:"mlzone",hint:"Masukkan Zone ID Mobile Legends."};
 
- if(name.includes("free fire"))
+ if(name.includes("free fire")||name.includes("freefire"))
   return {type:"ffid",hint:"Masukkan Player ID Free Fire."};
 
  if(name.includes("pubg"))
   return {type:"pubgid",hint:"Masukkan Character ID PUBG."};
 
- if(name.includes("genshin")||name.includes("honkai: star rail"))
+ if(name.includes("genshin")||name.includes("honkai"))
   return index===0
    ?{type:"genshin",hint:"Masukkan UID akun."}
    :{type:"server",hint:"Masukkan server akun."};
@@ -650,12 +1021,13 @@ function getFieldRule(p,index,field){
 
 function openProduct(p){
  selected=p;
+
  const fields=document.getElementById("fields");
  fields.innerHTML="";
 
  document.getElementById("detailName").textContent=p.name;
  document.getElementById("detailCategory").textContent=p.category||"NEXTMART DIGITAL";
- document.getElementById("detailLogo").src=asset(productDomain(p));
+ document.getElementById("detailLogo").src="";
 
  getProductFields(p).forEach((field,index)=>{
   const rule=getFieldRule(p,index,field);
@@ -692,36 +1064,69 @@ function openProduct(p){
  show("detail");
 }
 
+// =====================================================
 // VALIDASI
+// =====================================================
+
 function validateValue(value,type){
  const v=value.trim();
+
  if(!v)return {ok:false,message:"Kolom ini wajib diisi."};
 
  switch(type){
   case "phone":{
    const digits=v.replace(/[\s-]/g,"");
    return /^(08[0-9]{7,11}|628[0-9]{7,11}|\+628[0-9]{7,11})$/.test(digits)
-    ?{ok:true}:{ok:false,message:"Nomor HP tidak sesuai."};
+    ?{ok:true}
+    :{ok:false,message:"Nomor HP tidak sesuai."};
   }
+
   case "pln":
-   return /^[0-9]{11,13}$/.test(v)?{ok:true}:{ok:false,message:"ID PLN harus 11–13 angka."};
+   return /^[0-9]{11,13}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"ID PLN harus 11–13 angka."};
+
   case "mlid":
-   return /^[0-9]{5,15}$/.test(v)?{ok:true}:{ok:false,message:"User ID harus 5–15 angka."};
+   return /^[0-9]{5,15}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"User ID harus 5–15 angka."};
+
   case "mlzone":
-   return /^[0-9]{1,6}$/.test(v)?{ok:true}:{ok:false,message:"Zone ID harus 1–6 angka."};
+   return /^[0-9]{1,6}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"Zone ID harus 1–6 angka."};
+
   case "ffid":
-   return /^[0-9]{6,15}$/.test(v)?{ok:true}:{ok:false,message:"Player ID harus 6–15 angka."};
+   return /^[0-9]{6,15}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"Player ID harus 6–15 angka."};
+
   case "pubgid":
-   return /^[0-9]{5,15}$/.test(v)?{ok:true}:{ok:false,message:"Character ID tidak sesuai."};
+   return /^[0-9]{5,15}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"Character ID tidak sesuai."};
+
   case "genshin":
-   return /^[0-9]{9,10}$/.test(v)?{ok:true}:{ok:false,message:"UID harus 9–10 angka."};
+   return /^[0-9]{9,10}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"UID harus 9–10 angka."};
+
   case "numeric":
-   return /^[0-9]{4,20}$/.test(v)?{ok:true}:{ok:false,message:"Masukkan 4–20 angka."};
+   return /^[0-9]{4,20}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"Masukkan 4–20 angka."};
+
   case "username":
-   return /^[a-zA-Z0-9_.-]{3,40}$/.test(v)?{ok:true}:{ok:false,message:"Username harus 3–40 karakter."};
+   return /^[a-zA-Z0-9_.-]{3,40}$/.test(v)
+    ?{ok:true}
+    :{ok:false,message:"Username harus 3–40 karakter."};
+
   case "server":
   case "text":
-   return v.length>=2&&v.length<=40?{ok:true}:{ok:false,message:"Isi minimal 2 dan maksimal 40 karakter."};
+   return v.length>=2&&v.length<=40
+    ?{ok:true}
+    :{ok:false,message:"Isi minimal 2 dan maksimal 40 karakter."};
+
   default:
    return {ok:false,message:"Format belum dikenali."};
  }
@@ -730,23 +1135,105 @@ function validateValue(value,type){
 function validateOneField(index,showError=true){
  const input=document.getElementById("field"+index);
  const error=document.getElementById("error"+index);
+
  if(!input||!error)return false;
 
  const result=validateValue(input.value,input.dataset.rule);
+
  input.classList.toggle("invalid",!result.ok);
  error.textContent=result.ok?"":(showError?result.message:"");
+
  return result.ok;
 }
 
 function validateAllFields(){
  let valid=true;
+
  getProductFields(selected).forEach((_,index)=>{
   if(!validateOneField(index,true))valid=false;
  });
+
  return valid;
 }
 
+// =====================================================
+// RIWAYAT TRANSAKSI LOKAL
+// =====================================================
+
+const HISTORY_KEY="nextmart_transaction_history";
+
+function getHistory(){
+ try{
+  return JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");
+ }catch(error){
+  return [];
+ }
+}
+
+function saveHistory(item){
+ const history=getHistory();
+
+ const existing=history.findIndex(x=>x.order_id===item.order_id);
+
+ if(existing>=0)history[existing]={...history[existing],...item};
+ else history.unshift(item);
+
+ localStorage.setItem(HISTORY_KEY,JSON.stringify(history.slice(0,100)));
+}
+
+function openHistory(){
+ renderHistory();
+ show("history");
+}
+
+function renderHistory(){
+ const container=document.getElementById("historyList");
+ const history=getHistory();
+
+ if(!history.length){
+  container.innerHTML=`
+   <div class="notice">
+    Belum ada riwayat transaksi di perangkat ini.
+   </div>
+  `;
+  return;
+ }
+
+ container.innerHTML=history.map(item=>{
+  const status=String(item.status||"Menunggu pembayaran").toLowerCase();
+
+  let statusClass="status-pending";
+  if(status.includes("success")||status.includes("paid"))statusClass="status-success";
+  if(status.includes("failed")||status.includes("cancel"))statusClass="status-failed";
+
+  return `
+   <div class="history-item">
+    <div class="history-top">
+     <b>${escapeHTML(item.product||"Produk NEXTMART")}</b>
+     <span class="status-pill ${statusClass}">${escapeHTML(item.status||"Menunggu pembayaran")}</span>
+    </div>
+    <small>
+     Order ID: ${escapeHTML(item.order_id||"-")}<br>
+     Tujuan: ${escapeHTML(item.target||"-")}<br>
+     Harga: ${rupiah(item.price)}<br>
+     Tanggal: ${escapeHTML(item.date||"-")}
+    </small>
+   </div>
+  `;
+ }).join("");
+}
+
+function clearHistory(){
+ if(!confirm("Hapus semua riwayat transaksi lokal di perangkat ini?"))return;
+
+ localStorage.removeItem(HISTORY_KEY);
+ renderHistory();
+}
+
+// =====================================================
 // SIAPKAN PESANAN
+// =====================================================
+
 async function order(){
  const button=document.getElementById("orderButton");
  button.disabled=true;
@@ -761,7 +1248,8 @@ async function order(){
   if(!currentUser){
    pendingOrder=true;
    openAuth();
-   document.getElementById("authMessage").textContent="Login atau daftar dahulu sebelum membeli.";
+   document.getElementById("authMessage").textContent=
+    "Login atau daftar dahulu sebelum membeli.";
    return;
   }
 
@@ -773,12 +1261,17 @@ async function order(){
   }
 
   const fieldNames=getProductFields(selected);
+
   const values=fieldNames.map((_,index)=>
    document.getElementById("field"+index).value.trim()
   );
 
   const additionalData={};
-  fieldNames.forEach((name,index)=>additionalData[name]=values[index]);
+
+  fieldNames.forEach((name,index)=>{
+   additionalData[name]=values[index];
+  });
+
   additionalData.email=currentUser.email;
 
   currentOrderPayload={
@@ -808,13 +1301,20 @@ async function order(){
 
 function continuePendingOrder(){
  if(!pendingOrder)return;
+
  pendingOrder=false;
  show("detail");
  setTimeout(()=>order(),300);
 }
-function catalogBack(){openCategory(lastCatalog)}
 
+function catalogBack(){
+ openCategory(lastCatalog);
+}
+
+// =====================================================
 // MIDTRANS
+// =====================================================
+
 async function createPayment(){
  const button=document.getElementById("midtransButton");
  const message=document.getElementById("paymentMessage");
@@ -842,10 +1342,29 @@ async function createPayment(){
    throw new Error(result.error||result.message||"Transaksi gagal dibuat.");
   }
 
+  const order=result.order||result;
+
+  const orderId=order.order_id||result.order_id||"";
+  const paymentType=order.payment_type||"Midtrans";
+  const status=order.status||"pending";
+
+  saveHistory({
+   order_id:orderId,
+   product:selected?.name||"Produk NEXTMART",
+   target:currentOrderPayload.customer_target+
+    (currentOrderPayload.customer_target_zone
+     ?" / "+currentOrderPayload.customer_target_zone:""),
+   price:selected?.selling_price??selected?.price??0,
+   status:status,
+   payment_type:paymentType,
+   date:new Date().toLocaleString("id-ID")
+  });
+
   const redirectUrl=
    result.payment?.redirect_url||
    result.redirect_url||
-   result.payment_url;
+   result.payment_url||
+   order.snap_redirect_url;
 
   if(!redirectUrl){
    console.error("Respons backend:",result);
@@ -868,40 +1387,54 @@ function openPayment(){
   alert("Data pesanan tidak ditemukan.");
   return;
  }
+
  document.getElementById("paymentMessage").textContent="";
  document.getElementById("midtransButton").disabled=false;
  document.getElementById("midtransButton").textContent="Lanjut ke Pembayaran";
+
  show("payment");
 }
 
+// =====================================================
 // SLIDER
+// =====================================================
+
 function updateSlider(){
  const track=document.getElementById("sliderTrack");
  if(!track)return;
+
  track.style.transform="translateX(-"+(activeSlide*100)+"%)";
+
  document.querySelectorAll(".slider-dot").forEach((dot,index)=>{
   dot.classList.toggle("active",index===activeSlide);
  });
 }
+
 function goSlide(index,event){
  if(event)event.stopPropagation();
+
  activeSlide=(index+totalSlides)%totalSlides;
  updateSlider();
  restartSliderTimer();
 }
+
 function changeSlide(direction,event){
  if(event)event.stopPropagation();
+
  activeSlide=(activeSlide+direction+totalSlides)%totalSlides;
  updateSlider();
  restartSliderTimer();
 }
+
 function restartSliderTimer(){
  clearInterval(slideTimer);
+
  slideTimer=setInterval(()=>{
   activeSlide=(activeSlide+1)%totalSlides;
   updateSlider();
  },5000);
 }
+
 function openBannerProduct(name){
  const product=allProducts.find(p=>
   String(p.name||"").toLowerCase().includes(name.toLowerCase())
@@ -915,8 +1448,10 @@ function openBannerProduct(name){
 
  currentCategory="game";
  lastCatalog="game";
+ selectedGameFilter="";
  openProduct(product);
 }
+
 function setupSliderSwipe(){
  const slider=document.getElementById("mainSlider");
  let startX=0;
@@ -927,6 +1462,7 @@ function setupSliderSwipe(){
 
  slider.addEventListener("touchend",event=>{
   const distance=event.changedTouches[0].screenX-startX;
+
   if(Math.abs(distance)>45){
    activeSlide=(activeSlide+(distance<0?1:-1)+totalSlides)%totalSlides;
    updateSlider();
@@ -935,25 +1471,38 @@ function setupSliderSwipe(){
  },{passive:true});
 }
 
-// LOADING
+// =====================================================
+// LOADING AWAL
+// =====================================================
+
 function finishLoading(){
  const screen=document.getElementById("loadingScreen");
  if(!screen)return;
+
  screen.classList.add("done");
  document.body.classList.remove("loading");
+
  setTimeout(()=>screen.remove(),500);
 }
 
-// MULAI
+// =====================================================
+// MULAI APLIKASI
+// =====================================================
+
 drawCategories();
+drawRecommendedGames();
 initializeAuth();
 loadProducts();
 updateSlider();
 setupSliderSwipe();
 restartSliderTimer();
 
-window.addEventListener("load",()=>setTimeout(finishLoading,1100));
+window.addEventListener("load",()=>{
+ setTimeout(finishLoading,1100);
+});
+
 setTimeout(finishLoading,3000);
+
 </script>
 </body>
 </html>

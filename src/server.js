@@ -970,7 +970,8 @@ app.post("/api/orders", async (req, res) => {
 
 // =====================================================
 // MIDTRANS WEBHOOK
-// Signature diverifikasi sebelum memproses notifikasi.
+// Test notification ditangani sebelum verifikasi signature.
+// Notifikasi transaksi asli tetap wajib diverifikasi.
 // =====================================================
 
 app.post("/api/midtrans/webhook", async (req, res) => {
@@ -989,6 +990,28 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       gross_amount,
       signature_key
     } = notification;
+
+    // =================================================
+    // MIDTRANS TEST NOTIFICATION
+    // ID payment_notif_test_ adalah notifikasi sintetis
+    // dari dashboard Midtrans, bukan transaksi pelanggan.
+    // Balas 200 tanpa mengubah database atau memanggil Melo.
+    // =================================================
+
+    if (
+      typeof order_id === "string" &&
+      order_id.startsWith("payment_notif_test_")
+    ) {
+      console.log(
+        "Midtrans test notification received:",
+        order_id
+      );
+
+      return res.status(200).json({
+        ok: true,
+        message: "Midtrans test notification received."
+      });
+    }
 
     const serverKey = process.env.MIDTRANS_SERVER_KEY;
 
@@ -1033,24 +1056,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
 
       return res.status(401).json({
         error: "Signature Midtrans tidak valid."
-      });
-    }
-
-    // =================================================
-    // MIDTRANS TEST NOTIFICATION
-    // Hanya mengonfirmasi penerimaan notifikasi test.
-    // Tidak mengubah pembayaran atau memanggil Melo.
-    // =================================================
-
-    if (String(order_id).startsWith("payment_notif_test_")) {
-      console.log(
-        "Midtrans test notification received:",
-        order_id
-      );
-
-      return res.status(200).json({
-        ok: true,
-        message: "Midtrans test notification received."
       });
     }
 

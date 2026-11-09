@@ -92,6 +92,10 @@ app.get("/api/health-check", (_req, res) => {
   });
 });
 
+// =====================================================
+// DATABASE INITIALIZATION
+// =====================================================
+
 async function initDb() {
   if (!pool) return;
 
@@ -201,7 +205,7 @@ const adminOnly = (req, res, next) => {
 // =====================================================
 // HARGA JUAL
 // Modal + 10%, minimal keuntungan Rp1.500,
-// lalu dibulatkan ke atas kelipatan Rp500.
+// pembulatan ke atas kelipatan Rp500.
 // =====================================================
 
 function calculateSellingPrice(modalPrice) {
@@ -783,8 +787,6 @@ app.get(
 
 // =====================================================
 // PRODUCT API
-// Harga yang dikirim ke frontend adalah harga jual.
-// Harga modal tidak dikirim ke pembeli.
 // =====================================================
 
 app.get("/api/products", async (_req, res) => {
@@ -833,8 +835,6 @@ app.get("/api/products", async (_req, res) => {
 
 // =====================================================
 // CREATE PAYMENT ORDER
-// Tidak ada syarat MELO_ORDERS_ENABLED di sini.
-// Supplier hanya diproses setelah pembayaran terverifikasi.
 // =====================================================
 
 app.post("/api/orders", async (req, res) => {
@@ -889,7 +889,6 @@ app.post("/api/orders", async (req, res) => {
     }
 
     const modalPrice = Number(product.rows[0].price);
-
     const sellingPrice = calculateSellingPrice(modalPrice);
 
     const orderId =
@@ -971,7 +970,7 @@ app.post("/api/orders", async (req, res) => {
 
 // =====================================================
 // MIDTRANS WEBHOOK
-// Verifikasi signature + cek status langsung ke Midtrans.
+// Signature diverifikasi sebelum memproses notifikasi.
 // =====================================================
 
 app.post("/api/midtrans/webhook", async (req, res) => {
@@ -1005,6 +1004,7 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       });
     }
 
+    // Verifikasi signature SHA-512 dari Midtrans.
     const expectedSignature = crypto
       .createHash("sha512")
       .update(
@@ -1026,10 +1026,37 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       received.length !== expected.length ||
       !crypto.timingSafeEqual(received, expected)
     ) {
+      console.error(
+        "Midtrans webhook rejected: invalid signature",
+        order_id
+      );
+
       return res.status(401).json({
         error: "Signature Midtrans tidak valid."
       });
     }
+
+    // =================================================
+    // MIDTRANS TEST NOTIFICATION
+    // Hanya mengonfirmasi penerimaan notifikasi test.
+    // Tidak mengubah pembayaran atau memanggil Melo.
+    // =================================================
+
+    if (String(order_id).startsWith("payment_notif_test_")) {
+      console.log(
+        "Midtrans test notification received:",
+        order_id
+      );
+
+      return res.status(200).json({
+        ok: true,
+        message: "Midtrans test notification received."
+      });
+    }
+
+    // =================================================
+    // CARI PESANAN ASLI
+    // =================================================
 
     const paymentResult = await pool.query(
       `SELECT *
@@ -1055,6 +1082,7 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       });
     }
 
+    // Verifikasi status langsung ke Midtrans.
     const verified = await getMidtransTransactionStatus(
       order_id
     );
@@ -1093,6 +1121,7 @@ app.post("/api/midtrans/webhook", async (req, res) => {
         ]
       );
 
+      // Melo hanya dipanggil setelah status pembayaran terverifikasi.
       await fulfillPaidOrder(order_id);
 
     } else if (transactionStatus === "pending") {
@@ -1130,7 +1159,10 @@ app.post("/api/midtrans/webhook", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Midtrans webhook error:", error.message);
+    console.error(
+      "Midtrans webhook error:",
+      error.message
+    );
 
     return res.status(500).json({
       error: "Webhook gagal diproses."
@@ -1203,7 +1235,6 @@ app.get("/api/orders/:id", async (req, res) => {
 
 // =====================================================
 // ADMIN: RETRY SUPPLIER ORDER
-// Hanya untuk pembayaran sukses yang supplier-nya review.
 // =====================================================
 
 app.post(

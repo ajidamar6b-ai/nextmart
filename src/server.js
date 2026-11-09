@@ -12,7 +12,7 @@ const BASE_URL = "https://api.melostore.id/api/v1/h2h";
 const PORT = process.env.PORT || 3000;
 
 // =====================================================
-// CORS - GITHUB PAGES NEXTMART
+// CORS
 // =====================================================
 
 const allowedOrigins = [
@@ -25,26 +25,17 @@ app.use((req, res, next) => {
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
-    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Max-Age", "86400");
   }
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-
+  if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
 
 // =====================================================
-// MIDTRANS CONFIGURATION
+// MIDTRANS CONFIG
 // =====================================================
 
 const MIDTRANS_PRODUCTION =
@@ -204,8 +195,6 @@ const adminOnly = (req, res, next) => {
 
 // =====================================================
 // HARGA JUAL
-// Modal + 10%, minimal keuntungan Rp1.500,
-// pembulatan ke atas kelipatan Rp500.
 // =====================================================
 
 function calculateSellingPrice(modalPrice) {
@@ -342,9 +331,7 @@ async function createSnapTransaction(order) {
 async function getMidtransTransactionStatus(orderId) {
   return midtransRequest(
     `${MIDTRANS_STATUS_URL}/${encodeURIComponent(orderId)}/status`,
-    {
-      method: "GET"
-    }
+    { method: "GET" }
   );
 }
 
@@ -354,7 +341,6 @@ async function getMidtransTransactionStatus(orderId) {
 
 async function fulfillPaidOrder(orderId, allowRetry = false) {
   const client = await pool.connect();
-
   let payment;
 
   try {
@@ -478,6 +464,12 @@ async function fulfillPaidOrder(orderId, allowRetry = false) {
       ]
     );
 
+    console.log(
+      "Melo order submitted:",
+      payment.order_id,
+      data.status
+    );
+
   } catch (error) {
     console.error("Melo fulfillment error:", error.message);
 
@@ -509,9 +501,7 @@ app.get("/api/health", async (_req, res) => {
   try {
     const profile = await meloRequest("/profile");
 
-    if (pool) {
-      await pool.query("SELECT 1");
-    }
+    if (pool) await pool.query("SELECT 1");
 
     res.json({
       ok: true,
@@ -552,7 +542,6 @@ async function runProductSyncJob(jobId) {
     }
 
     const saved = savedJob.rows[0];
-
     let cursor = saved.sync_cursor || "";
 
     let fetched = saved.sync_cursor
@@ -577,13 +566,9 @@ async function runProductSyncJob(jobId) {
     let hasMore = true;
 
     while (hasMore) {
-      const params = new URLSearchParams({
-        limit: "500"
-      });
+      const params = new URLSearchParams({ limit: "500" });
 
-      if (cursor) {
-        params.set("cursor", cursor);
-      }
+      if (cursor) params.set("cursor", cursor);
 
       const result = await meloRequest(
         `/pricelists?${params.toString()}`
@@ -651,9 +636,7 @@ async function runProductSyncJob(jobId) {
       [jobId, fetched, synced]
     );
 
-    console.log(
-      `Melo product sync completed: ${synced} products`
-    );
+    console.log(`Melo product sync completed: ${synced} products`);
 
   } catch (error) {
     console.error("Melo product sync failed:", error.message);
@@ -666,10 +649,7 @@ async function runProductSyncJob(jobId) {
        WHERE id = $1`,
       [jobId, error.message]
     ).catch((dbError) => {
-      console.error(
-        "Could not update sync job:",
-        dbError.message
-      );
+      console.error("Could not update sync job:", dbError.message);
     });
   }
 }
@@ -709,7 +689,6 @@ app.post(
 
       if (active.rows.length) {
         const jobId = active.rows[0].id;
-
         startProductSyncJob(jobId);
 
         return res.status(202).json({
@@ -728,9 +707,7 @@ app.post(
         [jobId]
       );
 
-      setImmediate(() => {
-        startProductSyncJob(jobId);
-      });
+      setImmediate(() => startProductSyncJob(jobId));
 
       return res.status(202).json({
         ok: true,
@@ -810,9 +787,7 @@ app.get("/api/products", async (_req, res) => {
     );
 
     const products = rows.map((product) => {
-      const sellingPrice = calculateSellingPrice(
-        product.modal_price
-      );
+      const sellingPrice = calculateSellingPrice(product.modal_price);
 
       return {
         sku_code: product.sku_code,
@@ -925,11 +900,7 @@ app.post("/api/orders", async (req, res) => {
              snap_redirect_url = $3,
              updated_at = NOW()
          WHERE order_id = $1`,
-        [
-          orderId,
-          snap.token,
-          snap.redirect_url
-        ]
+        [orderId, snap.token, snap.redirect_url]
       );
 
       return res.status(201).json({
@@ -969,9 +940,93 @@ app.post("/api/orders", async (req, res) => {
 });
 
 // =====================================================
+// PROSES STATUS PEMBAYARAN DARI MIDTRANS
+// =====================================================
+
+async function processVerifiedMidtransPayment(orderId, verified) {
+  const paymentResult = await pool.query(
+    `SELECT *
+     FROM payment_orders
+     WHERE order_id = $1`,
+    [orderId]
+  );
+
+  if (!paymentResult.rows.length) {
+    throw new Error("Pesanan tidak ditemukan.");
+  }
+
+  const payment = paymentResult.rows[0];
+
+  if (
+    Math.round(Number(verified.gross_amount)) !==
+    Number(payment.selling_price)
+  ) {
+    throw new Error("Nominal status Midtrans tidak cocok.");
+  }
+
+  const transactionStatus = verified.transaction_status;
+  const fraudStatus = verified.fraud_status;
+
+  const isPaid =
+    transactionStatus === "settlement" ||
+    (
+      transactionStatus === "capture" &&
+      fraudStatus === "accept"
+    );
+
+  if (isPaid) {
+    await pool.query(
+      `UPDATE payment_orders
+       SET status = 'paid',
+           midtrans_transaction_id = $2,
+           payment_type = $3,
+           updated_at = NOW()
+       WHERE order_id = $1`,
+      [
+        orderId,
+        verified.transaction_id || null,
+        verified.payment_type || null
+      ]
+    );
+
+    console.log("Payment verified as paid:", orderId);
+
+    await fulfillPaidOrder(orderId);
+
+  } else if (transactionStatus === "pending") {
+    await pool.query(
+      `UPDATE payment_orders
+       SET status = 'pending',
+           updated_at = NOW()
+       WHERE order_id = $1
+         AND status <> 'paid'`,
+      [orderId]
+    );
+
+  } else if (
+    ["deny", "cancel", "expire"].includes(transactionStatus)
+  ) {
+    await pool.query(
+      `UPDATE payment_orders
+       SET status = $2,
+           updated_at = NOW()
+       WHERE order_id = $1
+         AND status <> 'paid'`,
+      [
+        orderId,
+        transactionStatus === "expire" ? "expired" : "failed"
+      ]
+    );
+  }
+
+  return {
+    transaction_status: transactionStatus,
+    fraud_status: fraudStatus || null
+  };
+}
+
+// =====================================================
 // MIDTRANS WEBHOOK
-// Test notification ditangani sebelum verifikasi signature.
-// Notifikasi transaksi asli tetap wajib diverifikasi.
 // =====================================================
 
 app.post("/api/midtrans/webhook", async (req, res) => {
@@ -991,13 +1046,7 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       signature_key
     } = notification;
 
-    // =================================================
-    // MIDTRANS TEST NOTIFICATION
-    // ID payment_notif_test_ adalah notifikasi sintetis
-    // dari dashboard Midtrans, bukan transaksi pelanggan.
-    // Balas 200 tanpa mengubah database atau memanggil Melo.
-    // =================================================
-
+    // Test notification tidak membuat order atau memanggil Melo.
     if (
       typeof order_id === "string" &&
       order_id.startsWith("payment_notif_test_")
@@ -1027,23 +1076,13 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       });
     }
 
-    // Verifikasi signature SHA-512 dari Midtrans.
     const expectedSignature = crypto
       .createHash("sha512")
-      .update(
-        `${order_id}${status_code}${gross_amount}${serverKey}`
-      )
+      .update(`${order_id}${status_code}${gross_amount}${serverKey}`)
       .digest("hex");
 
-    const received = Buffer.from(
-      String(signature_key),
-      "hex"
-    );
-
-    const expected = Buffer.from(
-      expectedSignature,
-      "hex"
-    );
+    const received = Buffer.from(String(signature_key), "hex");
+    const expected = Buffer.from(expectedSignature, "hex");
 
     if (
       received.length !== expected.length ||
@@ -1058,10 +1097,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
         error: "Signature Midtrans tidak valid."
       });
     }
-
-    // =================================================
-    // CARI PESANAN ASLI
-    // =================================================
 
     const paymentResult = await pool.query(
       `SELECT *
@@ -1087,93 +1122,109 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       });
     }
 
-    // Verifikasi status langsung ke Midtrans.
-    const verified = await getMidtransTransactionStatus(
-      order_id
+    const verified = await getMidtransTransactionStatus(order_id);
+
+    const result = await processVerifiedMidtransPayment(
+      order_id,
+      verified
     );
-
-    if (
-      Math.round(Number(verified.gross_amount)) !==
-      Number(payment.selling_price)
-    ) {
-      return res.status(400).json({
-        error: "Nominal status Midtrans tidak cocok."
-      });
-    }
-
-    const transactionStatus = verified.transaction_status;
-    const fraudStatus = verified.fraud_status;
-
-    const isPaid =
-      transactionStatus === "settlement" ||
-      (
-        transactionStatus === "capture" &&
-        fraudStatus === "accept"
-      );
-
-    if (isPaid) {
-      await pool.query(
-        `UPDATE payment_orders
-         SET status = 'paid',
-             midtrans_transaction_id = $2,
-             payment_type = $3,
-             updated_at = NOW()
-         WHERE order_id = $1`,
-        [
-          order_id,
-          verified.transaction_id || null,
-          verified.payment_type || null
-        ]
-      );
-
-      // Melo hanya dipanggil setelah status pembayaran terverifikasi.
-      await fulfillPaidOrder(order_id);
-
-    } else if (transactionStatus === "pending") {
-      await pool.query(
-        `UPDATE payment_orders
-         SET status = 'pending',
-             updated_at = NOW()
-         WHERE order_id = $1
-           AND status <> 'paid'`,
-        [order_id]
-      );
-
-    } else if (
-      ["deny", "cancel", "expire"].includes(transactionStatus)
-    ) {
-      await pool.query(
-        `UPDATE payment_orders
-         SET status = $2,
-             updated_at = NOW()
-         WHERE order_id = $1
-           AND status <> 'paid'`,
-        [
-          order_id,
-          transactionStatus === "expire"
-            ? "expired"
-            : "failed"
-        ]
-      );
-    }
 
     return res.status(200).json({
       ok: true,
       order_id,
-      transaction_status: transactionStatus
+      ...result
     });
 
   } catch (error) {
-    console.error(
-      "Midtrans webhook error:",
-      error.message
-    );
+    console.error("Midtrans webhook error:", error.message);
 
     return res.status(500).json({
       error: "Webhook gagal diproses."
     });
   }
 });
+
+// =====================================================
+// ADMIN: REKONSILIASI PEMBAYARAN
+// Cek status langsung ke Midtrans, bukan percaya input user.
+// =====================================================
+
+app.post(
+  "/api/admin/payments/:id/reconcile",
+  adminOnly,
+  async (req, res) => {
+    if (!pool) {
+      return res.status(503).json({
+        error: "Database belum tersedia."
+      });
+    }
+
+    try {
+      const orderId = req.params.id;
+
+      const paymentResult = await pool.query(
+        `SELECT *
+         FROM payment_orders
+         WHERE order_id = $1`,
+        [orderId]
+      );
+
+      if (!paymentResult.rows.length) {
+        return res.status(404).json({
+          error: "Pesanan tidak ditemukan."
+        });
+      }
+
+      const payment = paymentResult.rows[0];
+
+      // Jangan mengulang order supplier yang sudah diproses.
+      if (
+        payment.status === "paid" &&
+        payment.supplier_status !== "waiting_payment"
+      ) {
+        return res.json({
+          ok: true,
+          message: "Pembayaran sudah tercatat. Supplier tidak dipanggil ulang.",
+          order_id: orderId,
+          status: payment.status,
+          supplier_status: payment.supplier_status
+        });
+      }
+
+      console.log("Checking Midtrans status:", orderId);
+
+      const verified = await getMidtransTransactionStatus(orderId);
+
+      const result = await processVerifiedMidtransPayment(
+        orderId,
+        verified
+      );
+
+      const updated = await pool.query(
+        `SELECT order_id, status, payment_type,
+                supplier_status, supplier_message
+         FROM payment_orders
+         WHERE order_id = $1`,
+        [orderId]
+      );
+
+      return res.json({
+        ok: true,
+        order_id: orderId,
+        midtrans: result,
+        order: updated.rows[0]
+      });
+
+    } catch (error) {
+      console.error("Payment reconciliation error:", error.message);
+
+      return res.status(502).json({
+        ok: false,
+        error: error.message
+      });
+    }
+  }
+);
 
 // =====================================================
 // CEK STATUS PESANAN
@@ -1450,9 +1501,7 @@ app.post("/api/melo/webhook", async (req, res) => {
 
     await client.query("COMMIT");
 
-    return res.status(200).json({
-      ok: true
-    });
+    return res.status(200).json({ ok: true });
 
   } catch (error) {
     await client.query("ROLLBACK");
@@ -1495,18 +1544,11 @@ initDb()
     }
 
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(
-        `NEXTMART backend listening on port ${PORT}`
-      );
-
+      console.log(`NEXTMART backend listening on port ${PORT}`);
       console.log(
         `Midtrans mode: ${MIDTRANS_PRODUCTION ? "PRODUCTION" : "SANDBOX"}`
       );
-
-      console.log(
-        "CORS enabled for:",
-        allowedOrigins.join(", ")
-      );
+      console.log("CORS enabled for:", allowedOrigins.join(", "));
     });
   })
   .catch((error) => {

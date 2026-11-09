@@ -833,19 +833,14 @@ app.get("/api/products", async (_req, res) => {
 
 // =====================================================
 // CREATE PAYMENT ORDER
-// Pembeli belum dikirim ke supplier di tahap ini.
+// Tidak ada syarat MELO_ORDERS_ENABLED di sini.
+// Supplier hanya diproses setelah pembayaran terverifikasi.
 // =====================================================
 
 app.post("/api/orders", async (req, res) => {
   if (!pool) {
     return res.status(503).json({
       error: "Database belum tersedia."
-    });
-  }
-
-  if (process.env.MELO_ORDERS_ENABLED !== "true") {
-    return res.status(503).json({
-      error: "Pemesanan supplier belum diaktifkan."
     });
   }
 
@@ -1060,8 +1055,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
       });
     }
 
-    // Ambil status langsung dari Midtrans.
-    // Jangan hanya percaya isi webhook.
     const verified = await getMidtransTransactionStatus(
       order_id
     );
@@ -1100,8 +1093,6 @@ app.post("/api/midtrans/webhook", async (req, res) => {
         ]
       );
 
-      // Hanya pesanan yang sudah terverifikasi dibayar
-      // yang diteruskan ke supplier Melo.
       await fulfillPaidOrder(order_id);
 
     } else if (transactionStatus === "pending") {

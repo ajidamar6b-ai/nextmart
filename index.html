@@ -62,12 +62,12 @@ input.invalid,select.invalid{border:1px solid #ff6464}
 footer{text-align:center;padding:28px 10px 120px;color:#8790ad;font-size:10px}
 body{padding-bottom:94px}
 .bottom-dock{position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
-.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9;transition:--rainbow-angle .12s}
+.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9}.bottom-dock:after{content:"";position:absolute;z-index:1;left:10px;top:9px;width:calc((100% - 20px - 12px)/4);height:58px;border-radius:19px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(151,112,255,.20) 48%,rgba(78,180,255,.16));border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px #ffffff55,0 5px 18px #0002;transform:translateX(var(--dock-x,0px));transition:transform .32s cubic-bezier(.2,.8,.2,1),width .25s;backdrop-filter:blur(18px) saturate(190%);-webkit-backdrop-filter:blur(18px) saturate(190%)}
 .dock-item{position:relative;z-index:2;height:58px;border:0;background:transparent;color:#c9c3e8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;border-radius:19px;transition:color .2s,transform .2s}
 .dock-item .dock-icon{font-size:21px;line-height:1;filter:drop-shadow(0 2px 6px #0005)}
 .dock-item.active{color:#fff;text-shadow:0 0 12px #c6a5ff}
-.dock-item.active:before{content:"";position:absolute;inset:2px;background:linear-gradient(145deg,rgba(163,115,255,.42),rgba(86,115,255,.22),rgba(255,119,226,.22));border:1px solid rgba(220,195,255,.34);border-radius:17px;box-shadow:inset 0 1px 1px #ffffff55,0 4px 18px #9c5cff33;z-index:-1}
-.dock-item.home-dock{height:62px;margin-top:-19px;border-radius:21px;color:white;background:linear-gradient(145deg,rgba(164,112,255,.85),rgba(86,100,226,.8) 55%,rgba(206,94,226,.8));border:1px solid #ffffff65;box-shadow:0 7px 24px #965cff70,inset 0 1px 2px #ffffff80}
+.dock-item.active:before{content:none}
+.dock-item.home-dock{height:58px;margin-top:0;border-radius:19px;color:white;background:transparent;border:0;box-shadow:none}
 .dock-item.home-dock .dock-icon{font-size:25px}
 .dock-item:active{transform:scale(.93)}
 @media(min-width:700px){.bottom-dock{bottom:20px}}
@@ -375,7 +375,7 @@ let slideTimer=null;
 let currentOrderPayload=null;
 let catalogLoadToken=0;
 let selectedGameFilter="";
-let productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],social:[],apps:[]};
+let productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
 let productMeta=new WeakMap();
 let catalogEntries=[];
 let catalogCursor=0;
@@ -391,7 +391,6 @@ const categories=[
  {id:"pln",name:"TOKEN PLN",desc:"Token listrik",domain:"pln.co.id"},
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"},
  {id:"giftcard",name:"GIFT CARD",desc:"Voucher dan gift card digital",domain:""},
- {id:"social",name:"SOCIAL MEDIA",desc:"Layanan media sosial",domain:""},
  {id:"apps",name:"APLIKASI & LANGGANAN",desc:"Aplikasi dan layanan premium",domain:""},
  {id:"other",name:"LAINNYA",desc:"Produk digital lainnya",domain:""}
 ];
@@ -446,8 +445,8 @@ async function loadGameArtworks(names){
   const url=await getGameArtwork(name);
   if(!url)return;
   document.querySelectorAll('[data-game-logo="'+CSS.escape(name)+'"]').forEach(img=>{
-   img.src=url;img.style.display="block";
-   const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";
+   img.onload=()=>{img.style.display="block";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";};
+   img.onerror=()=>{img.removeAttribute("src");};img.src=url;
   });
  }));
 }
@@ -466,12 +465,32 @@ function show(id){
  if(id!=="catalog")catalogLoadToken++;
  const active=id==="home"?"home":id==="history"?"history":(["account","profile"].includes(id)?"account":(["catalog"].includes(id)?"categories":""));
  document.querySelectorAll(".dock-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.dock===active));
+ moveDockGlass(active);
  window.scrollTo(0,0);
 }
 
 function home(){
  show("home");
 }
+
+function moveDockGlass(active){
+ const dock=document.getElementById("bottomDock");
+ if(!dock)return;
+ const items=[...dock.querySelectorAll(".dock-item")];
+ const index=Math.max(0,items.findIndex(item=>item.dataset.dock===active));
+ const item=items[index];
+ if(!item)return;
+ const left=item.offsetLeft+dock.scrollLeft;
+ dock.style.setProperty("--dock-x",left-10+"px");
+}
+
+(function bindDockGlass(){
+ const dock=document.getElementById("bottomDock");if(!dock)return;
+ const track=e=>{const r=dock.getBoundingClientRect();const x=e.clientX-r.left;dock.style.setProperty("--rainbow-angle",(x/r.width*360)+"deg");};
+ dock.addEventListener("pointermove",track,{passive:true});
+ window.addEventListener("resize",()=>{const active=dock.querySelector(".dock-item.active");if(active)moveDockGlass(active.dataset.dock);});
+ requestAnimationFrame(()=>moveDockGlass("home"));
+})();
 
 // =====================================================
 // LOGIN SUPABASE
@@ -616,7 +635,7 @@ function classifyProduct(p){
  // Explicit non-game products override misleading words/SKU fragments.
  if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||/^d(n|gc)g?l|^dgcggln/.test(sku)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
  if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
- if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "social";
+ if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "excluded";
  if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
  if(/dana|gopay|ovo|shopeepay|linkaja|ewallet|e-wallet/.test(name)||cat.includes("ewallet"))return "ewallet";
  if(/paket data|data flash|internet|kuota/.test(name)||(cat.includes("data")&&!name.includes("pulsa")))return "data";
@@ -735,11 +754,12 @@ async function loadProducts(){
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
   allProducts=raw.filter(p=>p&&p.sku_code&&p.name&&String(p.status||"active").toLowerCase()==="active"&&Number(p.selling_price??p.price)>0);
-  productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],social:[],apps:[],other:[]};
+  productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
   productMeta=new WeakMap();
   const grouped={};
   for(const p of allProducts){
    const category=classifyProduct(p);
+   if(category==="excluded")continue;
    const game=category==="game"?getGameName(p):"";
    const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game).toLowerCase();
    productMeta.set(p,{category,game,search});
@@ -922,7 +942,7 @@ function productVisualKind(p){
  if(/\buc\b|unknown cash|pubg/.test(n)||/^pubgm/.test(sku))return "uc";
  if(/genesis crystal|crystal/.test(n)||/^giggl/.test(sku))return "crystal";
  if(/coin|gold|point|token|bond|\bcp\b|\bvp\b/.test(n))return "coin";
- if(type==="pulsa"||type==="data")return "phone";if(type==="ewallet")return "wallet";if(type==="pln")return "electric";if(type==="social")return "social";if(type==="apps")return "app";
+ if(type==="pulsa"||type==="data")return "phone";if(type==="ewallet")return "wallet";if(type==="pln")return "electric";if(type==="apps")return "app";
  return type==="game"?"game":"digital";
 }
 function productVisualSVG(kind){
@@ -937,7 +957,6 @@ function productVisualSVG(kind){
  phone:'<rect x="39" y="18" width="42" height="84" rx="9" fill="#fff"/><rect x="44" y="28" width="32" height="54" rx="3" fill="#75baff"/><path d="M52 57h16M60 49v16" stroke="#fff" stroke-width="5" stroke-linecap="round"/>',
  wallet:'<rect x="23" y="35" width="74" height="52" rx="10" fill="#fff"/><path d="M23 47h74" stroke="#8b72db" stroke-width="7"/><rect x="66" y="55" width="32" height="19" rx="6" fill="#7b62d5"/>',
  electric:'<path d="M68 17 35 66h23l-6 37 34-52H63Z" fill="#ffe27b" stroke="#fff" stroke-width="4"/>',
- social:'<circle cx="60" cy="60" r="31" fill="#fff"/><path d="M40 69c12-25 28-25 40 0M45 48h30" fill="none" stroke="#7865d9" stroke-width="7" stroke-linecap="round"/>',
  app:'<rect x="29" y="29" width="62" height="62" rx="16" fill="#fff"/><path d="M43 62h34M60 45v34" stroke="#8c69df" stroke-width="8" stroke-linecap="round"/>',
  game:'<path d="M35 44h50c10 0 17 8 17 18l-4 22c-2 9-12 12-19 5L67 76H53L41 89c-7 7-17 4-19-5l-4-22c0-10 7-18 17-18Z" fill="#fff"/><path d="M38 55v19M29 64h18M77 59h1M87 69h1" stroke="#7863d7" stroke-width="5" stroke-linecap="round"/>',
  digital:'<rect x="27" y="30" width="66" height="60" rx="12" fill="#fff"/><path d="M42 49h36M42 62h26M42 75h18" stroke="#8a6be2" stroke-width="6" stroke-linecap="round"/>'};

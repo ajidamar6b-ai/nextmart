@@ -545,11 +545,15 @@ function getGameName(product){
 // =====================================================
 
 const gameArtwork={};
-const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v8";
+const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v10";
 // Official publisher-provided wordmarks for titles with downloadable brand assets.
 const GAME_LOGO_STATIC={
- "Free Fire":"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/img/20228/eb56db6919078b837ffd2e6a3b7e4aac.jpg",
- "PUBG Mobile":"https://pubgmobile.proximabeta.com/images/event/brandassets/img-logo2.png"
+ // App artwork URLs are pinned for the main games so their tiles do not depend on favicon/API discovery.
+ "Mobile Legends":"https://www.gamecharge.net/images/thumbs/0000306_mobile-legends-bang-bang-indonesia_550.jpeg",
+ "Free Fire":"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d6/8f/47/d68f4742-5a10-b375-2114-0f840bd49ec1/AppIcon-1781539049-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+ "PUBG Mobile":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7f/cd/91/7fcd912b-0e42-e335-91d6-763d2a13e814/AppIcon-1x_U007emarketing-0-7-0-85-220-0.png/512x512bb.jpg",
+ "Roblox":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/b4/d9/fc/b4d9fc91-b318-ab14-4d2c-f6e067afb081/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+ "Genshin Impact":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d3/f5/2a/d3f52a60-8dd5-e433-226a-5468f9bcfd0f/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg"
 };
 const GAME_APP_ALIASES={
  "Mobile Legends":["Mobile Legends: Bang Bang"],"Free Fire":["Garena Free Fire","Free Fire"],
@@ -628,23 +632,52 @@ function logoCandidatesForDomain(domain,size=256){
  ];
 }
 async function getGameArtwork(name){
+ // Logo game dicari per nama game, bukan memakai logo mata uang/Pass.
  if(Object.prototype.hasOwnProperty.call(gameArtwork,name)&&gameArtwork[name])return gameArtwork[name];
- if(GAME_LOGO_STATIC[name]){const direct=await loadFirstWorkingImage([GAME_LOGO_STATIC[name]]);if(direct){gameArtwork[name]=direct;return direct;}}
  const cached=readGameLogoCache();
- if(cached[name]){const valid=await loadFirstWorkingImage([cached[name]]);if(valid){gameArtwork[name]=valid;return valid;}delete cached[name];}
- const domain=gameLogoDomain(name);
- let image=await loadFirstWorkingImage(logoCandidatesForDomain(domain,512));
- // App Store tetap dipakai sebagai fallback lintas platform jika logo situs tidak tersedia.
- if(!image){
-  try{
-   const query=(recommendedGames.find(g=>g.name===name)?.search)||name;
-   const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&country=id&limit=50",{mode:"cors",cache:"force-cache"});
-   if(response.ok){const data=await response.json();const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(compactGameText).filter(Boolean);
-    const scored=(data.results||[]).map(item=>{const title=compactGameText(item.trackName);let score=0;for(const alias of aliases){if(title===alias)score=Math.max(score,100);else if(title.startsWith(alias))score=Math.max(score,90);else if(title.includes(alias))score=Math.max(score,75);}return {score,image:item.artworkUrl512||item.artworkUrl100||item.artworkUrl60};}).filter(x=>x.image).sort((x,y)=>y.score-x.score);
-    if(scored[0]&&scored[0].score>=75)image=await loadFirstWorkingImage([scored[0].image]);
-   }
-  }catch(error){console.warn("Sumber logo aplikasi tidak tersedia:",name,error);}
+ if(cached[name]){
+  const valid=await loadFirstWorkingImage([cached[name]]);
+  if(valid){gameArtwork[name]=valid;return valid;}
+  delete cached[name];
  }
+ const staticKey=Object.keys(GAME_LOGO_STATIC).find(key=>compactGameText(key)===compactGameText(name));
+ const pinned=staticKey?GAME_LOGO_STATIC[staticKey]:"";
+ if(pinned){const direct=await loadFirstWorkingImage([pinned]);if(direct){gameArtwork[name]=direct;cached[name]=direct;writeGameLogoCache(cached);return direct;}}
+ let image="";
+ // Prioritaskan artwork aplikasi/game (cover/icon asli), bukan favicon situs yang sering hanya ikon generik.
+ try{
+  const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(compactGameText).filter(Boolean);
+  const query=(recommendedGames.find(g=>g.name===name)?.search)||name;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),6500);
+  const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&country=id&limit=50",{mode:"cors",cache:"no-store",signal:controller.signal});
+  clearTimeout(timeout);
+  if(response.ok){
+   const data=await response.json();
+   const scored=(data.results||[]).map(item=>{
+    const title=compactGameText(item.trackName||item.trackCensoredName||"");
+    let score=0;
+    for(const alias of aliases){
+     if(!alias)continue;
+     if(title===alias)score=Math.max(score,120);
+     else if(title.startsWith(alias)||alias.startsWith(title))score=Math.max(score,95);
+     else if(title.includes(alias)||alias.includes(title))score=Math.max(score,80);
+     else {
+      const words=alias.match(/[a-z0-9]{3,}/g)||[];
+      const hits=words.filter(word=>title.includes(word)).length;
+      if(words.length&&hits)score=Math.max(score,Math.round(55*hits/words.length));
+     }
+    }
+    return {score,image:item.artworkUrl512||item.artworkUrl100||item.artworkUrl60};
+   }).filter(x=>x.image).sort((a,b)=>b.score-a.score);
+   if(scored[0]&&scored[0].score>=48)image=await loadFirstWorkingImage([scored[0].image]);
+  }
+ }catch(error){console.warn("Artwork game belum tersedia dari katalog aplikasi:",name,error);}
+ if(!image){
+  const domain=gameLogoDomain(name);
+  image=await loadFirstWorkingImage(logoCandidatesForDomain(domain,512));
+ }
+ // Sumber terakhir tetap favicon resmi/brand; bila tidak ada, inisial aman dipertahankan.
  gameArtwork[name]=image||"";
  if(image){cached[name]=image;writeGameLogoCache(cached);}
  return image||"";

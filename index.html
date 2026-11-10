@@ -375,6 +375,7 @@ let slideTimer=null;
 let currentOrderPayload=null;
 let catalogLoadToken=0;
 let selectedGameFilter="";
+let selectedGameRegionFilter="";
 let selectedProviderFilter="";
 let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
 let productMeta=new WeakMap();
@@ -402,15 +403,14 @@ const pulsaProviders=[
  {name:"AXIS",key:"AXIS",mark:"AX",color:"#7b3fc6"},
  {name:"Tri (3)",key:"Tri",mark:"3",color:"#242424"},
  {name:"Smartfren",key:"Smartfren",mark:"SF",color:"#e5252a"},
- {name:"by.U",key:"by.U",mark:"by.U",color:"#2678ee"}
+ {name:"by.U",key:"by.U",mark:"by.U",color:"#2678ee"},
+ {name:"Digi Prepaid",key:"Digi Prepaid",mark:"Digi",color:"#e3b51b"},
+ {name:"U Mobile",key:"UMobile Top Up",mark:"U",color:"#e84d93"}
 ];
 const dataProviders=pulsaProviders;
+// Pricelist Melo 2026-11-10: kategori Ewallet hanya berisi Brand DANA.
 const walletProviders=[
- {name:"DANA",key:"DANA",mark:"D",color:"#1689ed"},
- {name:"OVO",key:"OVO",mark:"OVO",color:"#4b2b83"},
- {name:"GoPay",key:"GoPay",mark:"Go",color:"#00a7e8"},
- {name:"ShopeePay",key:"ShopeePay",mark:"S",color:"#ee4d2d"},
- {name:"LinkAja",key:"LinkAja",mark:"LA",color:"#e32636"}
+ {name:"DANA",key:"DANA",mark:"D",color:"#1689ed"}
 ];
 
 const recommendedGames=[
@@ -469,6 +469,7 @@ const GAME_SKU_RULES=[
  [/^(ml[a-z]{0,3}|mcgg)/,"Mobile Legends"],
  [/^ff[a-z]{0,3}/,"Free Fire"],
  [/^pubgm/,"PUBG Mobile"],
+ [/^(giggl|gimmy|gipph|gitth|gius|gittw)/,"Genshin Impact"],
  [/^(rvl|rgc(?=.*rv))/,"Roblox"],
  [/^codm/,"Call of Duty: Mobile"],
  [/^(abi|abb|abpp)/,"Arena Breakout"],
@@ -502,7 +503,19 @@ const GAME_SKU_RULES=[
 function getGameName(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
+ const brand=String(product?.brand||product?.brand_name||product?.provider||product?.product_brand||"").trim();
  for(const [rule,title] of GAME_SKU_RULES){if(rule.test(sku))return title;}
+ if(brand){
+  const clean=stripBrandRegion(brand);
+  const b=clean.toLowerCase();
+  if(/mobile legends?|mlbb/.test(b))return "Mobile Legends";
+  if(/free fire/.test(b))return "Free Fire";
+  if(/pubg mobile/.test(b))return "PUBG Mobile";
+  if(/genshin impact/.test(b))return "Genshin Impact";
+  if(/valorant/.test(b))return "VALORANT";
+  if(/magic chess/.test(b))return "Magic Chess: Go Go";
+  if(clean)return clean;
+ }
  const aliases=[
   ["Mobile Legends",/mobile legends?|mobile legend|mlbb|diamond ml/],
   ["Free Fire",/free ?fire|ff max|diamond ff/],
@@ -814,12 +827,16 @@ function classifyProduct(p){
  const name=String(p?.name||"").toLowerCase();
  const cat=String(p?.category||"").toLowerCase();
  const sku=String(p?.sku_code||"").toLowerCase();
+ const brand=String(p?.brand||p?.brand_name||p?.provider||p?.product_brand||"").toLowerCase();
+ const type=String(p?.type||p?.product_type||"").toLowerCase();
  if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
  if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "excluded";
  if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
- if(/dana|gopay|go\s?pay|ovo|shopeepay|shopee pay|linkaja|link aja|ewallet|e-wallet/.test(name)||cat.includes("ewallet")||cat.includes("e-wallet"))return "ewallet";
- if(/paket data|data flash|internet|kuota/.test(name)||(cat.includes("data")&&!name.includes("pulsa")))return "data";
- if(/pulsa/.test(name)||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
+ if(/dana|gopay|go\s?pay|ovo|shopeepay|shopee pay|linkaja|link aja|ewallet|e-wallet/.test(name)||/dana|gopay|ovo|shopeepay|linkaja/.test(brand)||cat.includes("ewallet")||cat.includes("e-wallet"))return "ewallet";
+ // Supplier category "Airtime & Data (Pulsa & Data)" is shared by both products.
+ // Do not classify every numeric denomination as a data package.
+ if(/paket data|data flash|internet|kuota utama|happy spesial|xtra combo/.test(name)||/^(tself|tdh)/.test(sku)||type.includes("data package")||/3 data happy/.test(brand))return "data";
+ if(/pulsa/.test(name)||type.includes("airtime")||type.includes("prepaid top up")||type.includes("top up")||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
  if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
  if(cat.includes("game")||cat.includes("games")||cat.includes("topup game"))return "game";
  if(/^(ml|mcgg|ff|f\d|pubgmi?|pubgmgl|giggl|abi|ab\d|rvl|codm|val|vtth|vpph|hok|aov)/.test(sku))return "game";
@@ -827,19 +844,58 @@ function classifyProduct(p){
  return "other";
 }
 
+const REGION_LABELS={
+ id:"Indonesia",indonesia:"Indonesia",ph:"Filipina",philippines:"Filipina",philippine:"Filipina",
+ my:"Malaysia",malaysia:"Malaysia",sg:"Singapura",singapore:"Singapura",
+ us:"Amerika Serikat",usa:"Amerika Serikat","united states":"Amerika Serikat",
+ br:"Brasil",brazil:"Brasil",ru:"Rusia",russia:"Rusia",tr:"Turki",turkey:"Turki",
+ th:"Thailand",thailand:"Thailand",gl:"Global",global:"Global",tw:"Taiwan",taiwan:"Taiwan",
+ vn:"Vietnam",vietnam:"Vietnam",bd:"Bangladesh",bangladesh:"Bangladesh",cis:"CIS",
+ eu:"Eropa",europe:"Eropa",na:"Amerika Utara",naeu:"NA / EU",
+ latam:"Amerika Latin",sea:"Asia Tenggara",asia:"Asia",jp:"Jepang",japan:"Jepang",
+ kr:"Korea Selatan",korea:"Korea Selatan",hk:"Hong Kong",mo:"Makau",in:"India",pk:"Pakistan"
+};
+const REGION_SUFFIX_PATTERN="ID|PH|MY|SG|US|BR|RU|TR|TH|GL|TW|VN|BD|CIS|EU|NAEU|NA|LATAM|SEA|ASIA|JP|KR|HK|MO|IN|PK|Indonesia|Philippines?|Malaysia|Singapore|United States|USA|Brazil|Russia|Turkey|Thailand|Global|Taiwan|Vietnam|Bangladesh|Europe|Japan|Korea|Hong Kong|Macau|India|Pakistan";
+function regionLabel(value){
+ const key=String(value||"").trim().toLowerCase();
+ return REGION_LABELS[key]||"";
+}
+function findBrandRegion(brand){
+ const value=String(brand||"").trim();
+ if(!value)return "";
+ if(/\(\s*MY\s*\/\s*SG\s*\)/i.test(value))return "Malaysia / Singapura";
+ const paren=value.match(new RegExp("\\\\(\\\\s*("+REGION_SUFFIX_PATTERN+")\\\\s*\\\\)","i"));
+ if(paren)return regionLabel(paren[1]);
+ const suffix=value.match(new RegExp("(?:\\\\s*[-–:]?\\\\s*)("+REGION_SUFFIX_PATTERN+")\\\\s*$","i"));
+ if(suffix)return regionLabel(suffix[1]);
+ return "";
+}
+function stripBrandRegion(brand){
+ let value=String(brand||"").trim();
+ value=value.replace(/\(\s*MY\s*\/\s*SG\s*\)/ig," ");
+ value=value.replace(new RegExp("\\\\s*\\\\(\\\\s*(?:"+REGION_SUFFIX_PATTERN+")\\\\s*\\\\)\\\\s*$","i")," ");
+ value=value.replace(new RegExp("(?:\\\\s*[-–:]?\\\\s*)(?:"+REGION_SUFFIX_PATTERN+")\\\\s*$","i")," ");
+ return value.replace(/\s+/g," ").replace(/[-–:]\s*$/,"").trim();
+}
 function productRegion(product,game){
+ const brand=String(product?.brand||product?.brand_name||product?.provider||product?.product_brand||"").trim();
+ const fromBrand=findBrandRegion(brand);
+ if(fromBrand)return fromBrand;
  const sku=String(product?.sku_code||"").toLowerCase();
- if(game==="Mobile Legends"||game==="Free Fire"){
-  const code=sku.match(/^(?:ml|ff)(id|ph|my|sg|us|br|ru|tr|th|gl)/);
-  const labels={id:"Indonesia",ph:"Filipina",my:"Malaysia",sg:"Singapura",us:"Amerika",br:"Brasil",ru:"Rusia",tr:"Turki",th:"Thailand",gl:"Global"};
-  return code?(labels[code[1]]||""):"";
- }
+ const skuMatch=sku.match(/^(?:ml|ff)(id|ph|my|sg|us|br|ru|tr|th|gl|tw|vn|bd|cis|eu|na|latam|sea|asia|naeu)/);
+ if(skuMatch)return regionLabel(skuMatch[1])||"";
+ const verifiedSku=[
+  [/^gipph/,"Filipina"],[/^gimmy/,"Malaysia"],[/^gitth/,"Thailand"],
+  [/^gius/,"Amerika Serikat"],[/^gittw/,"Taiwan"],[/^giggl/,"Global"]
+ ];
+ for(const [rule,label] of verifiedSku)if(rule.test(sku))return label;
  return "";
 }
 function normalizeProductName(name,game){
  let value=String(name||"").toLowerCase().normalize("NFKD");
- value=value.replace(/\((?:id|indonesia|global|sea|asia|philippines|philippine|ph|malaysia|my|singapore|sg|brazil|br|thailand|th|russia|ru|turkey|tr|eu|na|latam)\)/gi," ");
- value=value.replace(/\b(?:indonesia|global|sea server|philippines|malaysia|singapore|brazil|thailand)\b/gi," ");
+ value=stripBrandRegion(value);
+ value=value.replace(/\((?:id|indonesia|global|sea|asia|philippines|philippine|ph|malaysia|my|singapore|sg|brazil|br|thailand|th|russia|ru|turkey|tr|eu|na|latam|naeu)\)/gi," ");
+ value=value.replace(/\b(?:indonesia|global|sea server|philippines|malaysia|singapore|brazil|thailand|united states)\b/gi," ");
  value=value.replace(/[^a-z0-9+]+/g," ").trim().replace(/\s+/g," ");
  if((game==="Mobile Legends"||game==="Free Fire")&&/diamond/.test(value)){
   const nums=(value.match(/\d[\d,.]*/g)||[]).map(x=>x.replace(/[,.]/g,""));
@@ -865,8 +921,18 @@ function deduplicateProducts(products){
 function getPulsaOperator(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
+ const brand=String(product?.brand||product?.brand_name||product?.provider||product?.product_brand||"").toLowerCase();
+ if(/3 data happy|^3$|tri/.test(brand))return "Tri";
+ if(/digi prepaid/.test(brand))return "Digi Prepaid";
+ if(/u mobile|umobile/.test(brand))return "UMobile Top Up";
+ if(/telkomsel/.test(brand))return "Telkomsel";
+ if(/indosat/.test(brand))return "Indosat";
+ if(/^xl$|xl axiata/.test(brand))return "XL";
+ if(/axis/.test(brand))return "AXIS";
+ if(/smartfren/.test(brand))return "Smartfren";
+ if(/by\.?u/.test(brand))return "by.U";
  if(/by\.?u/.test(name)||/^byup?/.test(sku))return "by.U";
- if(/telkomsel|simpati|kartu as|loop/.test(name)||/^(tselp|tself|t1km|t5b|t1tp|tdh|tdhs|tdhmku)/.test(sku))return "Telkomsel";
+ if(/telkomsel|simpati|kartu as|loop/.test(name)||/^(tselp|tself|t1km|t1kmtm|t5b|t5bt|t1tp|tdh|tdhs|tdhmku)/.test(sku))return "Telkomsel";
  if(/indosat|im3|mentari/.test(name)||/^(isatidp?|i1ip)/.test(sku))return "Indosat";
  if(/smartfren/.test(name)||/^(sfp|sf|s1sp|s2sp)/.test(sku))return "Smartfren";
  if(/\baxis\b/.test(name)||/^axis/.test(sku))return "AXIS";
@@ -878,12 +944,9 @@ function getPulsaOperator(product){
 function getWalletService(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
- if(/shopee\s?pay|shopeepay|saldo shopee/.test(name))return "ShopeePay";
- if(/link\s?aja|linkaja|saldo linkaja/.test(name))return "LinkAja";
- if(/\bdana\b|saldo dana|top ?up dana/.test(name))return "DANA";
- if(/\bovo\b|saldo ovo|top ?up ovo/.test(name))return "OVO";
- if(/gopay|go\s?pay|saldo gojek/.test(name))return "GoPay";
- // SKU-only wallet mapping is intentionally not guessed without a verified supplier map.
+ const brand=String(product?.brand||product?.brand_name||product?.provider||product?.product_brand||"").trim().toLowerCase();
+ // Diverifikasi dari Pricelist Melo 2026-11-10: seluruh SKU keluarga ini ber-Brand DANA.
+ if(brand==="dana"||/\\bdana\\b|saldo dana|top ?up dana/.test(name)||/^(dgs|dzs|dnt|dpsnoa|dpr|dzr)/.test(sku))return "DANA";
  return "";
 }
 
@@ -895,7 +958,7 @@ function providerLogoHTML(provider){
 }
 
 function providerTileHTML(provider,count,type){
- const label=type==="pulsa"?"Pilihan nominal pulsa":type==="data"?"Pilihan paket internet":"Pilihan top-up saldo";
+ const label=type==="pulsa"?"Pilihan nominal pulsa":type==="data"?"Pilihan paket internet":"Pilihan nominal saldo DANA";
  return `<div class="card center provider-tile" onclick="openProviderCategory('${type}','${escapeHTML(provider.key)}')"><div class="brand-lockup">${providerLogoHTML(provider)}</div><small>${count} produk • ${label}</small></div>`;
 }
 
@@ -939,6 +1002,25 @@ function gameInitials(name){return String(name).split(/[:\s]+/).filter(Boolean).
 // MEMUAT PRODUK
 // =====================================================
 
+// Normalisasi field API Melo maupun header Pricelist Excel menjadi format internal.
+function normalizedKey(value){return String(value||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function normalizeSupplierProduct(raw){
+ const source=raw&&typeof raw==="object"?raw:{};
+ const fields=new Map(Object.entries(source).map(([key,value])=>[normalizedKey(key),value]));
+ const pick=(...keys)=>{for(const key of keys){const value=fields.get(normalizedKey(key));if(value!==undefined&&value!==null&&value!=="")return value;}return "";};
+ const product={...source};
+ product.name=String(pick("name","product","product_name","productName")||"");
+ product.sku_code=String(pick("sku_code","sku","product_sku","code")||"");
+ product.category=String(pick("category","product_category")||"");
+ product.brand=String(pick("brand","brand_name","product_brand","provider")||"");
+ product.type=String(pick("type","product_type")||"");
+ product.server=String(pick("server","server_name","serverName")||"");
+ product.status=String(pick("status","product_status")||"active").toLowerCase().replace(/[ -]+/g,"_");
+ const price=pick("selling_price","sellingPrice","your_price_mc","yourPriceMc","your_price","price","price_mc","h2h_basic_mc","h2h_premium_mc","retail_price_mc");
+ product.selling_price=Number(price)||0;
+ return product;
+}
+
 async function loadProducts(){
  const grid=document.getElementById("catalogGrid");
  grid.innerHTML="<div class='muted'>Memuat produk NEXTMART...</div>";
@@ -947,7 +1029,7 @@ async function loadProducts(){
   if(!response.ok)throw new Error("HTTP "+response.status);
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
-  allProducts=raw.filter(p=>p&&p.sku_code&&p.name&&String(p.status||"active").toLowerCase()==="active"&&Number(p.selling_price??p.price)>0);
+  allProducts=raw.map(normalizeSupplierProduct).filter(p=>p.sku_code&&p.name&&p.status==="active"&&Number(p.selling_price)>0);
   productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
   productMeta=new WeakMap();
   const grouped={};
@@ -957,14 +1039,16 @@ async function loadProducts(){
    const game=category==="game"?getGameName(p):"";
    if(category==="game"&&!game)category="unmappedGame";
    const region=game?productRegion(p,game):"";
+   const server=String(p.server||p.server_name||p.serverName||"");
    const operator=(category==="pulsa"||category==="data")?getPulsaOperator(p):"";
    const wallet=category==="ewallet"?getWalletService(p):"";
-   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game+" "+region+" "+operator+" "+wallet).toLowerCase();
-   productMeta.set(p,{category,game,region,operator,wallet,search});
+   const brand=String(p.brand||p.brand_name||p.provider||p.product_brand||"");
+   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+brand+" "+game+" "+region+" "+operator+" "+wallet).toLowerCase();
+   productMeta.set(p,{category,game,region,server,operator,wallet,search});
    (grouped[category]||(grouped[category]=[])).push(p);
   }
   for(const category of Object.keys(productBuckets)){
-   productBuckets[category]=(category==="game"?deduplicateProducts(grouped[category]||[]):(grouped[category]||[]).slice().sort((a,b)=>(Number(a.selling_price??a.price)||Infinity)-(Number(b.selling_price??b.price)||Infinity)));
+   productBuckets[category]=(grouped[category]||[]).slice().sort((a,b)=>(Number(a.selling_price??a.price)||Infinity)-(Number(b.selling_price??b.price)||Infinity));
   }
   drawCategories();
   drawRecommendedGames();
@@ -1011,23 +1095,23 @@ function showCategoryLoading(title){
 }
 
 function openCategory(id){
- currentCategory=id;lastCatalog=id;selectedGameFilter="";selectedProviderFilter="";
+ currentCategory=id;lastCatalog=id;selectedGameFilter="";selectedGameRegionFilter="";selectedProviderFilter="";
  document.getElementById("search").value="";
  const category=categories.find(c=>c.id===id);if(!category)return;
  document.getElementById("catalogTitle").textContent=category.name;
- document.getElementById("catalogDesc").textContent=id==="pulsa"?"Pilih operator untuk melihat nominal pulsa.":id==="data"?"Pilih operator untuk melihat paket data.":id==="ewallet"?"Pilih layanan e-wallet untuk melihat nominal top-up.":category.desc;
+ document.getElementById("catalogDesc").textContent=id==="pulsa"?"Pilih operator untuk melihat nominal pulsa.":id==="data"?"Pilih operator untuk melihat paket data.":id==="ewallet"?"Top-up saldo DANA. Pilih nominal yang tersedia.":category.desc;
  const token=++catalogLoadToken;showCategoryLoading(category.name);show("catalog");
  requestAnimationFrame(()=>{if(token!==catalogLoadToken||currentCategory!==id)return;renderCatalog();});
 }
 
 function openProviderCategory(type,key){
- if(type!=="pulsa"&&type!=="ewallet")return;
- currentCategory=type;lastCatalog=type;selectedGameFilter="";selectedProviderFilter=key;
- const providers=type==="pulsa"?pulsaProviders:walletProviders;
+ if(type!=="pulsa"&&type!=="data"&&type!=="ewallet")return;
+ currentCategory=type;lastCatalog=type;selectedGameFilter="";selectedGameRegionFilter="";selectedProviderFilter=key;
+ const providers=type==="pulsa"?pulsaProviders:type==="data"?dataProviders:walletProviders;
  const provider=providers.find(x=>x.key===key);if(!provider)return;
  document.getElementById("search").value="";
  document.getElementById("catalogTitle").textContent=provider.name;
- document.getElementById("catalogDesc").textContent=type==="pulsa"?"Nominal pulsa operator "+provider.name+".":"Pilihan top-up saldo "+provider.name+".";
+ document.getElementById("catalogDesc").textContent=type==="pulsa"?"Nominal pulsa operator "+provider.name+".":type==="data"?"Paket internet operator "+provider.name+".":"Pilihan nominal saldo DANA "+provider.name+".";
  const token=++catalogLoadToken;showCategoryLoading(provider.name);show("catalog");
  requestAnimationFrame(()=>{if(token===catalogLoadToken)renderCatalog();});
 }
@@ -1042,6 +1126,7 @@ function openRecommendedGame(index){
  currentCategory="game";
  lastCatalog="game";
  selectedGameFilter=game.name;
+ selectedGameRegionFilter="";
  document.getElementById("search").value="";
  document.getElementById("catalogTitle").textContent=game.name;
  document.getElementById("catalogDesc").textContent="Produk "+game.name+" di katalog NEXTMART.";
@@ -1053,6 +1138,7 @@ function openRecommendedGame(index){
 
 function resetGameFilter(){
  selectedGameFilter="";
+ selectedGameRegionFilter="";
  document.getElementById("search").value="";
  document.getElementById("catalogTitle").textContent="GAME";
  document.getElementById("catalogDesc").textContent="Pilih game untuk melihat produk top-up yang sesuai.";
@@ -1082,33 +1168,29 @@ function renderCatalog(){
   const available=providers.filter(provider=>(counts.get(provider.key)||0)>0);
   document.getElementById("empty").classList.toggle("hidden",available.length>0);
   if(available.length){grid.innerHTML=available.map(provider=>providerTileHTML(provider,counts.get(provider.key),type)).join("");}
-  else{const msg=document.createElement("div");msg.className="notice";msg.style.gridColumn="1/-1";msg.textContent="Belum ada produk operator/layanan yang berhasil dikenali dari katalog supplier.";grid.appendChild(msg);}
+  else{const msg=document.createElement("div");msg.className="notice";msg.style.gridColumn="1/-1";msg.textContent=type==="ewallet"?"Produk DANA aktif belum tersedia dari API Melo. Periksa sinkronisasi katalog supplier.":"Belum ada produk operator yang berhasil dikenali dari katalog supplier.";grid.appendChild(msg);}
   const unknown=list.filter(p=>!keyOf(p)).length;
-  if(unknown){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=unknown+" produk belum bisa dipastikan operator/layanan-nya dari nama dan SKU supplier. Produk ini tidak dimasukkan ke kategori merek secara asal.";grid.appendChild(note);}
+  if(unknown){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=type==="ewallet"?unknown+" produk E-Wallet tidak dikenali sebagai DANA berdasarkan Brand/nama/SKU Pricelist dan disembunyikan agar tidak salah tujuan top-up.":unknown+" produk belum bisa dipastikan operator-nya dari nama dan SKU supplier. Produk ini tidak dimasukkan ke kategori merek secara asal.";grid.appendChild(note);}
   return;
  }
  if((currentCategory==="pulsa"||currentCategory==="data")&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).operator===selectedProviderFilter);
  if(currentCategory==="ewallet"&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).wallet===selectedProviderFilter);
- if(currentCategory==="game"&&!selectedGameFilter){
+ if(currentCategory==="game"&&(!selectedGameFilter||!selectedGameRegionFilter)){
   const groups=new Map();
-  for(const p of list){const game=(productMeta.get(p)||{}).game;if(!game)continue;if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
-  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
-  document.getElementById("empty").classList.toggle("hidden",groups.size>0);
-  if(!groups.size){const unknownCount=(productBuckets.unmappedGame||[]).length;grid.innerHTML='<div class="notice" style="grid-column:1/-1">'+(unknownCount?unknownCount+' produk game belum dapat dipetakan ke judul game yang terverifikasi. Produk ini sengaja tidak dicampur ke game lain.':'Belum ada game yang cocok.')+'</div>';return;}
-  const order=["Mobile Legends","Free Fire","Roblox","PUBG Mobile","Genshin Impact","Honkai: Star Rail","Wuthering Waves","Call of Duty: Mobile","Arena Breakout","VALORANT","Honor of Kings","League of Legends: Wild Rift","Eggy Party","Ragnarok M: Eternal Love","Dragon Nest M Classic","State of Survival","Clash of Clans","Arena of Valor"] ;
-  const names=[...groups.keys()].sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b);});
-  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="eager" style="display:none"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
-  loadGameArtworks(names);
-  const unknownCount=(productBuckets.unmappedGame||[]).length;
-  if(unknownCount){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=unknownCount+" produk game belum bisa dipastikan judulnya dari SKU supplier, jadi tidak dicampur ke game lain.";grid.appendChild(note);}
-  return;
+  for(const p of list){const m=productMeta.get(p)||{};if(!m.game||(selectedGameFilter&&m.game!==selectedGameFilter))continue;const region=m.region||"Umum";const key=m.game+"||"+region;if(!groups.has(key))groups.set(key,{game:m.game,region,products:[]});groups.get(key).products.push(p);}
+  const grid=document.getElementById("catalogGrid");grid.replaceChildren();document.getElementById("empty").classList.toggle("hidden",groups.size>0);
+  if(!groups.size){const n=(productBuckets.unmappedGame||[]).length;grid.innerHTML='<div class="notice" style="grid-column:1/-1">'+(n?n+' produk game belum dapat dipetakan ke judul game/region yang terverifikasi.':'Belum ada game/region yang cocok.')+'</div>';return;}
+  const order=["Mobile Legends","Free Fire","Roblox","PUBG Mobile","Genshin Impact","Honkai: Star Rail","Wuthering Waves","Call of Duty: Mobile","Arena Breakout","VALORANT"];
+  const entries=[...groups.values()].sort((a,b)=>{const x=order.indexOf(a.game),y=order.indexOf(b.game);return (x<0?999:x)-(y<0?999:y)||a.game.localeCompare(b.game)||a.region.localeCompare(b.region);});
+  grid.innerHTML=entries.map(x=>{const label=x.region==="Umum"?x.game:x.game+" • "+x.region;const reg=x.region==="Umum"?"Umum":x.region;return `<div class="card center game-tile" onclick="openGameByName('${escapeHTML(x.game).replace(/'/g,"\'")}','${escapeHTML(reg).replace(/'/g,"\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(x.game)}" alt="Logo ${escapeHTML(x.game)}" loading="eager" style="display:none"><span class="logo-fallback">${gameInitials(x.game)}</span></div><b>${escapeHTML(label)}</b><small>${x.products.length} pilihan produk</small></div>`;}).join("");
+  loadGameArtworks([...new Set(entries.map(x=>x.game))]);return;
  }
- if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>(productMeta.get(p)||{}).game===selectedGameFilter);
+ if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>{const m=productMeta.get(p)||{};return m.game===selectedGameFilter&&(!selectedGameRegionFilter||(selectedGameRegionFilter==="Umum"?!m.region:m.region===selectedGameRegionFilter));});
  list.sort((a,b)=>(Number(a.selling_price??a.price)||Infinity)-(Number(b.selling_price??b.price)||Infinity));
  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
  document.getElementById("empty").classList.toggle("hidden",list.length>0);
  if(currentCategory==="game"&&selectedGameFilter){
-  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua Game";reset.onclick=resetGameFilter;grid.appendChild(reset);
+  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent=selectedGameRegionFilter?"← Pilih Region "+selectedGameFilter:"← Semua Game";reset.onclick=selectedGameRegionFilter?()=>openGameByName(selectedGameFilter,""):resetGameFilter;grid.appendChild(reset);
  }
  if((currentCategory==="pulsa"||currentCategory==="data"||currentCategory==="ewallet")&&selectedProviderFilter){
   const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua "+(currentCategory==="ewallet"?"E-Wallet":"Operator");reset.onclick=()=>openCategory(currentCategory);grid.appendChild(reset);
@@ -1117,12 +1199,13 @@ function renderCatalog(){
  catalogEntries=list.map(p=>({type:"product",product:p}));catalogCursor=0;catalogProductCount=list.length;renderMoreCatalog();
 }
 
-function openGameByName(name){
- currentCategory="game";lastCatalog="game";selectedGameFilter=name;
+function openGameByName(name,region=""){
+ currentCategory="game";lastCatalog="game";selectedGameFilter=name;selectedGameRegionFilter=region;
  document.getElementById("search").value="";
- document.getElementById("catalogTitle").textContent=name;
- document.getElementById("catalogDesc").textContent="Produk resmi supplier untuk "+name+".";
- const token=++catalogLoadToken;showCategoryLoading(name);show("catalog");
+ const title=region?name+" • "+region:name;
+ document.getElementById("catalogTitle").textContent=title;
+ document.getElementById("catalogDesc").textContent=region?"Produk "+name+" untuk region "+region+". Pastikan region akun sesuai.":"Pilih region produk "+name+" yang sesuai dengan akun kamu.";
+ const token=++catalogLoadToken;showCategoryLoading(title);show("catalog");
  requestAnimationFrame(()=>{if(token===catalogLoadToken)renderCatalog();});
 }
 
@@ -1182,9 +1265,9 @@ function createProductCard(p){
  const el=document.createElement("div");el.className="card center";
  const meta=productMeta.get(p)||{};const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
  const logo=document.createElement("div");logo.className="logo-box product-art";
- if(meta.category==="pulsa"||meta.category==="ewallet"){
-  const key=meta.category==="pulsa"?meta.operator:meta.wallet;
-  const providers=meta.category==="pulsa"?pulsaProviders:walletProviders;
+ if(meta.category==="pulsa"||meta.category==="data"||meta.category==="ewallet"){
+  const key=meta.category==="ewallet"?meta.wallet:meta.operator;
+  const providers=meta.category==="ewallet"?walletProviders:meta.category==="data"?dataProviders:pulsaProviders;
   const provider=providers.find(x=>x.key===key);
   if(provider){const brand=document.createElement("div");brand.className="brand-logo";brand.style.setProperty("--brand-color",provider.color);const mark=document.createElement("span");mark.textContent=provider.mark;brand.appendChild(mark);logo.appendChild(brand);}
   else{const art=document.createElement("img");art.alt="Ilustrasi layanan digital";art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);}
@@ -1194,7 +1277,7 @@ function createProductCard(p){
  }
  const title=document.createElement("b");title.textContent=p.name+(meta.region?" · "+meta.region:"");
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
- el.append(title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
+ if(meta.server){const server=document.createElement("small");server.className="muted";server.textContent=meta.server;el.append(title,server,price);}else el.append(title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
 }
 
 function appendProductCard(grid,p){grid.appendChild(createProductCard(p));}

@@ -545,7 +545,7 @@ function getGameName(product){
 // =====================================================
 
 const gameArtwork={};
-const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v6";
+const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v8";
 // Official publisher-provided wordmarks for titles with downloadable brand assets.
 const GAME_LOGO_STATIC={
  "Free Fire":"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/img/20228/eb56db6919078b837ffd2e6a3b7e4aac.jpg",
@@ -601,16 +601,30 @@ function gameLogoDomain(name){
  return "";
 }
 function loadFirstWorkingImage(urls){
- return new Promise(resolve=>{let i=0;const test=()=>{if(i>=urls.length){resolve("");return;}const url=urls[i++];const im=new Image();im.onload=()=>resolve(url);im.onerror=test;im.referrerPolicy="no-referrer";im.src=url;};test();});
+ // Batasi waktu tiap sumber agar host yang menggantung tidak menghentikan antrean logo.
+ return new Promise(resolve=>{
+  const list=[...new Set((urls||[]).filter(Boolean))];let i=0,finished=false;
+  const finish=value=>{if(finished)return;finished=true;resolve(value||"");};
+  const test=()=>{
+   if(i>=list.length){finish("");return;}
+   const url=list[i++],im=new Image();let settled=false;
+   const next=()=>{if(settled)return;settled=true;clearTimeout(timer);test();};
+   const timer=setTimeout(next,2600);
+   im.onload=()=>{if(settled)return;settled=true;clearTimeout(timer);if(im.naturalWidth>0)finish(url);else test();};
+   im.onerror=next;im.referrerPolicy="no-referrer";im.decoding="async";im.src=url;
+  };
+  test();
+ });
 }
 function logoCandidatesForDomain(domain,size=256){
  if(!domain)return [];
- const d=encodeURIComponent(domain);
+ const d=String(domain).trim().toLowerCase();
  return [
-  `https://icons.duckduckgo.com/ip3/${d}.ico`,
-  `https://www.google.com/s2/favicons?domain=${d}&sz=${size}`,
-  `https://logo.clearbit.com/${d}`,
-  `https://icon.horse/icon/${d}`
+  `https://www.google.com/s2/favicons?domain=${encodeURIComponent(d)}&sz=${size}`,
+  `https://favicon.im/${encodeURIComponent(d)}?larger=true`,
+  `https://icons.duckduckgo.com/ip3/${encodeURIComponent(d)}.ico`,
+  `https://icon.horse/icon/${encodeURIComponent(d)}`,
+  `https://logo.clearbit.com/${encodeURIComponent(d)}`
  ];
 }
 async function getGameArtwork(name){
@@ -1447,6 +1461,9 @@ function renderMoreCatalog(){
 
 function productVisualKind(p){
  const n=String(p?.name||"").toLowerCase(),sku=String(p?.sku_code||"").toLowerCase(),type=classifyProduct(p);
+ const section=type==="game"?gameProductSection(p):"currency";
+ if(section==="pass")return "pass";
+ if(section==="first")return "first";
  if(/robux|roblox/.test(n)||/^rvl|^rgc.*rv/.test(sku))return "robux";
  if(/voucher|gift ?card|google play|apple gift|itunes|steam wallet/.test(n)||type==="giftcard")return "voucher";
  if(/diamond|\bdm\b/.test(n)||/^ml|^ff/.test(sku))return "diamond";
@@ -1469,11 +1486,20 @@ function productVisualSVG(kind){
  wallet:'<rect x="23" y="35" width="74" height="52" rx="10" fill="#fff"/><path d="M23 47h74" stroke="#8b72db" stroke-width="7"/><rect x="66" y="55" width="32" height="19" rx="6" fill="#7b62d5"/>',
  electric:'<path d="M68 17 35 66h23l-6 37 34-52H63Z" fill="#ffe27b" stroke="#fff" stroke-width="4"/>',
  app:'<rect x="29" y="29" width="62" height="62" rx="16" fill="#fff"/><path d="M43 62h34M60 45v34" stroke="#8c69df" stroke-width="8" stroke-linecap="round"/>',
+ pass:'<path d="M30 27h60a9 9 0 0 1 9 9v48a9 9 0 0 1-9 9H30a9 9 0 0 1-9-9V36a9 9 0 0 1 9-9Z" fill="#fff"/><path d="M42 27v66M78 27v66" stroke="#b88aef" stroke-width="4" stroke-dasharray="5 5"/><path d="m60 42 5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2Z" fill="#f0bd55" stroke="#d69a32" stroke-width="2"/><text x="60" y="84" text-anchor="middle" font-size="10" font-weight="900" fill="#6d55a4">PASS</text>',
+ first:'<rect x="24" y="29" width="72" height="62" rx="12" fill="#fff"/><path d="M24 45h72" stroke="#9b77e8" stroke-width="5"/><path d="m60 52 6 11 12 2-9 9 2 12-11-6-11 6 2-12-9-9 12-2Z" fill="#f3bd56"/><text x="60" y="40" text-anchor="middle" font-size="9" font-weight="900" fill="#7052ad">FIRST TOP UP</text>',
  game:'<path d="M35 44h50c10 0 17 8 17 18l-4 22c-2 9-12 12-19 5L67 76H53L41 89c-7 7-17 4-19-5l-4-22c0-10 7-18 17-18Z" fill="#fff"/><path d="M38 55v19M29 64h18M77 59h1M87 69h1" stroke="#7863d7" stroke-width="5" stroke-linecap="round"/>',
  digital:'<rect x="27" y="30" width="66" height="60" rx="12" fill="#fff"/><path d="M42 49h36M42 62h26M42 75h18" stroke="#8a6be2" stroke-width="6" stroke-linecap="round"/>'};
  return base+(art[kind]||art.digital)+'</svg>';
 }
-function productVisualURL(p){return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(productVisualSVG(productVisualKind(p)));}
+function productVisualURL(p){
+ const meta=productMeta.get(p)||{},name=String(p?.name||"").toLowerCase(),game=String(meta.game||getGameName(p)||"").toLowerCase();
+ // Artwork produk pass yang punya sumber gambar spesifik; sisanya memakai ikon fallback bertema Pass.
+ if(game.includes("mobile legends")&&/weekly diamond pass|twilight pass|starlight/.test(name))return "https://cdn.qukasoft.com/f/990724/cG96YWFtNG0vcUp3ZUdFOVU1NG5hQT09/p/mlbb-weekly-diamond-pass-93370750-sw1024sh1024.png";
+ if(game.includes("pubg")&&/royale pass/.test(name))return "https://seagm-media.seagmcdn.com/material/1372.jpg";
+ if(game.includes("genshin")&&/welkin|blessing/.test(name))return "https://image.api.playstation.com/vulcan/img/rnd/202009/2511/jzbiUTcXsteG2oyWXBrjuRZY.png";
+ return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(productVisualSVG(productVisualKind(p)));
+}
 
 function giftBrandDomain(brand){
  const b=String(brand||"").toLowerCase();
@@ -1541,8 +1567,12 @@ function createProductCard(p){
   }
   logo.appendChild(brand);el.appendChild(logo);
  }else if(meta.category==="game"&&meta.game){
-  const art=document.createElement("img");art.dataset.gameLogo=meta.game;art.alt="Logo "+meta.game;art.loading="lazy";art.style.display="none";
-  const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent=gameInitials(meta.game);logo.append(art,fallback);el.appendChild(logo);
+  // Kartu nominal memakai ikon mata uang; Pass dan First Top Up punya artwork tersendiri.
+  const art=document.createElement("img");art.alt=(gameProductSection(p)==="pass"?"Ilustrasi Pass ":gameProductSection(p)==="first"?"Ilustrasi First Top Up ":"Ikon mata uang ")+meta.game;
+  art.loading="lazy";art.style.objectFit="contain";
+  const generatedArt='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(productVisualSVG(productVisualKind(p)));
+  const selectedArt=productVisualURL(p);art.onerror=()=>{if(art.src!==generatedArt)art.src=generatedArt;};art.src=selectedArt;
+  art.dataset.productKind=productVisualKind(p);logo.appendChild(art);el.appendChild(logo);
  }else{
   const art=document.createElement("img");art.alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);el.appendChild(logo);
  }
@@ -2206,6 +2236,7 @@ function finishLoading(){
 handleCheckoutReturn();
 drawCategories();
 drawRecommendedGames();
+loadGameArtworks(["Mobile Legends","Free Fire","PUBG Mobile","Genshin Impact","Roblox"]);
 initializeAuth();
 loadProducts();
 updateSlider();

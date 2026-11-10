@@ -66,8 +66,8 @@ input.invalid,select.invalid{border:1px solid #ff6464}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
 footer{text-align:center;padding:28px 10px 120px;color:#8790ad;font-size:10px}
 body{padding-bottom:94px}
-.bottom-dock{position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
-.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9}.bottom-dock:after{content:"";position:absolute;z-index:1;left:10px;top:9px;width:calc((100% - 20px - 12px)/4);height:58px;border-radius:19px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(151,112,255,.20) 48%,rgba(78,180,255,.16));border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px #ffffff55,0 5px 18px #0002;transform:translateX(var(--dock-x,0px));transition:transform .32s cubic-bezier(.2,.8,.2,1),width .25s;backdrop-filter:blur(18px) saturate(190%);-webkit-backdrop-filter:blur(18px) saturate(190%)}
+.bottom-dock{position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr 1fr;align-items:center;gap:2px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
+.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9}.bottom-dock:after{content:"";position:absolute;z-index:1;left:10px;top:9px;width:calc((100% - 20px - 16px)/5);height:58px;border-radius:19px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(151,112,255,.20) 48%,rgba(78,180,255,.16));border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px #ffffff55,0 5px 18px #0002;transform:translateX(var(--dock-x,0px));transition:transform .32s cubic-bezier(.2,.8,.2,1),width .25s;backdrop-filter:blur(18px) saturate(190%);-webkit-backdrop-filter:blur(18px) saturate(190%)}
 .dock-item{position:relative;z-index:2;height:58px;border:0;background:transparent;color:#c9c3e8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;border-radius:19px;transition:color .2s,transform .2s}
 .dock-item .dock-icon{font-size:21px;line-height:1;filter:drop-shadow(0 2px 6px #0005)}
 .dock-item.active{color:#fff;text-shadow:0 0 12px #c6a5ff}
@@ -286,6 +286,24 @@ header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rg
  </div>
 </section>
 
+<section id="dashboard" class="hidden">
+ <button class="back" onclick="home()">← Kembali</button>
+ <h3>Dashboard NEXTMART</h3>
+ <p class="muted">Area khusus Owner dan Admin.</p>
+ <div class="panel">
+  <p class="muted">Akun masuk</p><b id="dashboardEmail" style="overflow-wrap:anywhere">-</b>
+  <p class="muted">Hak akses</p><b id="dashboardRole">-</b>
+ </div>
+ <div class="panel hidden" id="ownerAdminPanel">
+  <h3>Kelola Admin</h3>
+  <p class="muted">Daftar akun yang diberi akses Admin oleh Owner.</p>
+  <div id="adminList" class="auth-status">Memuat daftar Admin...</div>
+  <button class="primary" onclick="loadDashboardData()">↻ Muat Ulang</button>
+  <div class="notice">Penambahan dan penghapusan Admin melalui dashboard akan diaktifkan setelah endpoint server aman dipasang. Kunci rahasia Supabase tidak boleh ditaruh di HTML.</div>
+ </div>
+ <div class="panel" id="adminInfoPanel"><b>Panel Admin</b><p class="muted">Akses Admin aktif. Fitur pengelolaan akan mengikuti izin yang diberikan Owner.</p></div>
+</section>
+
 <section id="history" class="hidden">
  <button class="back" onclick="home()">← Kembali</button>
  <h3>📜 Riwayat Transaksi</h3>
@@ -356,6 +374,7 @@ header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rg
  <button class="dock-item" data-dock="history" onclick="openHistory()"><span class="dock-icon">◷</span><span>Transaksi</span></button>
  <button class="dock-item home-dock active" data-dock="home" onclick="home()"><span class="dock-icon">⌂</span><span>Beranda</span></button>
  <button class="dock-item" data-dock="account" onclick="openAccountTab()"><span class="dock-icon">♙</span><span>Akun</span></button>
+ <button class="dock-item hidden" id="dashboardDock" data-dock="dashboard" onclick="openDashboard()"><span class="dock-icon">▣</span><span>Dashboard</span></button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -371,6 +390,7 @@ const SUPABASE_KEY="sb_publishable_2oUrPxCcEKkgQ68364e4Qw_viPYXtip";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null;
+let currentNextmartRole=null;
 let authMode="login";
 let pendingOrder=false;
 let currentCategory="";
@@ -746,13 +766,13 @@ async function loadGameArtworks(names){
 
 
 function show(id){
- const sections=["home","catalog","detail","summary","payment","account","profile","history"];
+ const sections=["home","catalog","detail","summary","payment","account","profile","dashboard","history"];
  sections.forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  const cs=document.getElementById("csButton");
  cs.classList.toggle("hidden",id!=="home");
  if(id!=="catalog")catalogLoadToken++;
- const active=id==="home"?"home":id==="history"?"history":(["account","profile"].includes(id)?"account":(["catalog"].includes(id)?"categories":""));
+ const active=id==="home"?"home":id==="history"?"history":id==="dashboard"?"dashboard":(["account","profile"].includes(id)?"account":(["catalog"].includes(id)?"categories":""));
  document.querySelectorAll(".dock-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.dock===active));
  moveDockGlass(active);
  window.scrollTo(0,0);
@@ -880,9 +900,45 @@ async function submitAuth(){
  }
 }
 
+async function refreshNextmartRole(){
+ currentNextmartRole=null;
+ const dock=document.getElementById("dashboardDock");
+ if(!currentUser){dock?.classList.add("hidden");return null;}
+ try{
+  const {data,error}=await sb.from("nextmart_admins").select("role").eq("user_id",currentUser.id).maybeSingle();
+  if(error)throw error;
+  currentNextmartRole=data?.role||null;
+ }catch(err){console.warn("Pengecekan role NEXTMART gagal:",err.message);}
+ if(dock)dock.classList.toggle("hidden",!currentNextmartRole);
+ return currentNextmartRole;
+}
+
+async function openDashboard(){
+ if(!currentUser){alert("Silakan login terlebih dahulu.");openAuth();return;}
+ const role=await refreshNextmartRole();
+ if(!role){alert("Akses ditolak. Akun ini bukan Owner atau Admin NEXTMART.");home();return;}
+ document.getElementById("dashboardEmail").textContent=currentUser.email||"-";
+ document.getElementById("dashboardRole").textContent=role.toUpperCase();
+ document.getElementById("ownerAdminPanel").classList.toggle("hidden",role!=="owner");
+ document.getElementById("adminInfoPanel").classList.toggle("hidden",role!=="admin");
+ show("dashboard");
+ if(role==="owner")await loadDashboardData();
+}
+
+async function loadDashboardData(){
+ const list=document.getElementById("adminList");
+ if(!list||currentNextmartRole!=="owner")return;
+ list.textContent="Memuat daftar Admin...";
+ const {data,error}=await sb.from("nextmart_admins").select("email, role, created_at").eq("role","admin").order("created_at",{ascending:false});
+ if(error){list.textContent="Gagal memuat daftar: "+error.message;return;}
+ if(!data?.length){list.textContent="Belum ada akun Admin.";return;}
+ list.innerHTML=data.map(item=>`<div style="padding:10px 0;border-bottom:1px solid var(--lg-border);overflow-wrap:anywhere"><b>${String(item.email||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[c]))}</b><div class="muted">ADMIN</div></div>`).join("");
+}
+
 function updateAccountUI(){
  if(currentUser)document.getElementById("profileEmail").textContent=currentUser.email;
  else document.getElementById("profileEmail").textContent="-";
+ refreshNextmartRole();
 }
 
 async function logout(){
@@ -894,6 +950,8 @@ async function logout(){
  }
 
  currentUser=null;
+ currentNextmartRole=null;
+ document.getElementById("dashboardDock")?.classList.add("hidden");
  pendingOrder=false;
  updateAccountUI();
  home();
@@ -909,6 +967,7 @@ async function initializeAuth(){
 
  sb.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user||null;
+  currentNextmartRole=null;
   updateAccountUI();
  });
 }

@@ -123,6 +123,23 @@ body{padding-bottom:94px}
 .status-failed{background:#542626;color:#ffaaaa}
 @media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}.slide{min-height:230px;padding:28px}.slide-art{width:120px;height:120px}.slide-art img{width:90px;height:90px}}
 @media(max-width:380px){.slide{min-height:190px;padding:17px}.slide h2{font-size:20px}.slide-art{width:78px;height:78px}.slide-art img{width:60px;height:60px}}
+
+/* FULL LIQUID GLASS THEME */
+:root{--lg-border:rgba(220,205,255,.24)}
+body{background:radial-gradient(ellipse at 12% 0%,#38205c 0%,transparent 38%),radial-gradient(ellipse at 100% 22%,#182e61 0%,transparent 38%),linear-gradient(155deg,#080b18,#11142a 48%,#090e20)!important;background-attachment:fixed!important}
+header,.hero,.slide,.card,.search,.product-head,.panel,.nominal,.notice,.payment-option,.history-item,.back,.cs{backdrop-filter:blur(22px) saturate(175%);-webkit-backdrop-filter:blur(22px) saturate(175%)}
+header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rgba(18,30,67,.72) 55%,rgba(71,35,91,.68))!important;border-bottom:1px solid var(--lg-border)!important;box-shadow:0 10px 38px #0004,inset 0 1px #ffffff26}
+.brand{color:#d6bdff!important;text-shadow:0 0 22px #a66cff88}
+.hero,.slide{border:1px solid rgba(230,218,255,.26)!important;box-shadow:0 14px 38px #0005,inset 0 1px 1px #ffffff45!important}
+.hero{background:linear-gradient(125deg,rgba(111,69,190,.7),rgba(42,84,165,.64) 55%,rgba(176,72,170,.58))!important}
+.slide-1{background:linear-gradient(120deg,rgba(48,109,207,.78),rgba(100,65,183,.74),rgba(190,75,183,.6))!important}.slide-2{background:linear-gradient(120deg,rgba(190,78,43,.72),rgba(130,70,179,.7),rgba(62,90,176,.62))!important}.slide-3{background:linear-gradient(120deg,rgba(31,123,111,.72),rgba(59,77,174,.7),rgba(135,70,173,.58))!important}.slide-4{background:linear-gradient(120deg,rgba(104,64,173,.78),rgba(66,100,192,.7),rgba(194,82,172,.58))!important}.slide-5{background:linear-gradient(120deg,rgba(141,67,174,.78),rgba(78,83,188,.72),rgba(209,92,168,.6))!important}
+.card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(124,105,192,.11) 48%,rgba(32,61,112,.2))!important;border:1px solid rgba(226,216,255,.22)!important;box-shadow:0 9px 28px #0003,inset 0 1px 1px #ffffff30!important;transition:transform .22s,border-color .22s,box-shadow .22s}.card:active{transform:scale(.975)}.card:hover{border-color:rgba(198,157,255,.48)!important;box-shadow:0 12px 34px #8e55ff22,inset 0 1px 1px #ffffff44!important}
+.search,input,select{background:rgba(18,23,49,.72)!important;border:1px solid rgba(204,185,255,.28)!important;box-shadow:inset 0 1px 2px #ffffff13,0 6px 18px #0002}.search:focus,input:focus,select:focus{outline:none;border-color:#b68aff!important;box-shadow:0 0 0 3px #a66cff28,0 0 22px #985bff20}
+.product-head,.panel,.notice,.payment-option,.history-item{position:relative;overflow:hidden;background:linear-gradient(140deg,rgba(255,255,255,.12),rgba(104,88,166,.15),rgba(22,53,101,.24))!important;border:1px solid rgba(219,205,255,.24)!important;box-shadow:0 10px 30px #0003,inset 0 1px 1px #ffffff2b!important}
+.nominal{background:linear-gradient(130deg,rgba(255,255,255,.12),rgba(93,93,160,.15),rgba(35,68,121,.22))!important;border:1px solid rgba(210,194,255,.24)!important;backdrop-filter:blur(18px)}.nominal.active{border-color:#bd91ff!important;background:linear-gradient(120deg,#8051c877,#4b78c977,#bc5abf66)!important;box-shadow:0 0 22px #a36cff38}
+.logo-box{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(161,125,255,.14))!important;border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 1px #ffffff55,0 6px 18px #0002;backdrop-filter:blur(12px)}.logo-box img{border-radius:12px}.product-art img{width:100%;height:100%;object-fit:cover;padding:0!important;border-radius:13px}
+.primary{background:linear-gradient(110deg,#8055e8,#557be8 55%,#c35cc9)!important;box-shadow:0 8px 24px #8959ff55,inset 0 1px #ffffff55}.back{background:linear-gradient(130deg,rgba(142,100,218,.4),rgba(56,91,169,.34))!important;border:1px solid var(--lg-border)!important}.cs{background:linear-gradient(120deg,#7654df,#357fc8)!important;border:1px solid #ffffff55;box-shadow:0 8px 28px #8659ff66}footer{color:#b6a9d5!important}.bottom-dock{box-shadow:0 14px 46px #000a,0 0 28px #9b61ff25,inset 0 1px 1px #ffffff55}#loadingScreen{background:radial-gradient(ellipse at 50% 40%,#38205c,#10132c 55%,#080b18)!important}
+
 </style>
 </head>
 
@@ -640,7 +657,11 @@ function getGameName(product){
   ["Genshin Impact",["genshin","genesis crystal"]]
  ];
  for(const [title,keys] of known){if(keys.some(k=>name.includes(k)))return title;}
- return "Game Lainnya";
+ const cleaned=String(product?.name||"").replace(/\b(top ?up|voucher|weekly|monthly|membership|package|paket|murah|instant|global|indonesia)\b/ig,"").replace(/[0-9]+/g," ").replace(/[-_:|()[\]]/g," ").replace(/\s+/g," ").trim();
+ const words=cleaned.split(" ").filter(w=>w.length>2);
+ if(words.length>=2)return words.slice(0,3).map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join(" ");
+ const family=(sku.match(/^[a-z]+/)||[""])[0];
+ return family?"Game "+family.toUpperCase():"Perlu Identifikasi";
 }
 
 function normalizeProductName(name){
@@ -653,8 +674,10 @@ function deduplicateProducts(products){
  for(const p of products){
   const meta=productMeta.get(p)||{};
   const sku=String(p.sku_code||"").toLowerCase();
-  const family=meta.game==="Game Lainnya"?(sku.match(/^[a-z]+/)||[sku])[0]:"";
-  const key=[meta.category,meta.game||"",family,normalizeProductName(p.name)].join("|");
+  const family=meta.game.startsWith("Game ")||meta.game==="Perlu Identifikasi"?(sku.match(/^[a-z]+/)||[sku])[0]:"";
+  const regionMatch=sku.match(/^(mlid|mlph|mlmy|mlsg|mlbr|mltr|mlru|mlus|ffid|ffgl|ffbr|ffph|pubgmgl|pubgmi)/);
+  const region=regionMatch?regionMatch[1]:"";
+  const key=[meta.category,meta.game||"",family,region,normalizeProductName(p.name)].join("|");
   const old=chosen.get(key);
   const price=Number(p.selling_price??p.price)||Infinity;
   const oldPrice=old?(Number(old.selling_price??old.price)||Infinity):Infinity;
@@ -891,16 +914,42 @@ function renderMoreCatalog(){
  }
 }
 
+function productVisualKind(p){
+ const n=String(p?.name||"").toLowerCase(),sku=String(p?.sku_code||"").toLowerCase(),type=classifyProduct(p);
+ if(/robux|roblox/.test(n)||/^rvl|^rgc.*rv/.test(sku))return "robux";
+ if(/voucher|gift ?card|google play|apple gift|itunes|steam wallet/.test(n)||type==="giftcard")return "voucher";
+ if(/diamond|\bdm\b/.test(n)||/^ml|^ff/.test(sku))return "diamond";
+ if(/\buc\b|unknown cash|pubg/.test(n)||/^pubgm/.test(sku))return "uc";
+ if(/genesis crystal|crystal/.test(n)||/^giggl/.test(sku))return "crystal";
+ if(/coin|gold|point|token|bond|\bcp\b|\bvp\b/.test(n))return "coin";
+ if(type==="pulsa"||type==="data")return "phone";if(type==="ewallet")return "wallet";if(type==="pln")return "electric";if(type==="social")return "social";if(type==="apps")return "app";
+ return type==="game"?"game":"digital";
+}
+function productVisualSVG(kind){
+ const base='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a879ff"/><stop offset=".55" stop-color="#526fe0"/><stop offset="1" stop-color="#dc72d6"/></linearGradient><linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#c6d8ff"/></linearGradient></defs><rect x="5" y="5" width="110" height="110" rx="25" fill="url(#bg)"/><circle cx="94" cy="23" r="22" fill="#fff" opacity=".13"/>';
+ const art={
+ diamond:'<path d="M60 20 91 48 60 100 29 48Z" fill="url(#shine)" stroke="#fff" stroke-width="3"/><path d="m29 48 62 0M45 32l15 68 15-68" fill="none" stroke="#8cbaff" stroke-width="3"/>',
+ robux:'<path d="M36 27h48v66H36z" fill="#f5f7ff"/><path d="m48 42 27 18-27 18z" fill="#6578a9"/><path d="M36 27h48v9H36z" fill="#d7dfff"/>',
+ voucher:'<rect x="22" y="32" width="76" height="56" rx="10" fill="#fff"/><path d="M22 48h76M42 32v56" stroke="#9b77e8" stroke-width="3" stroke-dasharray="4 4"/><circle cx="70" cy="67" r="11" fill="#8c6be8"/><path d="M65 67h10M70 62v10" stroke="#fff" stroke-width="3"/>',
+ uc:'<circle cx="60" cy="60" r="31" fill="#e9f2ff" stroke="#fff" stroke-width="4"/><text x="60" y="69" text-anchor="middle" font-size="25" font-weight="900" fill="#5572b7">UC</text>',
+ crystal:'<path d="M60 18 83 44 72 94 48 94 37 44Z" fill="url(#shine)" stroke="#fff" stroke-width="3"/><path d="m37 44 46 0M60 18v76" stroke="#a5baff" stroke-width="3"/>',
+ coin:'<circle cx="60" cy="60" r="34" fill="#ffd76e" stroke="#fff0b2" stroke-width="5"/><circle cx="60" cy="60" r="24" fill="none" stroke="#c88931" stroke-width="3"/><path d="M60 40v40M48 49h20l-20 22h22" fill="none" stroke="#a86c25" stroke-width="5" stroke-linecap="round"/>',
+ phone:'<rect x="39" y="18" width="42" height="84" rx="9" fill="#fff"/><rect x="44" y="28" width="32" height="54" rx="3" fill="#75baff"/><path d="M52 57h16M60 49v16" stroke="#fff" stroke-width="5" stroke-linecap="round"/>',
+ wallet:'<rect x="23" y="35" width="74" height="52" rx="10" fill="#fff"/><path d="M23 47h74" stroke="#8b72db" stroke-width="7"/><rect x="66" y="55" width="32" height="19" rx="6" fill="#7b62d5"/>',
+ electric:'<path d="M68 17 35 66h23l-6 37 34-52H63Z" fill="#ffe27b" stroke="#fff" stroke-width="4"/>',
+ social:'<circle cx="60" cy="60" r="31" fill="#fff"/><path d="M40 69c12-25 28-25 40 0M45 48h30" fill="none" stroke="#7865d9" stroke-width="7" stroke-linecap="round"/>',
+ app:'<rect x="29" y="29" width="62" height="62" rx="16" fill="#fff"/><path d="M43 62h34M60 45v34" stroke="#8c69df" stroke-width="8" stroke-linecap="round"/>',
+ game:'<path d="M35 44h50c10 0 17 8 17 18l-4 22c-2 9-12 12-19 5L67 76H53L41 89c-7 7-17 4-19-5l-4-22c0-10 7-18 17-18Z" fill="#fff"/><path d="M38 55v19M29 64h18M77 59h1M87 69h1" stroke="#7863d7" stroke-width="5" stroke-linecap="round"/>',
+ digital:'<rect x="27" y="30" width="66" height="60" rx="12" fill="#fff"/><path d="M42 49h36M42 62h26M42 75h18" stroke="#8a6be2" stroke-width="6" stroke-linecap="round"/>'};
+ return base+(art[kind]||art.digital)+'</svg>';
+}
+function productVisualURL(p){return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(productVisualSVG(productVisualKind(p)));}
+
 function createProductCard(p){
  const el=document.createElement("div");el.className="card center";
  const meta=productMeta.get(p)||{};const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
- const logo=document.createElement("div");logo.className="logo-box";
- if(gameName){
-  const img=document.createElement("img");img.alt="Logo "+gameName;img.loading="lazy";img.dataset.gameLogo=gameName;
-  const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent=gameInitials(gameName);
-  logo.append(img,fallback);
-  if(!gameArtwork[gameName])getGameArtwork(gameName).then(url=>{if(url){gameArtwork[gameName]=url;document.querySelectorAll('[data-game-logo="'+CSS.escape(gameName)+'"]').forEach(i=>{i.src=url;i.style.display="block";const f=i.parentElement.querySelector(".logo-fallback");if(f)f.style.display="none";});}});
- }else{const fallback=document.createElement("span");fallback.className="logo-fallback";fallback.textContent="NM";logo.appendChild(fallback);}
+ const logo=document.createElement("div");logo.className="logo-box product-art";
+ const art=document.createElement("img");art.alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);
  const title=document.createElement("b");title.textContent=p.name;
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
  el.append(logo,title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
@@ -983,7 +1032,8 @@ function openProduct(p){
 
  document.getElementById("detailName").textContent=p.name;
  document.getElementById("detailCategory").textContent=p.category||"NEXTMART DIGITAL";
- document.getElementById("detailLogo").src="";
+ document.getElementById("detailLogo").src=productVisualURL(p);
+ document.getElementById("detailLogo").alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;
 
  getProductFields(p).forEach((field,index)=>{
   const rule=getFieldRule(p,index,field);

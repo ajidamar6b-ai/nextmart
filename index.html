@@ -94,7 +94,7 @@ body{padding-bottom:94px}
 .slide p{font-size:11px;color:#e2edff;line-height:1.5;margin:0}
 .slide-cta{display:inline-block;margin-top:14px;padding:9px 13px;border-radius:8px;background:#ffffff;color:#14233e;font-size:10px;font-weight:bold}
 .slide-art{position:relative;z-index:2;width:100px;height:100px;flex-shrink:0;border-radius:23px;background:#ffffff20;border:1px solid #ffffff55;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px #0003}
-.slide-art img{width:75px;height:75px;object-fit:contain;border-radius:15px;background:white;padding:4px}
+.slide-art img{width:75px;height:75px;object-fit:contain;border-radius:15px;background:white;padding:4px}.slide-art .game-fallback{display:flex;align-items:center;justify-content:center;width:75px;height:75px;border-radius:15px;background:linear-gradient(145deg,#fff,#e7eaff);color:#30477b;font-size:22px;font-weight:900;text-align:center}
 .slide-1{background:linear-gradient(115deg,#0752a5,#168bd0 60%,#222d78)}
 .slide-2{background:linear-gradient(115deg,#a52c13,#e56c18 60%,#7c241f)}
 .slide-3{background:linear-gradient(115deg,#174b42,#188d75 60%,#173d65)}
@@ -121,8 +121,8 @@ body{padding-bottom:94px}
 .status-success{background:#16452f;color:#7ff0b1}
 .status-pending{background:#59431b;color:#ffdc88}
 .status-failed{background:#542626;color:#ffaaaa}
-@media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}.slide{min-height:230px;padding:28px}.slide-art{width:120px;height:120px}.slide-art img{width:90px;height:90px}}
-@media(max-width:380px){.slide{min-height:190px;padding:17px}.slide h2{font-size:20px}.slide-art{width:78px;height:78px}.slide-art img{width:60px;height:60px}}
+@media(min-width:550px){.grid{grid-template-columns:repeat(3,1fr)}.slide{min-height:230px;padding:28px}.slide-art{width:120px;height:120px}.slide-art img,.slide-art .game-fallback{width:90px;height:90px}}
+@media(max-width:380px){.slide{min-height:190px;padding:17px}.slide h2{font-size:20px}.slide-art{width:78px;height:78px}.slide-art img,.slide-art .game-fallback{width:60px;height:60px}}
 
 /* FULL LIQUID GLASS THEME */
 :root{--lg-border:rgba(220,205,255,.24)}
@@ -137,7 +137,7 @@ header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rg
 .search,input,select{background:rgba(18,23,49,.72)!important;border:1px solid rgba(204,185,255,.28)!important;box-shadow:inset 0 1px 2px #ffffff13,0 6px 18px #0002}.search:focus,input:focus,select:focus{outline:none;border-color:#b68aff!important;box-shadow:0 0 0 3px #a66cff28,0 0 22px #985bff20}
 .product-head,.panel,.notice,.payment-option,.history-item{position:relative;overflow:hidden;background:linear-gradient(140deg,rgba(255,255,255,.12),rgba(104,88,166,.15),rgba(22,53,101,.24))!important;border:1px solid rgba(219,205,255,.24)!important;box-shadow:0 10px 30px #0003,inset 0 1px 1px #ffffff2b!important}
 .nominal{background:linear-gradient(130deg,rgba(255,255,255,.12),rgba(93,93,160,.15),rgba(35,68,121,.22))!important;border:1px solid rgba(210,194,255,.24)!important;backdrop-filter:blur(18px)}.nominal.active{border-color:#bd91ff!important;background:linear-gradient(120deg,#8051c877,#4b78c977,#bc5abf66)!important;box-shadow:0 0 22px #a36cff38}
-.logo-box{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(161,125,255,.14))!important;border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 1px #ffffff55,0 6px 18px #0002;backdrop-filter:blur(12px)}.logo-box img{border-radius:12px}.product-art img{width:100%;height:100%;object-fit:cover;padding:0!important;border-radius:13px}
+.logo-box{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(161,125,255,.14))!important;border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 1px #ffffff55,0 6px 18px #0002;backdrop-filter:blur(12px)}.logo-box img{border-radius:12px}.field-success{color:#65d69b!important;font-size:11px;margin-top:5px;font-weight:700}.brand-lockup{display:flex;align-items:center;gap:10px;justify-content:center;min-height:48px}.brand-logo{width:42px;height:42px;border-radius:13px;background:var(--brand-color);display:grid;place-items:center;color:#fff;font-weight:950;font-size:15px;letter-spacing:-.6px;box-shadow:0 5px 14px color-mix(in srgb,var(--brand-color) 35%,transparent)}.brand-logo span{line-height:1}.provider-tile{cursor:pointer;min-height:116px}.provider-tile small{margin-top:9px}.operator-label{display:inline-block;margin-top:8px;padding:5px 8px;border-radius:20px;background:rgba(149,112,255,.2);border:1px solid rgba(208,185,255,.28);color:#e3d7ff;font-size:9px;font-weight:800;letter-spacing:.4px}.product-art img{width:100%;height:100%;object-fit:cover;padding:0!important;border-radius:13px}
 .primary{background:linear-gradient(110deg,#8055e8,#557be8 55%,#c35cc9)!important;box-shadow:0 8px 24px #8959ff55,inset 0 1px #ffffff55}.back{background:linear-gradient(130deg,rgba(142,100,218,.4),rgba(56,91,169,.34))!important;border:1px solid var(--lg-border)!important}.cs{background:linear-gradient(120deg,#7654df,#357fc8)!important;border:1px solid #ffffff55;box-shadow:0 8px 28px #8659ff66}footer{color:#b6a9d5!important}.bottom-dock{box-shadow:0 14px 46px #000a,0 0 28px #9b61ff25,inset 0 1px 1px #ffffff55}#loadingScreen{background:radial-gradient(ellipse at 50% 40%,#38205c,#10132c 55%,#080b18)!important}
 
 </style>
@@ -375,7 +375,8 @@ let slideTimer=null;
 let currentOrderPayload=null;
 let catalogLoadToken=0;
 let selectedGameFilter="";
-let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
+let selectedProviderFilter="";
+let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
 let productMeta=new WeakMap();
 let catalogEntries=[];
 let catalogCursor=0;
@@ -392,7 +393,23 @@ const categories=[
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"},
  {id:"giftcard",name:"GIFT CARD",desc:"Voucher dan gift card digital",domain:""},
  {id:"apps",name:"APLIKASI & LANGGANAN",desc:"Aplikasi dan layanan premium",domain:""},
- {id:"other",name:"LAINNYA",desc:"Produk digital lainnya",domain:""}
+];
+
+const pulsaProviders=[
+ {name:"Telkomsel",key:"Telkomsel",mark:"T",color:"#e5232e"},
+ {name:"Indosat",key:"Indosat",mark:"IM3",color:"#f6c400"},
+ {name:"XL",key:"XL",mark:"XL",color:"#1689e8"},
+ {name:"AXIS",key:"AXIS",mark:"AX",color:"#7b3fc6"},
+ {name:"Tri (3)",key:"Tri",mark:"3",color:"#242424"},
+ {name:"Smartfren",key:"Smartfren",mark:"SF",color:"#e5252a"},
+ {name:"by.U",key:"by.U",mark:"by.U",color:"#2678ee"}
+];
+const walletProviders=[
+ {name:"DANA",key:"DANA",mark:"D",color:"#1689ed"},
+ {name:"OVO",key:"OVO",mark:"OVO",color:"#4b2b83"},
+ {name:"GoPay",key:"GoPay",mark:"Go",color:"#00a7e8"},
+ {name:"ShopeePay",key:"ShopeePay",mark:"S",color:"#ee4d2d"},
+ {name:"LinkAja",key:"LinkAja",mark:"LA",color:"#e32636"}
 ];
 
 const recommendedGames=[
@@ -595,14 +612,23 @@ async function getGameArtwork(name){
 }
 async function loadGameArtworks(names){
  const queue=[...new Set(names||[])];let cursor=0;
- async function worker(){while(cursor<queue.length){const name=queue[cursor++];const url=await getGameArtwork(name);if(!url)continue;
+ function applyLogo(name,url){
   document.querySelectorAll("img[data-game-logo]").forEach(img=>{
    if(img.dataset.gameLogo!==name)return;
-   img.onload=()=>{img.style.display="block";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";};
-   img.onerror=()=>{img.removeAttribute("src");img.style.display="none";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="flex";};
+   let fallback=img.parentElement.querySelector(".logo-fallback,.game-fallback");
+   if(img.closest(".slide-art")&&!fallback){fallback=document.createElement("span");fallback.className="game-fallback";fallback.textContent=gameInitials(name);img.insertAdjacentElement("afterend",fallback);}
+   const showFallback=()=>{img.removeAttribute("src");img.style.display="none";if(fallback)fallback.style.display="flex";};
+   if(!url){showFallback();return;}
+   img.onload=()=>{img.style.display="block";if(fallback)fallback.style.display="none";};
+   img.onerror=showFallback;
+   img.style.display="none";
+   if(fallback)fallback.style.display="flex";
    img.src=url;
   });
- }}
+ }
+ // Render a readable fallback immediately; logo loading must never leave an empty tile/banner.
+ queue.forEach(name=>applyLogo(name,""));
+ async function worker(){while(cursor<queue.length){const name=queue[cursor++];const url=await getGameArtwork(name);applyLogo(name,url);}}
  await Promise.all(Array.from({length:Math.min(4,queue.length)},()=>worker()));
 }
 
@@ -790,11 +816,13 @@ function classifyProduct(p){
  if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
  if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "excluded";
  if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
- if(/dana|gopay|ovo|shopeepay|linkaja|ewallet|e-wallet/.test(name)||cat.includes("ewallet"))return "ewallet";
+ if(/dana|gopay|go\s?pay|ovo|shopeepay|shopee pay|linkaja|link aja|ewallet|e-wallet/.test(name)||cat.includes("ewallet")||cat.includes("e-wallet"))return "ewallet";
  if(/paket data|data flash|internet|kuota/.test(name)||(cat.includes("data")&&!name.includes("pulsa")))return "data";
  if(/pulsa/.test(name)||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
  if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
  if(cat.includes("game")||cat.includes("games")||cat.includes("topup game"))return "game";
+ if(/^(ml|mcgg|ff|f\d|pubgmi?|pubgmgl|giggl|abi|ab\d|rvl|codm|val|vtth|vpph|hok|aov)/.test(sku))return "game";
+ if(/mobile legends?|mlbb|free ?fire|pubg|genshin|roblox|robux|arena breakout|call of duty|codm|honkai|star rail|valorant|wild rift|ragnarok|stumble guys|point blank|minecraft/.test(name))return "game";
  return "other";
 }
 
@@ -833,6 +861,41 @@ function deduplicateProducts(products){
  });
 }
 
+function getPulsaOperator(product){
+ const name=String(product?.name||"").toLowerCase();
+ const sku=String(product?.sku_code||"").toLowerCase();
+ if(/by\.?u/.test(name)||/^byup?/.test(sku))return "by.U";
+ if(/telkomsel|simpati|kartu as|loop/.test(name)||/^(tselp|tself|t1km|t5b|t1tp|tdh|tdhs|tdhmku)/.test(sku))return "Telkomsel";
+ if(/indosat|im3|mentari/.test(name)||/^(isatidp?|i1ip)/.test(sku))return "Indosat";
+ if(/smartfren/.test(name)||/^(sfp|sf|s1sp|s2sp)/.test(sku))return "Smartfren";
+ if(/\baxis\b/.test(name)||/^axis/.test(sku))return "AXIS";
+ if(/xl axiata|\bxl\b/.test(name)||/^xl/.test(sku))return "XL";
+ if(/tri indonesia|\bthree\b|\btri\b/.test(name)||/^(trbb|trbp|t2tr)/.test(sku))return "Tri";
+ return "";
+}
+
+function getWalletService(product){
+ const name=String(product?.name||"").toLowerCase();
+ const sku=String(product?.sku_code||"").toLowerCase();
+ if(/shopee\s?pay|shopeepay/.test(name))return "ShopeePay";
+ if(/link\s?aja|linkaja/.test(name))return "LinkAja";
+ if(/\bdana\b/.test(name))return "DANA";
+ if(/\bovo\b/.test(name))return "OVO";
+ if(/gopay|go\s?pay/.test(name))return "GoPay";
+ // SKU-only wallet mapping is intentionally not guessed without a verified supplier map.
+ return "";
+}
+
+function providerLogoHTML(provider){
+ const safe=escapeHTML(provider.name);
+ return `<div class="brand-logo" style="--brand-color:${provider.color}"><span>${escapeHTML(provider.mark)}</span></div><b>${safe}</b>`;
+}
+
+function providerTileHTML(provider,count,type){
+ const label=type==="pulsa"?"Pilihan nominal pulsa":"Pilihan top-up saldo";
+ return `<div class="card center provider-tile" onclick="openProviderCategory('${type}','${escapeHTML(provider.key)}')"><div class="brand-lockup">${providerLogoHTML(provider)}</div><small>${count} produk • ${label}</small></div>`;
+}
+
 function productDomain(p){
  const type=classifyProduct(p);
  if(type==="pulsa"||type==="data")return "telkomsel.com";
@@ -842,21 +905,18 @@ function productDomain(p){
 }
 
 function drawCategories(){
- document.getElementById("categories").innerHTML=categories.map(c=>`
-  <div class="card center" onclick="openCategory('${c.id}')">
-   <div class="logo-box">
-    <span class="logo-fallback">${c.id==="game"?"🎮":c.id==="pulsa"?"📱":c.id==="data"?"🌐":c.id==="pln"?"⚡":"💳"}</span>
-   </div>
-   <b>${c.name}</b>
-   <small>${c.desc}</small>
-  </div>
- `).join("");
+ const categoryMarks={game:["🎮","#5865d8"],pulsa:["SIM","#2186df"],data:["4G","#168bcb"],pln:["⚡","#e5a900"],ewallet:["W","#4b69d8"],giftcard:["GC","#9a65d8"],apps:["APP","#5b6f91"]};
+ document.getElementById("categories").innerHTML=categories.map(c=>{
+  const item=categoryMarks[c.id]||["•","#667085"];
+  return `<div class="card center" onclick="openCategory('${c.id}')"><div class="brand-logo" style="--brand-color:${item[1]}"><span>${item[0]}</span></div><b>${c.name}</b><small>${c.desc}</small></div>`;
+ }).join("");
 }
 
 function drawRecommendedGames(){
  const container=document.getElementById("recommendedGames");
  const available=new Set((productBuckets.game||[]).map(p=>(productMeta.get(p)||{}).game));
- const visible=recommendedGames.filter(game=>available.has(game.name));
+ const homeFeaturedNames=new Set(["Mobile Legends","Free Fire","Roblox","PUBG Mobile","Genshin Impact","Honkai: Star Rail","Wuthering Waves","Call of Duty: Mobile","Arena Breakout","VALORANT"]);
+ const visible=recommendedGames.filter(game=>homeFeaturedNames.has(game.name)&&available.has(game.name));
  container.innerHTML=visible.map((game,index)=>gameTileHTML(game.name,index)).join("");
  if(!visible.length)container.innerHTML='<div class="notice">Game unggulan akan tampil setelah katalog berhasil dimuat.</div>';
  loadGameArtworks(visible.map(g=>g.name));
@@ -885,17 +945,19 @@ async function loadProducts(){
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
   allProducts=raw.filter(p=>p&&p.sku_code&&p.name&&String(p.status||"active").toLowerCase()==="active"&&Number(p.selling_price??p.price)>0);
-  productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
+  productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
   productMeta=new WeakMap();
   const grouped={};
   for(const p of allProducts){
    let category=classifyProduct(p);
-   if(category==="excluded")continue;
+   if(category==="excluded"||category==="other")continue;
    const game=category==="game"?getGameName(p):"";
    if(category==="game"&&!game)category="unmappedGame";
    const region=game?productRegion(p,game):"";
-   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game+" "+region).toLowerCase();
-   productMeta.set(p,{category,game,region,search});
+   const operator=category==="pulsa"?getPulsaOperator(p):"";
+   const wallet=category==="ewallet"?getWalletService(p):"";
+   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game+" "+region+" "+operator+" "+wallet).toLowerCase();
+   productMeta.set(p,{category,game,region,operator,wallet,search});
    (grouped[category]||(grouped[category]=[])).push(p);
   }
   for(const category of Object.keys(productBuckets)){
@@ -946,21 +1008,25 @@ function showCategoryLoading(title){
 }
 
 function openCategory(id){
- currentCategory=id;
- lastCatalog=id;
- selectedGameFilter="";
+ currentCategory=id;lastCatalog=id;selectedGameFilter="";selectedProviderFilter="";
  document.getElementById("search").value="";
- const category=categories.find(c=>c.id===id);
- if(!category)return;
+ const category=categories.find(c=>c.id===id);if(!category)return;
  document.getElementById("catalogTitle").textContent=category.name;
- document.getElementById("catalogDesc").textContent=category.desc;
- const token=++catalogLoadToken;
- showCategoryLoading(category.name);
- show("catalog");
- requestAnimationFrame(()=>{
-  if(token!==catalogLoadToken||currentCategory!==id)return;
-  renderCatalog();
- });
+ document.getElementById("catalogDesc").textContent=id==="pulsa"?"Pilih operator untuk melihat nominal pulsa.":id==="ewallet"?"Pilih layanan e-wallet untuk melihat nominal top-up.":category.desc;
+ const token=++catalogLoadToken;showCategoryLoading(category.name);show("catalog");
+ requestAnimationFrame(()=>{if(token!==catalogLoadToken||currentCategory!==id)return;renderCatalog();});
+}
+
+function openProviderCategory(type,key){
+ if(type!=="pulsa"&&type!=="ewallet")return;
+ currentCategory=type;lastCatalog=type;selectedGameFilter="";selectedProviderFilter=key;
+ const providers=type==="pulsa"?pulsaProviders:walletProviders;
+ const provider=providers.find(x=>x.key===key);if(!provider)return;
+ document.getElementById("search").value="";
+ document.getElementById("catalogTitle").textContent=provider.name;
+ document.getElementById("catalogDesc").textContent=type==="pulsa"?"Nominal pulsa operator "+provider.name+".":"Pilihan top-up saldo "+provider.name+".";
+ const token=++catalogLoadToken;showCategoryLoading(provider.name);show("catalog");
+ requestAnimationFrame(()=>{if(token===catalogLoadToken)renderCatalog();});
 }
 
 // =====================================================
@@ -1005,6 +1071,21 @@ function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase().trim();
  const source=productBuckets[currentCategory]||[];
  let list=source.filter(p=>{const meta=productMeta.get(p);return !query||(meta&&meta.search.includes(query));});
+ if((currentCategory==="pulsa"||currentCategory==="ewallet")&&!selectedProviderFilter){
+  const type=currentCategory;const providers=type==="pulsa"?pulsaProviders:walletProviders;
+  const keyOf=p=>{const m=productMeta.get(p)||{};return type==="pulsa"?m.operator:m.wallet;};
+  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
+  const counts=new Map();for(const p of list){const key=keyOf(p);if(key)counts.set(key,(counts.get(key)||0)+1);}
+  const available=providers.filter(provider=>(counts.get(provider.key)||0)>0);
+  document.getElementById("empty").classList.toggle("hidden",available.length>0);
+  if(available.length){grid.innerHTML=available.map(provider=>providerTileHTML(provider,counts.get(provider.key),type)).join("");}
+  else{const msg=document.createElement("div");msg.className="notice";msg.style.gridColumn="1/-1";msg.textContent="Belum ada produk operator/layanan yang berhasil dikenali dari katalog supplier.";grid.appendChild(msg);}
+  const unknown=list.filter(p=>!keyOf(p)).length;
+  if(unknown){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=unknown+" produk belum bisa dipastikan operator/layanan-nya dari nama dan SKU supplier. Produk ini tidak dimasukkan ke kategori merek secara asal.";grid.appendChild(note);}
+  return;
+ }
+ if(currentCategory==="pulsa"&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).operator===selectedProviderFilter);
+ if(currentCategory==="ewallet"&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).wallet===selectedProviderFilter);
  if(currentCategory==="game"&&!selectedGameFilter){
   const groups=new Map();
   for(const p of list){const game=(productMeta.get(p)||{}).game;if(!game)continue;if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
@@ -1025,6 +1106,9 @@ function renderCatalog(){
  document.getElementById("empty").classList.toggle("hidden",list.length>0);
  if(currentCategory==="game"&&selectedGameFilter){
   const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua Game";reset.onclick=resetGameFilter;grid.appendChild(reset);
+ }
+ if((currentCategory==="pulsa"||currentCategory==="ewallet")&&selectedProviderFilter){
+  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua "+(currentCategory==="pulsa"?"Operator":"E-Wallet");reset.onclick=()=>openCategory(currentCategory);grid.appendChild(reset);
  }
  if(!list.length){const message=document.createElement("div");message.className="notice";message.style.gridColumn="1/-1";message.textContent="Produk tidak ditemukan.";grid.appendChild(message);return;}
  catalogEntries=list.map(p=>({type:"product",product:p}));catalogCursor=0;catalogProductCount=list.length;renderMoreCatalog();
@@ -1095,10 +1179,19 @@ function createProductCard(p){
  const el=document.createElement("div");el.className="card center";
  const meta=productMeta.get(p)||{};const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
  const logo=document.createElement("div");logo.className="logo-box product-art";
- const art=document.createElement("img");art.alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);
+ if(meta.category==="pulsa"||meta.category==="ewallet"){
+  const key=meta.category==="pulsa"?meta.operator:meta.wallet;
+  const providers=meta.category==="pulsa"?pulsaProviders:walletProviders;
+  const provider=providers.find(x=>x.key===key);
+  if(provider){const brand=document.createElement("div");brand.className="brand-logo";brand.style.setProperty("--brand-color",provider.color);const mark=document.createElement("span");mark.textContent=provider.mark;brand.appendChild(mark);logo.appendChild(brand);}
+  else{const art=document.createElement("img");art.alt="Ilustrasi layanan digital";art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);}
+  const service=document.createElement("span");service.className="operator-label";service.textContent=key||(meta.category==="pulsa"?"Operator belum terverifikasi":"Layanan belum terverifikasi");el.appendChild(logo);el.appendChild(service);
+ }else{
+  const art=document.createElement("img");art.alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);el.appendChild(logo);
+ }
  const title=document.createElement("b");title.textContent=p.name+(meta.region?" · "+meta.region:"");
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
- el.append(logo,title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
+ el.append(title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
 }
 
 function appendProductCard(grid,p){grid.appendChild(createProductCard(p));}
@@ -1177,7 +1270,8 @@ function openProduct(p){
  fields.innerHTML="";
 
  document.getElementById("detailName").textContent=p.name;
- document.getElementById("detailCategory").textContent=p.category||"NEXTMART DIGITAL";
+ const detailType=classifyProduct(p),detailMeta=productMeta.get(p)||{};
+ document.getElementById("detailCategory").textContent=detailType==="pulsa"?"PULSA • "+(detailMeta.operator||"Operator belum terverifikasi"):detailType==="ewallet"?"E-WALLET • "+(detailMeta.wallet||"Layanan belum terverifikasi"):(p.category||"NEXTMART DIGITAL");
  document.getElementById("detailLogo").src=productVisualURL(p);
  document.getElementById("detailLogo").alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;
 
@@ -1220,6 +1314,22 @@ function openProduct(p){
 // VALIDASI
 // =====================================================
 
+function detectMobileOperator(value){
+ const digits=String(value||"").replace(/\D/g,"").replace(/^62/,"0");
+ if(!/^08[0-9]{8,11}$/.test(digits))return "";
+ const prefix=digits.slice(0,4);
+ const groups={
+  Telkomsel:["0811","0812","0813","0821","0822","0823","0851","0852","0853"],
+  Indosat:["0814","0815","0816","0855","0856","0857","0858"],
+  XL:["0817","0818","0819","0859","0877","0878"],
+  AXIS:["0831","0832","0833","0838"],
+  Tri:["0895","0896","0897","0898","0899"],
+  Smartfren:["0881","0882","0883","0884","0885","0886","0887","0888","0889"]
+ };
+ for(const [operator,prefixes] of Object.entries(groups))if(prefixes.includes(prefix))return operator;
+ return "";
+}
+
 function validateValue(value,type){
  const v=value.trim();
 
@@ -1227,10 +1337,11 @@ function validateValue(value,type){
 
  switch(type){
   case "phone":{
-   const digits=v.replace(/[\s-]/g,"");
-   return /^(08[0-9]{7,11}|628[0-9]{7,11}|\+628[0-9]{7,11})$/.test(digits)
-    ?{ok:true}
-    :{ok:false,message:"Nomor HP tidak sesuai."};
+   const digits=v.replace(/[\s()-]/g,"");
+   const valid=/^(08[0-9]{8,11}|628[0-9]{8,11}|\+628[0-9]{8,11})$/.test(digits);
+   if(!valid)return {ok:false,message:"Nomor HP tidak sesuai. Gunakan format 08xxxxxxxxxx."};
+   const operator=detectMobileOperator(digits);
+   return {ok:true,message:operator?"Format valid • perkiraan operator "+operator:"Format valid • operator belum dikenali"};
   }
 
   case "pln":
@@ -1293,7 +1404,8 @@ function validateOneField(index,showError=true){
  const result=validateValue(input.value,input.dataset.rule);
 
  input.classList.toggle("invalid",!result.ok);
- error.textContent=result.ok?"":(showError?result.message:"");
+ error.classList.toggle("field-success",result.ok&&input.dataset.rule==="phone"&&!!result.message);
+ error.textContent=result.ok?(input.dataset.rule==="phone"?result.message||"":""):(showError?result.message:"");
 
  return result.ok;
 }

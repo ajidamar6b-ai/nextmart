@@ -127,7 +127,12 @@ body{padding-bottom:94px}
 /* FULL LIQUID GLASS THEME */
 :root{--lg-border:rgba(220,205,255,.24)}
 body{background:radial-gradient(ellipse at 12% 0%,#38205c 0%,transparent 38%),radial-gradient(ellipse at 100% 22%,#182e61 0%,transparent 38%),linear-gradient(155deg,#080b18,#11142a 48%,#090e20)!important;background-attachment:fixed!important}
-header,.hero,.slide,.card,.search,.product-head,.panel,.nominal,.notice,.payment-option,.history-item,.back,.cs{backdrop-filter:blur(22px) saturate(175%);-webkit-backdrop-filter:blur(22px) saturate(175%)}
+header,.hero,.slide,.search,.product-head,.panel,.nominal,.notice,.payment-option,.history-item,.back,.cs{backdrop-filter:blur(22px) saturate(175%);-webkit-backdrop-filter:blur(22px) saturate(175%)}
+/* Performance: avoid per-card backdrop compositing on mobile Safari/Chrome. */
+.card,.logo-box{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+#catalogGrid{content-visibility:auto;contain-intrinsic-size:1px 900px}
+.game-tile{contain:layout paint;}
+@media(prefers-reduced-motion:reduce){.card,.game-tile{transition:none!important}}
 header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rgba(18,30,67,.72) 55%,rgba(71,35,91,.68))!important;border-bottom:1px solid var(--lg-border)!important;box-shadow:0 10px 38px #0004,inset 0 1px #ffffff26}
 .brand{color:#d6bdff!important;text-shadow:0 0 22px #a66cff88}
 .hero,.slide{border:1px solid rgba(230,218,255,.26)!important;box-shadow:0 14px 38px #0005,inset 0 1px 1px #ffffff45!important}
@@ -137,7 +142,7 @@ header{position:relative;background:linear-gradient(125deg,rgba(48,31,83,.78),rg
 .search,input,select{background:rgba(18,23,49,.72)!important;border:1px solid rgba(204,185,255,.28)!important;box-shadow:inset 0 1px 2px #ffffff13,0 6px 18px #0002}.search:focus,input:focus,select:focus{outline:none;border-color:#b68aff!important;box-shadow:0 0 0 3px #a66cff28,0 0 22px #985bff20}
 .product-head,.panel,.notice,.payment-option,.history-item{position:relative;overflow:hidden;background:linear-gradient(140deg,rgba(255,255,255,.12),rgba(104,88,166,.15),rgba(22,53,101,.24))!important;border:1px solid rgba(219,205,255,.24)!important;box-shadow:0 10px 30px #0003,inset 0 1px 1px #ffffff2b!important}
 .nominal{background:linear-gradient(130deg,rgba(255,255,255,.12),rgba(93,93,160,.15),rgba(35,68,121,.22))!important;border:1px solid rgba(210,194,255,.24)!important;backdrop-filter:blur(18px)}.nominal.active{border-color:#bd91ff!important;background:linear-gradient(120deg,#8051c877,#4b78c977,#bc5abf66)!important;box-shadow:0 0 22px #a36cff38}
-.logo-box{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(161,125,255,.14))!important;border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 1px #ffffff55,0 6px 18px #0002;backdrop-filter:blur(12px)}.logo-box img{border-radius:12px}.product-art img{width:100%;height:100%;object-fit:cover;padding:0!important;border-radius:13px}
+.logo-box{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(161,125,255,.14))!important;border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 1px #ffffff55,0 6px 18px #0002;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.logo-box img{border-radius:12px}.logo-box img:not(.logo-loaded){opacity:0;position:absolute;width:1px;height:1px}.logo-box{position:relative}.logo-box .logo-fallback{z-index:1}.product-art img{width:100%;height:100%;object-fit:cover;padding:0!important;border-radius:13px}
 .primary{background:linear-gradient(110deg,#8055e8,#557be8 55%,#c35cc9)!important;box-shadow:0 8px 24px #8959ff55,inset 0 1px #ffffff55}.back{background:linear-gradient(130deg,rgba(142,100,218,.4),rgba(56,91,169,.34))!important;border:1px solid var(--lg-border)!important}.cs{background:linear-gradient(120deg,#7654df,#357fc8)!important;border:1px solid #ffffff55;box-shadow:0 8px 28px #8659ff66}footer{color:#b6a9d5!important}.bottom-dock{box-shadow:0 14px 46px #000a,0 0 28px #9b61ff25,inset 0 1px 1px #ffffff55}#loadingScreen{background:radial-gradient(ellipse at 50% 40%,#38205c,#10132c 55%,#080b18)!important}
 
 </style>
@@ -377,6 +382,7 @@ let catalogLoadToken=0;
 let selectedGameFilter="";
 let productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
 let productMeta=new WeakMap();
+let gameGroups=new Map();
 let catalogEntries=[];
 let catalogCursor=0;
 let catalogSearchTimer=null;
@@ -423,32 +429,98 @@ const gameInfo=[
 ];
 
 // =====================================================
-// LOGO GAME
+// LOGO GAME - UNIVERSAL (ANDROID, IPHONE, DESKTOP)
+// Prioritas: cache lokal -> thumbnail Wikipedia -> fallback inisial.
+// Tidak bergantung pada iTunes/App Store.
 // =====================================================
-
-const gameArtwork={};
-async function getGameArtwork(name){
- if(gameArtwork[name])return gameArtwork[name];
- try{
-  const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(name)+"&entity=software&limit=20");
-  const data=await response.json();
-  const wanted=name.toLowerCase().replace(/[^a-z0-9]/g,"");
-  const candidates=(data.results||[]).map(item=>({item,track:String(item.trackName||"").toLowerCase().replace(/[^a-z0-9]/g,"")}));
-  const found=candidates.find(x=>x.track===wanted)||candidates.find(x=>x.track.includes(wanted)||wanted.includes(x.track)&&x.track.length>5);
-  const image=found&&(found.item.artworkUrl512||found.item.artworkUrl100);
-  if(image){gameArtwork[name]=image;return image;}
- }catch(error){console.log("Logo tidak tersedia:",name);}
+const gameArtwork={
+ "Mobile Legends":"Mobile_Legends_Bang_Bang",
+ "Free Fire":"Garena_Free_Fire",
+ "PUBG Mobile":"PUBG_Mobile",
+ "Genshin Impact":"Genshin_Impact",
+ "Honkai: Star Rail":"Honkai_Star_Rail",
+ "Roblox":"Roblox_(ゲームプラットフォーム)",
+ "Arena Breakout":"Arena_Breakout",
+ "Call of Duty: Mobile":"Call_of_Duty_Mobile",
+ "Call of Duty":"Call_of_Duty",
+ "Honor of Kings":"Honor_of_Kings",
+ "Arena of Valor":"Arena_of_Valor",
+ "VALORANT":"Valorant",
+ "Wild Rift":"League_of_Legends:_Wild_Rift",
+ "Ragnarok":"Ragnarok_Online",
+ "Point Blank":"Point_Blank_(video_game)",
+ "Steam":"Steam_(service)",
+ "Minecraft":"Minecraft",
+ "Stumble Guys":"Stumble_Guys",
+ "LifeAfter":"LifeAfter",
+ "Wuthering Waves":"Wuthering_Waves"
+};
+const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v2";
+const GAME_LOGO_CACHE_TTL=1000*60*60*24*14;
+let gameLogoCache={};
+try{gameLogoCache=JSON.parse(localStorage.getItem(GAME_LOGO_CACHE_KEY)||"{}");}catch(_){gameLogoCache={};}
+const gameLogoPending=new Map();
+let gameLogoObserver=null;
+function getCachedGameLogo(name){
+ const item=gameLogoCache[name];
+ if(item&&item.url&&Date.now()-item.time<GAME_LOGO_CACHE_TTL)return item.url;
  return "";
 }
-async function loadGameArtworks(names){
- await Promise.all([...new Set(names||[])].map(async name=>{
-  const url=await getGameArtwork(name);
-  if(!url)return;
-  document.querySelectorAll('[data-game-logo="'+CSS.escape(name)+'"]').forEach(img=>{
-   img.onload=()=>{img.style.display="block";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";};
-   img.onerror=()=>{img.removeAttribute("src");};img.src=url;
+function setCachedGameLogo(name,url){
+ gameLogoCache[name]={url,time:Date.now()};
+ try{localStorage.setItem(GAME_LOGO_CACHE_KEY,JSON.stringify(gameLogoCache));}catch(_){/* storage penuh/private mode */}
+}
+async function getGameArtwork(name){
+ const cached=getCachedGameLogo(name);if(cached)return cached;
+ if(gameLogoPending.has(name))return gameLogoPending.get(name);
+ const task=(async()=>{
+  const page=gameArtwork[name]||String(name).replace(/\s+/g,"_");
+  const controller=typeof AbortController!=="undefined"?new AbortController():null;
+  const timeout=controller?setTimeout(()=>controller.abort(),5500):null;
+  try{
+   const response=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(page),{
+    mode:"cors",credentials:"omit",signal:controller?.signal
+   });
+   if(!response.ok)throw new Error("Logo tidak ditemukan");
+   const data=await response.json();
+   const url=data?.thumbnail?.source||data?.originalimage?.source||"";
+   if(url&&/^https:\/\//i.test(url)){setCachedGameLogo(name,url);return url;}
+  }catch(error){console.debug("Logo fallback:",name);}
+  finally{if(timeout)clearTimeout(timeout);}
+  return "";
+ })();
+ gameLogoPending.set(name,task);
+ try{return await task;}finally{gameLogoPending.delete(name);}
+}
+function applyGameLogo(img,url){
+ if(!img||!url||!img.isConnected)return;
+ img.onload=()=>{img.classList.add("logo-loaded");const fallback=img.parentElement?.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";};
+ img.onerror=()=>{img.removeAttribute("src");img.classList.remove("logo-loaded");};
+ img.src=url;
+}
+function initGameLogoObserver(){
+ if(gameLogoObserver||typeof IntersectionObserver==="undefined")return;
+ gameLogoObserver=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+   if(!entry.isIntersecting)return;
+   const img=entry.target;gameLogoObserver.unobserve(img);
+   const name=img.dataset.gameLogo;if(!name)return;
+   const cached=getCachedGameLogo(name);
+   if(cached){applyGameLogo(img,cached);return;}
+   getGameArtwork(name).then(url=>applyGameLogo(img,url));
   });
- }));
+ },{rootMargin:"180px 0px",threshold:0.01});
+}
+function loadGameArtworks(names){
+ initGameLogoObserver();
+ const wanted=new Set(names||[]);
+ document.querySelectorAll("img[data-game-logo]").forEach(img=>{
+  const name=img.dataset.gameLogo;if(!wanted.has(name))return;
+  const cached=getCachedGameLogo(name);
+  if(cached){applyGameLogo(img,cached);return;}
+  if(gameLogoObserver)gameLogoObserver.observe(img);
+  else getGameArtwork(name).then(url=>applyGameLogo(img,url));
+ });
 }
 
 // =====================================================
@@ -768,6 +840,14 @@ async function loadProducts(){
   for(const category of Object.keys(productBuckets)){
    productBuckets[category]=category==="game"?deduplicateProducts(grouped[category]||[]):(grouped[category]||[]);
   }
+  // Build the game index once at data-load time; entering GAME no longer regroups
+  // the entire 15k+ product array on every render/search.
+  gameGroups=new Map();
+  for(const p of productBuckets.game){
+   const game=(productMeta.get(p)||{}).game||"Game Lainnya";
+   if(!gameGroups.has(game))gameGroups.set(game,[]);
+   gameGroups.get(game).push(p);
+  }
   drawCategories();
   console.log("NEXTMART products loaded:",allProducts.length,productBuckets);
  }catch(error){
@@ -879,22 +959,30 @@ function scheduleCatalogSearch(){
 
 function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase().trim();
- const source=productBuckets[currentCategory]||[];
- let list=source.filter(p=>{const meta=productMeta.get(p);return !query||(meta&&meta.search.includes(query));});
+ const grid=document.getElementById("catalogGrid");
  if(currentCategory==="game"&&!selectedGameFilter){
-  const groups=new Map();
-  for(const p of list){const game=(productMeta.get(p)||{}).game||"Game Lainnya";if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
-  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
-  document.getElementById("empty").classList.toggle("hidden",groups.size>0);
-  if(!groups.size){grid.innerHTML='<div class="notice" style="grid-column:1/-1">Belum ada game yang cocok.</div>';return;}
+  const groups=gameGroups;
+  const names=[...groups.keys()].filter(name=>!query||name.toLowerCase().includes(query)||groups.get(name).some(p=>{
+   const meta=productMeta.get(p);return meta&&meta.search.includes(query);
+  }));
+  grid.replaceChildren();
+  document.getElementById("empty").classList.toggle("hidden",names.length>0);
+  if(!names.length){grid.innerHTML='<div class="notice" style="grid-column:1/-1">Belum ada game yang cocok.</div>';return;}
   const order=["Mobile Legends","Free Fire","Roblox","Genshin Impact","Arena Breakout","PUBG Mobile","VALORANT"];
-  const names=[...groups.keys()].sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b);});
-  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="lazy"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
+  names.sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b);});
+  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="lazy"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
   loadGameArtworks(names);
   return;
  }
- if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>(productMeta.get(p)||{}).game===selectedGameFilter);
- const grid=document.getElementById("catalogGrid");grid.replaceChildren();
+ let list;
+ if(currentCategory==="game"&&selectedGameFilter){
+  const indexed=gameGroups.get(selectedGameFilter)||[];
+  list=query?indexed.filter(p=>{const meta=productMeta.get(p);return meta&&meta.search.includes(query);}):indexed;
+ }else{
+  const source=productBuckets[currentCategory]||[];
+  list=query?source.filter(p=>{const meta=productMeta.get(p);return meta&&meta.search.includes(query);}):source;
+ }
+ grid.replaceChildren();
  document.getElementById("empty").classList.toggle("hidden",list.length>0);
  if(currentCategory==="game"&&selectedGameFilter){
   const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua Game";reset.onclick=resetGameFilter;grid.appendChild(reset);

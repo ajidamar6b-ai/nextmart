@@ -545,7 +545,7 @@ function getGameName(product){
 // =====================================================
 
 const gameArtwork={};
-const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v10";
+const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v11";
 // Official publisher-provided wordmarks for titles with downloadable brand assets.
 const GAME_LOGO_STATIC={
  // App artwork URLs are pinned for the main games so their tiles do not depend on favicon/API discovery.
@@ -631,6 +631,34 @@ function logoCandidatesForDomain(domain,size=256){
   `https://logo.clearbit.com/${encodeURIComponent(d)}`
  ];
 }
+let itunesLogoCallbackId=0;
+function searchItunesArtworkJSONP(term,aliases){
+ return new Promise(resolve=>{
+  const callbackName="__nextmartLogoCB"+(++itunesLogoCallbackId);
+  const script=document.createElement("script");let finished=false;
+  const cleanup=()=>{if(finished)return;finished=true;clearTimeout(timer);try{delete window[callbackName];}catch(_){window[callbackName]=undefined;}script.remove();};
+  const timer=setTimeout(()=>{cleanup();resolve("");},12000);
+  window[callbackName]=(data)=>{
+   const rows=(data&&data.results)||[];
+   const scored=rows.map(item=>{
+    const title=compactGameText(item.trackName||item.trackCensoredName||"");let score=0;
+    for(const alias of aliases){
+     if(!alias)continue;
+     if(title===alias)score=Math.max(score,130);
+     else if(title.startsWith(alias)||alias.startsWith(title))score=Math.max(score,105);
+     else if(title.includes(alias)||alias.includes(title))score=Math.max(score,85);
+     else {const words=alias.match(/[a-z0-9]{3,}/g)||[];const hits=words.filter(word=>title.includes(word)).length;if(words.length&&hits)score=Math.max(score,Math.round(65*hits/words.length));}
+    }
+    return {score,image:item.artworkUrl512||item.artworkUrl100||item.artworkUrl60};
+   }).filter(x=>x.image).sort((a,b)=>b.score-a.score);
+   const best=scored.find(x=>x.score>=48);
+   cleanup();resolve(best?best.image:"");
+  };
+  script.onerror=()=>{cleanup();resolve("");};
+  script.src="https://itunes.apple.com/search?term="+encodeURIComponent(term)+"&entity=software&country=id&limit=50&callback="+callbackName;
+  document.head.appendChild(script);
+ });
+}
 async function getGameArtwork(name){
  // Logo game dicari per nama game, bukan memakai logo mata uang/Pass.
  if(Object.prototype.hasOwnProperty.call(gameArtwork,name)&&gameArtwork[name])return gameArtwork[name];
@@ -673,9 +701,15 @@ async function getGameArtwork(name){
    if(scored[0]&&scored[0].score>=48)image=await loadFirstWorkingImage([scored[0].image]);
   }
  }catch(error){console.warn("Artwork game belum tersedia dari katalog aplikasi:",name,error);}
+ // Fallback JSONP: tetap dapat mengambil artwork ketika browser/hosting memblokir fetch lintas domain.
+ if(!image){
+  try{const jsonpUrl=await searchItunesArtworkJSONP(query,aliases);if(jsonpUrl)image=await loadFirstWorkingImage([jsonpUrl]);}catch(_){}
+ }
  if(!image){
   const domain=gameLogoDomain(name);
-  image=await loadFirstWorkingImage(logoCandidatesForDomain(domain,512));
+  const guessed=String(name||"").toLowerCase().replace(/[^a-z0-9]+/g,"").replace(/^(the|a)/,"");
+  const domains=[domain,guessed?guessed+".com":"",guessed?guessed+"game.com":""].filter(Boolean);
+  image=await loadFirstWorkingImage(domains.flatMap(d=>logoCandidatesForDomain(d,512)));
  }
  // Sumber terakhir tetap favicon resmi/brand; bila tidak ada, inisial aman dipertahankan.
  gameArtwork[name]=image||"";
@@ -691,10 +725,12 @@ async function loadGameArtworks(names){
    if(img.closest(".slide-art")&&!fallback){fallback=document.createElement("span");fallback.className="game-fallback";fallback.textContent=gameInitials(name);img.insertAdjacentElement("afterend",fallback);}
    const showFallback=()=>{img.removeAttribute("src");img.style.display="none";if(fallback)fallback.style.display="flex";};
    if(!url){showFallback();return;}
-   img.onload=()=>{img.style.display="block";if(fallback)fallback.style.display="none";};
+   img.onload=()=>{if(img.naturalWidth>0){img.style.display="block";if(fallback)fallback.style.display="none";}else showFallback();};
    img.onerror=showFallback;
    img.style.display="none";
    if(fallback)fallback.style.display="flex";
+   img.loading="eager";
+   img.decoding="async";
    img.src=url;
   });
  }

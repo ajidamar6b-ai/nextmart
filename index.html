@@ -1375,6 +1375,8 @@ function appsFamily(product){
  for(const [label,re] of rules)if(re.test(text))return label;
  return brand||name||"Layanan lainnya";
 }
+function openGiftCardBrand(name){selectedGiftCardFilter=name;currentCategory="giftcard";lastCatalog="giftcard";document.getElementById("catalogTitle").textContent=name;document.getElementById("catalogDesc").textContent="Pilih produk "+name+" yang tersedia.";document.getElementById("search").value="";showCategoryLoading(name);show("catalog");requestAnimationFrame(renderCatalog);}
+
 function openAppsFamily(name){selectedAppsFilter=name;currentCategory="apps";lastCatalog="apps";document.getElementById("catalogTitle").textContent=name;document.getElementById("catalogDesc").textContent="Pilih paket atau durasi layanan "+name+".";document.getElementById("search").value="";showCategoryLoading(name);show("catalog");requestAnimationFrame(renderCatalog);}
 
 function renderCatalog(){
@@ -1384,6 +1386,25 @@ function renderCatalog(){
  const grid=document.getElementById("catalogGrid");
  grid.replaceChildren();
 
+ if(currentCategory==="giftcard"&&!selectedGiftCardFilter){
+  const groups=new Map();
+  for(const p of list){const brand=String(p.brand||"Gift Card").trim()||"Gift Card";groups.set(brand,(groups.get(brand)||0)+1);}
+  document.getElementById("empty").classList.toggle("hidden",groups.size>0);
+  for(const [brand,count] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0],"id"))){
+   const card=document.createElement("div");card.className="card center provider-tile";
+   const logo=document.createElement("div");logo.className="brand-logo";logo.style.setProperty("--brand-color","#7658bd");
+   const domain=giftBrandDomain(brand);
+   if(domain){const img=document.createElement("img");img.alt="Logo "+brand;img.loading="lazy";img.src="https://www.google.com/s2/favicons?domain="+encodeURIComponent(domain)+"&sz=128";img.style.cssText="width:30px;height:30px;object-fit:contain";img.onerror=()=>{img.onerror=null;img.src="https://icons.duckduckgo.com/ip3/"+domain+".ico";};logo.appendChild(img);}
+   const mark=document.createElement("span");mark.textContent=brandInitials(brand);logo.appendChild(mark);
+   const title=document.createElement("b");title.textContent=brand;const small=document.createElement("small");small.textContent=count+" produk tersedia";
+   card.append(logo,title,small);card.addEventListener("click",()=>openGiftCardBrand(brand));grid.appendChild(card);
+  }
+  return;
+ }
+ if(currentCategory==="giftcard"&&selectedGiftCardFilter){
+  list=list.filter(p=>(String(p.brand||"Gift Card").trim()||"Gift Card")===selectedGiftCardFilter);
+  const back=document.createElement("button");back.className="catalog-more";back.textContent="← Semua Gift Card";back.style.gridColumn="1/-1";back.onclick=()=>{selectedGiftCardFilter="";document.getElementById("catalogTitle").textContent="GIFT CARD";document.getElementById("catalogDesc").textContent="Pilih kategori gift card yang tersedia.";renderCatalog();};grid.appendChild(back);
+ }
  if((currentCategory==="pulsa"||currentCategory==="data"||currentCategory==="ewallet")&&!selectedProviderFilter){
   const type=currentCategory;const providers=type==="pulsa"?pulsaProviders:type==="data"?dataProviders:walletProviders;
   const keyOf=p=>{const m=productMeta.get(p)||{};return type==="ewallet"?m.wallet:m.operator;};
@@ -1509,12 +1530,7 @@ function renderCatalog(){
    products.forEach(product=>catalogEntries.push({type:"product",product}));
   }
  }else if(currentCategory==="giftcard"){
-  const groups=new Map();
-  for(const p of list){const brand=String(p.brand||"Gift Card").trim()||"Gift Card";if(!groups.has(brand))groups.set(brand,[]);groups.get(brand).push(p);}
-  for(const brand of [...groups.keys()].sort((a,b)=>a.localeCompare(b,"id"))){
-   catalogEntries.push({type:"heading",label:brand});
-   groups.get(brand).forEach(product=>catalogEntries.push({type:"product",product}));
-  }
+  catalogEntries=list.map(product=>({type:"product",product}));
  }else if(currentCategory==="social"||currentCategory==="apps"){
   const groups=new Map();
   for(const p of list){const brand=String(p.brand||"").trim();if(brand){if(!groups.has(brand))groups.set(brand,[]);groups.get(brand).push(p);}else{if(!groups.has("Layanan lain"))groups.set("Layanan lain",[]);groups.get("Layanan lain").push(p);}}

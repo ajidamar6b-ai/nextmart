@@ -66,8 +66,8 @@ input.invalid,select.invalid{border:1px solid #ff6464}
 .cs{position:fixed;bottom:19px;right:15px;z-index:5;background:#168bce;color:white;text-decoration:none;border-radius:30px;padding:13px 17px;font-size:12px;font-weight:bold;box-shadow:0 5px 22px #0008}
 footer{text-align:center;padding:28px 10px 120px;color:#8790ad;font-size:10px}
 body{padding-bottom:94px}
-.bottom-dock{position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr 1fr;align-items:center;gap:2px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
-.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9}.bottom-dock:after{content:"";position:absolute;z-index:1;left:10px;top:9px;width:calc((100% - 20px - 16px)/5);height:58px;border-radius:19px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(151,112,255,.20) 48%,rgba(78,180,255,.16));border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px #ffffff55,0 5px 18px #0002;transform:translateX(var(--dock-x,0px));transition:transform .32s cubic-bezier(.2,.8,.2,1),width .25s;backdrop-filter:blur(18px) saturate(190%);-webkit-backdrop-filter:blur(18px) saturate(190%)}
+.bottom-dock{--dock-count:4;position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(440px,calc(100% - 28px));height:76px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr;align-items:center;gap:2px;border:1px solid rgba(255,255,255,.22);border-radius:27px;background:linear-gradient(135deg,rgba(42,30,83,.78),rgba(20,29,63,.72) 52%,rgba(63,34,91,.72));backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);box-shadow:0 12px 42px #0009,inset 0 1px 1px #ffffff40;overflow:hidden}
+.bottom-dock.has-dashboard{--dock-count:5;grid-template-columns:1fr 1fr 1.15fr 1fr 1fr}.bottom-dock:before{content:"";position:absolute;inset:-80% -20%;pointer-events:none;background:conic-gradient(from var(--rainbow-angle,0deg),transparent 0deg,rgba(85,190,255,.18) 45deg,rgba(181,91,255,.34) 100deg,rgba(255,112,220,.24) 155deg,rgba(104,107,255,.25) 220deg,transparent 300deg);filter:blur(20px);opacity:.9}.bottom-dock:after{content:"";position:absolute;z-index:1;left:10px;top:9px;width:calc((100% - 20px - 16px)/var(--dock-count));height:58px;border-radius:19px;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(151,112,255,.20) 48%,rgba(78,180,255,.16));border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px #ffffff55,0 5px 18px #0002;transform:translateX(var(--dock-x,0px));transition:transform .32s cubic-bezier(.2,.8,.2,1),width .25s;backdrop-filter:blur(18px) saturate(190%);-webkit-backdrop-filter:blur(18px) saturate(190%)}
 .dock-item{position:relative;z-index:2;height:58px;border:0;background:transparent;color:#c9c3e8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;border-radius:19px;transition:color .2s,transform .2s}
 .dock-item .dock-icon{font-size:21px;line-height:1;filter:drop-shadow(0 2px 6px #0005)}
 .dock-item.active{color:#fff;text-shadow:0 0 12px #c6a5ff}
@@ -903,13 +903,14 @@ async function submitAuth(){
 async function refreshNextmartRole(){
  currentNextmartRole=null;
  const dock=document.getElementById("dashboardDock");
- if(!currentUser){dock?.classList.add("hidden");return null;}
+ if(!currentUser){dock?.classList.add("hidden");document.getElementById("bottomDock")?.classList.remove("has-dashboard");return null;}
  try{
   const {data,error}=await sb.from("nextmart_admins").select("role").eq("user_id",currentUser.id).maybeSingle();
   if(error)throw error;
   currentNextmartRole=data?.role||null;
  }catch(err){console.warn("Pengecekan role NEXTMART gagal:",err.message);}
  if(dock)dock.classList.toggle("hidden",!currentNextmartRole);
+ document.getElementById("bottomDock")?.classList.toggle("has-dashboard",!!currentNextmartRole);
  return currentNextmartRole;
 }
 
@@ -952,6 +953,7 @@ async function logout(){
  currentUser=null;
  currentNextmartRole=null;
  document.getElementById("dashboardDock")?.classList.add("hidden");
+ document.getElementById("bottomDock")?.classList.remove("has-dashboard");
  pendingOrder=false;
  updateAccountUI();
  home();

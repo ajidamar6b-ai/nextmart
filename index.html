@@ -966,6 +966,22 @@ const REGION_LABELS={
 function regionLabel(value){
  return REGION_LABELS[String(value||"").trim().toLowerCase()]||"";
 }
+// Ikon region: gunakan bendera negara, bukan inisial region.
+const REGION_FLAG_CODES={
+ "indonesia":"id","filipina":"ph","malaysia":"my","singapura":"sg",
+ "amerika serikat":"us","brasil":"br","rusia":"ru","turki":"tr",
+ "thailand":"th","taiwan":"tw","vietnam":"vn","bangladesh":"bd",
+ "jepang":"jp","korea selatan":"kr","hong kong":"hk","makau":"mo",
+ "india":"in","kamboja":"kh","ukraina":"ua","belarus":"by",
+ "australia":"au","selandia baru":"nz","britania raya":"gb",
+ "uni emirat arab":"ae","bahrain":"bh","kanada":"ca","kuwait":"kw"
+};
+function regionVisual(region){
+ const key=String(region||"").trim().toLowerCase();
+ const code=REGION_FLAG_CODES[key];
+ if(code)return {src:`https://flagcdn.com/w160/${code}.png`,alt:`Bendera ${region}`,fallback:"🌐"};
+ return {src:"",alt:`Ikon ${region||"region"}`,fallback:(/global|umum|asia|eropa|amerika|sea|cis|mena|na \/ eu|eu \/ tr|taiwan \/ hong kong/i.test(region||""))?"🌐":"🗺️"};
+}
 function findBrandRegion(brand){
  const value=String(brand||"").replace(/[（）]/g,ch=>ch==="（"?"(":")").trim();
  if(!value)return "";
@@ -1440,13 +1456,30 @@ function renderCatalog(){
     for(const region of regions){
      const count=list.filter(p=>((productMeta.get(p)||{}).region||"Umum")===region).length;
      const card=document.createElement("div");card.className="card center";
-     const mark=document.createElement("div");mark.className="brand-logo";mark.style.setProperty("--brand-color","#7658bd");
-     const span=document.createElement("span");span.textContent=region==="Umum"?"ALL":region.slice(0,3).toUpperCase();mark.appendChild(span);
+     // Pertahankan logo asli game, lalu tambahkan bendera region sebagai badge kecil.
+     const mark=document.createElement("div");mark.className="logo-box region-game-logo";
+     mark.style.cssText="position:relative;overflow:visible;margin:0 auto 10px;width:57px;height:57px;border-radius:14px";
+     const gameImg=document.createElement("img");gameImg.dataset.gameLogo=selectedGameFilter;gameImg.alt="Logo "+selectedGameFilter;gameImg.loading="lazy";
+     gameImg.style.cssText="width:100%;height:100%;object-fit:contain;padding:5px;border-radius:14px;overflow:hidden";
+     const gameFallback=document.createElement("span");gameFallback.className="logo-fallback";gameFallback.textContent=gameInitials(selectedGameFilter);
+     mark.append(gameImg,gameFallback);
+     const visual=regionVisual(region);
+     const flagBadge=document.createElement("span");flagBadge.className="region-flag-badge";
+     flagBadge.style.cssText="position:absolute;right:-7px;bottom:-5px;width:27px;height:21px;border-radius:5px;border:2px solid rgba(255,255,255,.85);background:#29224f;display:grid;place-items:center;overflow:hidden;box-shadow:0 2px 8px #0007;z-index:2";
+     if(visual.src){
+      const flag=document.createElement("img");flag.src=visual.src;flag.alt=visual.alt;flag.loading="lazy";flag.decoding="async";
+      flag.style.cssText="width:100%;height:100%;object-fit:cover;padding:0;border-radius:0";
+      flag.onerror=()=>{flagBadge.textContent=visual.fallback;};flagBadge.appendChild(flag);
+     }else{
+      flagBadge.textContent=visual.fallback;flagBadge.style.fontSize="13px";
+     }
+     mark.appendChild(flagBadge);
      const label=document.createElement("b");label.textContent=region;
      const small=document.createElement("small");small.textContent=count+" produk";
      card.append(mark,label,small);card.addEventListener("click",()=>openGameByName(selectedGameFilter,region));
      grid.appendChild(card);
     }
+    loadGameArtworks([selectedGameFilter]);
     return;
    }
   }

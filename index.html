@@ -377,7 +377,7 @@ let catalogLoadToken=0;
 let selectedGameFilter="";
 let selectedGameRegionFilter="";
 let selectedProviderFilter="";
-let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],social:[]};
+let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
 let productMeta=new WeakMap();
 let catalogEntries=[];
 let catalogCursor=0;
@@ -394,7 +394,6 @@ const categories=[
  {id:"ewallet",name:"E-WALLET",desc:"Isi saldo dompet digital",domain:"dana.id"},
  {id:"giftcard",name:"GIFT CARD",desc:"Voucher dan gift card digital",domain:""},
  {id:"apps",name:"APLIKASI & LANGGANAN",desc:"Aplikasi dan layanan premium",domain:""},
- {id:"social",name:"SOCIAL MEDIA",desc:"Layanan media sosial",domain:""},
 ];
 
 const pulsaProviders=[
@@ -505,7 +504,6 @@ function getGameName(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
  const brand=String(product?.brand||product?.brand_name||product?.provider||product?.product_brand||"").trim();
- if(/magic chess/i.test(brand+" "+name)||/^mcgg/i.test(sku))return "Magic Chess: Go Go";
  for(const [rule,title] of GAME_SKU_RULES){if(rule.test(sku))return title;}
  if(brand){
   const clean=stripBrandRegion(brand);
@@ -832,7 +830,7 @@ function classifyProduct(p){
  const brand=String(p?.brand||p?.brand_name||p?.provider||p?.product_brand||"").toLowerCase();
  const type=String(p?.type||p?.product_type||"").toLowerCase();
  if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
- if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "social";
+ if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "excluded";
  if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
  if(/dana|gopay|go\s?pay|ovo|shopeepay|shopee pay|linkaja|link aja|ewallet|e-wallet/.test(name)||/dana|gopay|ovo|shopeepay|linkaja/.test(brand)||cat.includes("ewallet")||cat.includes("e-wallet"))return "ewallet";
  // Supplier category "Airtime & Data (Pulsa & Data)" is shared by both products.
@@ -908,11 +906,16 @@ function normalizeProductName(name,game){
 function deduplicateProducts(products){
  const chosen=new Map();
  for(const p of products){
-  const sku=String(p.sku_code||"").trim().toLowerCase();
-  const key=sku||[p.name,p.brand,p.type,p.description].map(x=>String(x||"").trim().toLowerCase()).join("|");
-  if(!chosen.has(key))chosen.set(key,p);
+  const meta=productMeta.get(p)||{};const region=productRegion(p,meta.game);
+  const key=[meta.game||"",region,normalizeProductName(p.name,meta.game)].join("|");
+  const old=chosen.get(key);const price=Number(p.selling_price??p.price)||Infinity;
+  const oldPrice=old?(Number(old.selling_price??old.price)||Infinity):Infinity;
+  if(!old||price<oldPrice||(price===oldPrice&&String(p.sku_code)<String(old.sku_code)))chosen.set(key,p);
  }
- return [...chosen.values()].sort((a,b)=>(Number(a.selling_price)||Infinity)-(Number(b.selling_price)||Infinity)||String(a.name).localeCompare(String(b.name),"id"));
+ return [...chosen.values()].sort((a,b)=>{
+  const pa=Number(a.selling_price??a.price)||Infinity,pb=Number(b.selling_price??b.price)||Infinity;
+  return pa-pb||String(a.name).localeCompare(String(b.name),"id");
+ });
 }
 
 function getPulsaOperator(product){
@@ -968,7 +971,7 @@ function productDomain(p){
 }
 
 function drawCategories(){
- const categoryMarks={game:["🎮","#5865d8"],pulsa:["SIM","#2186df"],data:["4G","#168bcb"],pln:["⚡","#e5a900"],ewallet:["W","#4b69d8"],giftcard:["GC","#9a65d8"],apps:["APP","#5b6f91"],social:["SM","#5b6f91"]};
+ const categoryMarks={game:["🎮","#5865d8"],pulsa:["SIM","#2186df"],data:["4G","#168bcb"],pln:["⚡","#e5a900"],ewallet:["W","#4b69d8"],giftcard:["GC","#9a65d8"],apps:["APP","#5b6f91"]};
  document.getElementById("categories").innerHTML=categories.map(c=>{
   const item=categoryMarks[c.id]||["•","#667085"];
   return `<div class="card center" onclick="openCategory('${c.id}')"><div class="brand-logo" style="--brand-color:${item[1]}"><span>${item[0]}</span></div><b>${c.name}</b><small>${c.desc}</small></div>`;
@@ -1012,9 +1015,8 @@ function normalizeSupplierProduct(raw){
  product.brand=String(pick("brand","brand_name","product_brand","provider")||"");
  product.type=String(pick("type","product_type")||"");
  product.server=String(pick("server","server_name","serverName")||"");
- product.description=String(pick("description","desc")||"");
  product.status=String(pick("status","product_status")||"active").toLowerCase().replace(/[ -]+/g,"_");
- const price=pick("retail_price_mc","retailPriceMc","retail_price","selling_price","sellingPrice","price","price_mc");
+ const price=pick("selling_price","sellingPrice","your_price_mc","yourPriceMc","your_price","price","price_mc","h2h_basic_mc","h2h_premium_mc","retail_price_mc");
  product.selling_price=Number(price)||0;
  return product;
 }
@@ -1027,8 +1029,8 @@ async function loadProducts(){
   if(!response.ok)throw new Error("HTTP "+response.status);
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
-  allProducts=deduplicateProducts(raw.map(normalizeSupplierProduct).filter(p=>p.sku_code&&p.name&&p.status==="active"&&Number(p.selling_price)>0));
-  productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],social:[]};
+  allProducts=raw.map(normalizeSupplierProduct).filter(p=>p.sku_code&&p.name&&p.status==="active"&&Number(p.selling_price)>0);
+  productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[]};
   productMeta=new WeakMap();
   const grouped={};
   for(const p of allProducts){
@@ -1194,22 +1196,6 @@ function renderCatalog(){
   const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua "+(currentCategory==="ewallet"?"E-Wallet":"Operator");reset.onclick=()=>openCategory(currentCategory);grid.appendChild(reset);
  }
  if(!list.length){const message=document.createElement("div");message.className="notice";message.style.gridColumn="1/-1";message.textContent="Produk tidak ditemukan.";grid.appendChild(message);return;}
- if(currentCategory==="game"&&selectedGameFilter){
-  const buckets={pass:[],first:[],currency:[],other:[]};
-  for(const p of list){const t=String(p.type||"").toLowerCase(),n=String(p.name||"").toLowerCase(),d=String(p.description||"").toLowerCase();
-   if(/pass|membership|subscription|weekly|monthly|privilege|starlight|twilight|elite pass|royale pass/.test(t+" "+n+" "+d))buckets.pass.push(p);
-   else if(/first\s*top\s*up|first recharge|first purchase|first topup/.test(t+" "+n+" "+d))buckets.first.push(p);
-   else buckets.currency.push(p);
-  }
-  const grid=document.getElementById("catalogGrid");grid.replaceChildren();
-  const back=document.createElement("button");back.className="back";back.style.gridColumn="1/-1";back.textContent="← Semua Game";back.onclick=resetGameFilter;grid.appendChild(back);
-  for(const [key,label] of [["pass","Pass / Membership"],["first","First Top Up"],["currency","Mata Uang"]]){
-   if(!buckets[key].length)continue;
-   const heading=document.createElement("h3");heading.textContent=label;heading.style.gridColumn="1/-1";heading.style.margin="18px 0 2px";grid.appendChild(heading);
-   for(const product of buckets[key])grid.appendChild(createProductCard(product));
-  }
-  return;
- }
  catalogEntries=list.map(p=>({type:"product",product:p}));catalogCursor=0;catalogProductCount=list.length;renderMoreCatalog();
 }
 
@@ -1291,7 +1277,7 @@ function createProductCard(p){
  }
  const title=document.createElement("b");title.textContent=p.name+(meta.region?" · "+meta.region:"");
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
- el.append(title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
+ if(meta.server){const server=document.createElement("small");server.className="muted";server.textContent=meta.server;el.append(title,server,price);}else el.append(title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
 }
 
 function appendProductCard(grid,p){grid.appendChild(createProductCard(p));}
@@ -1525,7 +1511,6 @@ function validateAllFields(){
 // =====================================================
 
 const HISTORY_KEY="nextmart_transaction_history";
-const CHECKOUT_DRAFT_KEY="nextmart_checkout_draft_v1";
 
 function getHistory(){
  try{
@@ -1655,7 +1640,6 @@ async function order(){
    "\nMetode: Midtrans Sandbox";
 
   pendingOrder=false;
-  try{localStorage.setItem(CHECKOUT_DRAFT_KEY,JSON.stringify({sku_code:selected.sku_code,product_name:selected.name,values,fieldNames,category:classifyProduct(selected),saved_at:Date.now()}));}catch(e){}
   show("summary");
 
  }catch(error){

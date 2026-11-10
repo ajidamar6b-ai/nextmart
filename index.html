@@ -375,7 +375,7 @@ let slideTimer=null;
 let currentOrderPayload=null;
 let catalogLoadToken=0;
 let selectedGameFilter="";
-let productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
+let productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
 let productMeta=new WeakMap();
 let catalogEntries=[];
 let catalogCursor=0;
@@ -397,7 +397,7 @@ const categories=[
 
 const recommendedGames=[
  {name:"Mobile Legends",search:"Mobile Legends: Bang Bang"},
- {name:"Free Fire",search:"Free Fire"},
+ {name:"Free Fire",search:"Garena Free Fire"},
  {name:"Roblox",search:"Roblox"},
  {name:"PUBG Mobile",search:"PUBG MOBILE"},
  {name:"Genshin Impact",search:"Genshin Impact"},
@@ -409,66 +409,201 @@ const recommendedGames=[
  {name:"Honor of Kings",search:"Honor of Kings"},
  {name:"League of Legends: Wild Rift",search:"League of Legends: Wild Rift"},
  {name:"Eggy Party",search:"Eggy Party"},
+ {name:"EA SPORTS FC Mobile",search:"EA SPORTS FC Mobile"},
+ {name:"Football Master 2",search:"Football Master 2"},
+ {name:"Point Blank",search:"Point Blank"},
  {name:"Ragnarok M: Eternal Love",search:"Ragnarok M: Eternal Love"},
+ {name:"Ragnarok: The New World",search:"Ragnarok The New World"},
  {name:"Dragon Nest M Classic",search:"Dragon Nest M Classic"},
  {name:"State of Survival",search:"State of Survival"},
- {name:"Clash of Clans",search:"Clash of Clans"}
+ {name:"Clash of Clans",search:"Clash of Clans"},
+ {name:"Arena of Valor",search:"Arena of Valor"},
+ {name:"Love and Deepspace",search:"Love and Deepspace"},
+ {name:"Sword of Justice",search:"Sword of Justice"},
+ {name:"Devil May Cry: Peak of Combat",search:"Devil May Cry Peak of Combat"},
+ {name:"Golden Spatula",search:"Golden Spatula"},
+ {name:"Soul Land: New World",search:"Soul Land New World"},
+ {name:"Age of Empires Mobile",search:"Age of Empires Mobile"},
+ {name:"Dragon Raja SEA",search:"Dragon Raja SEA"},
+ {name:"The Seven Deadly Sins: Grand Cross",search:"The Seven Deadly Sins Grand Cross"},
+ {name:"Lineage 2M",search:"Lineage 2M"},
+ {name:"Ragnarok Origin",search:"Ragnarok Origin"},
+ {name:"Ragnarok M: Classic",search:"Ragnarok M Classic"},
+ {name:"The Lord of the Rings: Rise to War",search:"The Lord of the Rings Rise to War"},
+ {name:"Solo Leveling: Arise",search:"Solo Leveling: Arise"},
+ {name:"Punishing: Gray Raven",search:"Punishing: Gray Raven"},
+ {name:"BLEACH: Soul Resonance",search:"BLEACH Soul Resonance"},
+ {name:"CATS: Crash Arena Turbo Stars",search:"CATS Crash Arena Turbo Stars"},
+ {name:"The Legend of Neverland",search:"The Legend of Neverland"},
+ {name:"Ragnarok X: Next Generation",search:"Ragnarok X Next Generation"},
+ {name:"Ghost Story: Love Destiny",search:"Ghost Story Love Destiny"},
+ {name:"Haikyu!! Fly High",search:"Haikyu Fly High"},
+ {name:"Arknights: Endfield",search:"Arknights Endfield"},
+ {name:"Dragonheir: Silent Gods",search:"Dragonheir Silent Gods"},
+ {name:"Pixel Gun 3D",search:"Pixel Gun 3D"},
+ {name:"Dragon Ball Z Dokkan Battle",search:"Dragon Ball Z Dokkan Battle"},
+ {name:"Slam Dunk",search:"Slam Dunk Mobile"}
 ];
 
-const gameInfo=[
- {name:"Mobile Legends",keys:["mobile legends","mobile legend","mlbb","diamond ml"]},
- {name:"Free Fire",keys:["free fire","freefire","ff max","diamond ff"]},
- {name:"PUBG Mobile",keys:["pubg mobile","pubgm","pubg uc"]},
- {name:"Genshin Impact",keys:["genshin","genesis crystal"]},
- {name:"Honkai: Star Rail",keys:["honkai","star rail","oneiric"]},
- {name:"Roblox",keys:["roblox","robux"]},
- {name:"Arena Breakout",keys:["arena breakout","arena break out","bond arena"]},
- {name:"Call of Duty",keys:["call of duty","codm","cod mobile"]},
- {name:"Ragnarok",keys:["ragnarok","ro mobile"]},
- {name:"Arena of Valor",keys:["arena of valor","aov"]},
- {name:"Wild Rift",keys:["wild rift"]},
- {name:"Point Blank",keys:["point blank"]},
- {name:"Steam",keys:["steam wallet","steam"]},
- {name:"Minecraft",keys:["minecraft"]},
- {name:"Stumble Guys",keys:["stumble guys"]},
- {name:"LifeAfter",keys:["lifeafter","life after"]}
+// SKU provider families are mapped before product-name matching. Never infer a game
+// from generic item words such as Diamonds, Gems, Coins, or Vouchers.
+const GAME_SKU_RULES=[
+ [/^(ml[a-z]{0,3}|mcgg)/,"Mobile Legends"],
+ [/^ff[a-z]{0,3}/,"Free Fire"],
+ [/^pubgm/,"PUBG Mobile"],
+ [/^(rvl|rgc(?=.*rv))/,"Roblox"],
+ [/^codm/,"Call of Duty: Mobile"],
+ [/^(abi|abb|abpp)/,"Arena Breakout"],
+ [/^hok/,"Honor of Kings"], [/^aov/,"Arena of Valor"],
+ [/^lolwr/,"League of Legends: Wild Rift"],
+ [/^dnmc/,"Dragon Nest M Classic"], [/^sos/,"State of Survival"],
+ [/^(epiid|eppph|eppes|ep[0-9])/,"Eggy Party"],
+ [/^(rmssea|rmelssea|rmel|rmlla|rmll)/,"Ragnarok M: Eternal Love"],
+ [/^rtnw/,"Ragnarok: The New World"], [/^coc/,"Clash of Clans"],
+ [/^(val|vtth|vpph|vvgcu)/,"VALORANT"], [/^wwm|^ww/,"Wuthering Waves"],
+ [/^(hsr|hs)/,"Honkai: Star Rail"], [/^(esfm|emiid|emkkh|emssg|emmmy)/,"EA SPORTS FC Mobile"],
+ [/^(pb|pbiid)/,"Point Blank"], [/^lad/,"Love and Deepspace"],
+ [/^soj/,"Sword of Justice"], [/^dmcp/,"Devil May Cry: Peak of Combat"],
+ [/^fm/,"Football Master 2"], [/^gs\d+sgs/,"Golden Spatula"],
+ [/^aoem/,"Age of Empires Mobile"], [/^drss/,"Dragon Raja SEA"],
+ [/^tsds/,"The Seven Deadly Sins: Grand Cross"], [/^l2m/,"Lineage 2M"],
+ [/^ron/,"Ragnarok Origin"], [/^rmcu/,"Ragnarok M: Classic"],
+ [/^tlot/,"The Lord of the Rings: Rise to War"],
+ [/^slaa/,"Solo Leveling: Arise"], [/^(pgri|pgra)/,"Punishing: Gray Raven"],
+ [/^bsr/,"BLEACH: Soul Resonance"], [/^ccat/,"CATS: Crash Arena Turbo Stars"],
+ [/^lonn|^tlon/,"The Legend of Neverland"], [/^(rxng|rxin)/,"Ragnarok X: Next Generation"],
+ [/^gsld/,"Ghost Story: Love Destiny"], [/^hfhs/,"Haikyu!! Fly High"],
+ [/^aeav/,"Arknights: Endfield"], [/^slad/,"Solo Leveling: Arise"],
+ [/^vvgc/,"VALORANT"], [/^dsg/,"Dragonheir: Silent Gods"],
+ [/^pg31/,"Pixel Gun 3D"], [/^dbzd/,"Dragon Ball Z Dokkan Battle"],
+ [/^sd\d+/,"Slam Dunk"],
+ [/^slnw|^slggl/,"Soul Land: New World"],
+ [/^dmc/,"Devil May Cry: Peak of Combat"]
 ];
+
+function getGameName(product){
+ const name=String(product?.name||"").toLowerCase();
+ const sku=String(product?.sku_code||"").toLowerCase();
+ for(const [rule,title] of GAME_SKU_RULES){if(rule.test(sku))return title;}
+ const aliases=[
+  ["Mobile Legends",/mobile legends?|mobile legend|mlbb|diamond ml/],
+  ["Free Fire",/free ?fire|ff max|diamond ff/],
+  ["PUBG Mobile",/pubg mobile|pubg ?m(obile)?|unknown cash|\buc\b/],
+  ["Genshin Impact",/genshin|genesis crystal/],
+  ["Arena Breakout",/arena breakout|infinite bonds|\bbond\b/],
+  ["Roblox",/roblox|robux/],
+  ["Call of Duty: Mobile",/call of duty|codm|cod points/],
+  ["Honkai: Star Rail",/honkai|star rail|oneiric/],
+  ["Wuthering Waves",/wuthering waves|echo beads|lunite/],
+  ["VALORANT",/valorant|valorant points|\bvp\b/],
+  ["Honor of Kings",/honor of kings/], ["Arena of Valor",/arena of valor/],
+  ["League of Legends: Wild Rift",/wild rift|wild cores/],
+  ["Eggy Party",/eggy party|eggy coins|egg coins/],
+  ["EA SPORTS FC Mobile",/fc points|ea sports fc|\bsilver\b/],
+  ["Football Master 2",/football master|\bfmp\b/],
+  ["Point Blank",/point blank|pb cash/],
+  ["Ragnarok M: Eternal Love",/ragnarok m|big cat coins|\bbcc\b/],
+  ["Ragnarok: The New World",/ragnarok the new world|starstones/],
+  ["Dragon Nest M Classic",/dragon nest m classic/],
+  ["State of Survival",/state.of.survival/],
+  ["Clash of Clans",/clash of clans|builder gold/],
+  ["Love and Deepspace",/love and deepspace|deepspace/],
+  ["Sword of Justice",/sword of justice|exquisite treasures/],
+  ["Devil May Cry: Peak of Combat",/devil may cry|devil gems/],
+  ["Golden Spatula",/golden spatulas?/],
+  ["Soul Land: New World",/soul land new world/],
+  ["Age of Empires Mobile",/age of empires mobile|empire coins|koin apex/],
+  ["Dragon Raja SEA",/dragon raja|\bcoupons\b/],
+  ["The Seven Deadly Sins: Grand Cross",/seven deadly sins|7ds/],
+  ["Lineage 2M",/lineage 2m|lineage ii/],
+  ["Ragnarok Origin",/ragnarok origin/],
+  ["Ragnarok M: Classic",/ragnarok m classic|\bzeny\b/],
+  ["The Lord of the Rings: Rise to War",/lord of the rings|rise to war/],
+  ["Solo Leveling: Arise",/solo leveling|essence stones/],
+  ["Punishing: Gray Raven",/punishing gray raven|rainbow cards/],
+  ["BLEACH: Soul Resonance",/bleach soul resonance|premium spiritual jade/],
+  ["CATS: Crash Arena Turbo Stars",/crash arena turbo stars|ultimate tokens/],
+  ["The Legend of Neverland",/legend of neverland|cabala crystals|candock wish pack/],
+  ["Ragnarok X: Next Generation",/ragnarok x|next generation/],
+  ["Ghost Story: Love Destiny",/ghost story|jade giftpack/],
+  ["Haikyu!! Fly High",/haikyu|star gems|ultra recruit ticket/],
+  ["Arknights: Endfield",/arknights endfield|origeometry/],
+  ["Dragonheir: Silent Gods",/dragonheir|wyrmarrow/],
+  ["Pixel Gun 3D",/pixel gun 3d|boosters|pass tickets/],
+  ["Dragon Ball Z Dokkan Battle",/dragon ball z|dragon stones/],
+  ["Slam Dunk",/slam dunk/]
+ ];
+ for(const [title,re] of aliases){if(re.test(name))return title;}
+ return null;
+}
 
 // =====================================================
 // LOGO GAME
 // =====================================================
 
 const gameArtwork={};
-const GAME_APP_ALIASES={
- "Mobile Legends":["Mobile Legends: Bang Bang"],"PUBG Mobile":["PUBG MOBILE"],
- "Call of Duty: Mobile":["Call of Duty®: Mobile"],"VALORANT":["VALORANT"]
+const GAME_LOGO_CACHE_KEY="nextmart_game_logo_cache_v6";
+// Official publisher-provided wordmarks for titles with downloadable brand assets.
+const GAME_LOGO_STATIC={
+ "Free Fire":"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/img/20228/eb56db6919078b837ffd2e6a3b7e4aac.jpg",
+ "PUBG Mobile":"https://pubgmobile.proximabeta.com/images/event/brandassets/img-logo2.png"
 };
+const GAME_APP_ALIASES={
+ "Mobile Legends":["Mobile Legends: Bang Bang"],"Free Fire":["Garena Free Fire","Free Fire"],
+ "PUBG Mobile":["PUBG MOBILE"],"Call of Duty: Mobile":["Call of Duty: Mobile - Garena","Call of Duty Mobile"],
+ "EA SPORTS FC Mobile":["EA SPORTS FC Mobile"],"Honkai: Star Rail":["Honkai: Star Rail"],
+ "Wuthering Waves":["Wuthering Waves"],"Honor of Kings":["Honor of Kings"],
+ "League of Legends: Wild Rift":["League of Legends: Wild Rift"],"Ragnarok M: Eternal Love":["Ragnarok M: Eternal Love"],
+ "Dragon Nest M Classic":["Dragon Nest M: Classic"],"Devil May Cry: Peak of Combat":["Devil May Cry: Peak of Combat"],
+ "Age of Empires Mobile":["Age of Empires Mobile"],"Dragon Raja SEA":["Dragon Raja SEA"],
+ "The Seven Deadly Sins: Grand Cross":["The Seven Deadly Sins: Grand Cross"],
+ "Lineage 2M":["Lineage 2M"],"Ragnarok Origin":["Ragnarok Origin"],
+ "Ragnarok M: Classic":["Ragnarok M: Classic"],"The Lord of the Rings: Rise to War":["The Lord of the Rings: Rise to War"],
+ "Solo Leveling: Arise":["Solo Leveling: Arise"],"Punishing: Gray Raven":["Punishing: Gray Raven"],
+ "BLEACH: Soul Resonance":["BLEACH: Soul Resonance"],"CATS: Crash Arena Turbo Stars":["CATS: Crash Arena Turbo Stars"],
+ "The Legend of Neverland":["The Legend of Neverland"],"Ragnarok X: Next Generation":["Ragnarok X: Next Generation"]
+};
+function compactGameText(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function readGameLogoCache(){try{return JSON.parse(localStorage.getItem(GAME_LOGO_CACHE_KEY)||"{}");}catch(_){return {};}}
+function writeGameLogoCache(cache){try{localStorage.setItem(GAME_LOGO_CACHE_KEY,JSON.stringify(cache));}catch(_){}}
 async function getGameArtwork(name){
  if(Object.prototype.hasOwnProperty.call(gameArtwork,name))return gameArtwork[name];
+ if(GAME_LOGO_STATIC[name]){gameArtwork[name]=GAME_LOGO_STATIC[name];return GAME_LOGO_STATIC[name];}
+ const cached=readGameLogoCache();if(cached[name]){gameArtwork[name]=cached[name];return cached[name];}
  try{
   const query=(recommendedGames.find(g=>g.name===name)?.search)||name;
-  const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&limit=50");
-  if(!response.ok)throw new Error("App artwork lookup failed");
+  const url="https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&country=id&limit=50";
+  const response=await fetch(url,{mode:"cors",cache:"force-cache"});
+  if(!response.ok)throw new Error("App Store lookup HTTP "+response.status);
   const data=await response.json();
-  const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(x=>x.toLowerCase().replace(/[^a-z0-9]/g,""));
-  const found=(data.results||[]).find(item=>{
-   const title=String(item.trackName||"").toLowerCase().replace(/[^a-z0-9]/g,"");
-   return aliases.some(alias=>title===alias||title.startsWith(alias)||alias.startsWith(title)&&title.length>=6);
-  });
-  const image=found&&(found.artworkUrl512||found.artworkUrl100);
-  gameArtwork[name]=image||"";
-  return gameArtwork[name];
- }catch(error){gameArtwork[name]="";console.warn("Artwork game belum tersedia:",name);return "";}
+  const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(compactGameText).filter(Boolean);
+  const scored=(data.results||[]).map(item=>{
+   const title=compactGameText(item.trackName);let score=0;
+   for(const alias of aliases){
+    if(title===alias)score=Math.max(score,100);
+    else if(title.startsWith(alias))score=Math.max(score,90);
+    else if(title.includes(alias))score=Math.max(score,75);
+   }
+   const image=item.artworkUrl512||item.artworkUrl100||item.artworkUrl60;
+   return {score,image};
+  }).filter(x=>x.image).sort((a,b)=>b.score-a.score);
+  const image=scored[0]&&scored[0].score>=75?scored[0].image:"";
+  gameArtwork[name]=image;
+  if(image){cached[name]=image;writeGameLogoCache(cached);}
+  return image;
+ }catch(error){console.warn("Logo resmi App Store belum dapat dimuat:",name,error);gameArtwork[name]="";return "";}
 }
 async function loadGameArtworks(names){
- await Promise.all([...new Set(names||[])].map(async name=>{
-  const url=await getGameArtwork(name);
-  if(!url)return;
-  document.querySelectorAll('[data-game-logo="'+CSS.escape(name)+'"]').forEach(img=>{
+ const queue=[...new Set(names||[])];let cursor=0;
+ async function worker(){while(cursor<queue.length){const name=queue[cursor++];const url=await getGameArtwork(name);if(!url)continue;
+  document.querySelectorAll("img[data-game-logo]").forEach(img=>{
+   if(img.dataset.gameLogo!==name)return;
    img.onload=()=>{img.style.display="block";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="none";};
-   img.onerror=()=>{img.removeAttribute("src");img.style.display="none";};img.src=url;
+   img.onerror=()=>{img.removeAttribute("src");img.style.display="none";const fallback=img.parentElement.querySelector(".logo-fallback");if(fallback)fallback.style.display="flex";};
+   img.src=url;
   });
- }));
+ }}
+ await Promise.all(Array.from({length:Math.min(4,queue.length)},()=>worker()));
 }
 
 // =====================================================
@@ -652,72 +787,50 @@ function classifyProduct(p){
  const name=String(p?.name||"").toLowerCase();
  const cat=String(p?.category||"").toLowerCase();
  const sku=String(p?.sku_code||"").toLowerCase();
- // Explicit non-game products override misleading words/SKU fragments.
- if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||/^d(n|gc)g?l|^dgcggln/.test(sku)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
- if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
+ if(/discord|spotify|netflix|youtube premium|canva|capcut|viu premium|prime video/.test(name)||cat.includes("aplikasi")||cat.includes("langganan"))return "apps";
  if(/instagram|tiktok|facebook|youtube views|followers|likes|social media/.test(name)||cat.includes("social"))return "excluded";
  if(/token pln|pln/.test(name)||cat.includes("pln"))return "pln";
  if(/dana|gopay|ovo|shopeepay|linkaja|ewallet|e-wallet/.test(name)||cat.includes("ewallet"))return "ewallet";
  if(/paket data|data flash|internet|kuota/.test(name)||(cat.includes("data")&&!name.includes("pulsa")))return "data";
  if(/pulsa/.test(name)||cat.includes("airtime")||cat.includes("pulsa"))return "pulsa";
- // Respect supplier category: only actual Game products can enter GAME.
+ if(sku.startsWith("rgcglu")||/gift ?card|google play|apple gift|itunes|steam wallet|voucher steam/.test(name)||cat.includes("gift card"))return "giftcard";
  if(cat.includes("game")||cat.includes("games")||cat.includes("topup game"))return "game";
- // Explicit SKU/name detection for games accidentally mislabeled by supplier.
- if(/^(ml|mcgg|ff|f\d|pubgmi?|pubgmgl|giggl|abi|ab\d|rvl|codm|val|vtth|vpph|hok|aov)/.test(sku))return "game";
- if(/mobile legends?|mlbb|free ?fire|pubg|genshin|roblox|robux|arena breakout|call of duty|codm|honkai|star rail|valorant|wild rift|ragnarok|stumble guys|point blank|minecraft/.test(name))return "game";
  return "other";
 }
 
-const GAME_SKU_RULES=[
- [/^(ml|mcgg)/,"Mobile Legends"], [/^ff/,"Free Fire"], [/^pubgm/,"PUBG Mobile"],
- [/^(giggl)/,"Genshin Impact"], [/^(abi|ab[0-9])/,"Arena Breakout"], [/^rvl/,"Roblox"],
- [/^(codm)/,"Call of Duty: Mobile"], [/^hok/,"Honor of Kings"], [/^aov/,"Arena of Valor"],
- [/^lolwr/,"League of Legends: Wild Rift"], [/^dnmcs/,"Dragon Nest M Classic"],
- [/^soszw/,"State of Survival"], [/^epiid/,"Eggy Party"], [/^rmssea|^rmelssea|^rmel/,"Ragnarok M: Eternal Love"],
- [/^coc/,"Clash of Clans"], [/^val|^vtth|^vpph|^vvgcu/,"VALORANT"],
- [/^wwm|^ww/,"Wuthering Waves"], [/^hsr|^hs/,"Honkai: Star Rail"]
-];
-function getGameName(product){
- const name=String(product?.name||"").toLowerCase();
+function productRegion(product,game){
  const sku=String(product?.sku_code||"").toLowerCase();
- for(const [rule,title] of GAME_SKU_RULES)if(rule.test(sku))return title;
- const aliases=[
-  ["Mobile Legends",/mobile legends?|mlbb|diamond ml/],["Free Fire",/free ?fire|ff max|diamond ff/],
-  ["PUBG Mobile",/pubg mobile|pubgm|unknown cash|uc/],["Genshin Impact",/genshin|genesis crystal/],
-  ["Arena Breakout",/arena breakout|bond/],["Roblox",/roblox|robux/],
-  ["Call of Duty: Mobile",/call of duty|codm/],["Honkai: Star Rail",/honkai|star rail|oneiric/],
-  ["Wuthering Waves",/wuthering waves|lunite/],["VALORANT",/valorant|vp/],
-  ["Honor of Kings",/honor of kings/],["Arena of Valor",/arena of valor/],
-  ["League of Legends: Wild Rift",/wild rift|wild cores/],["Eggy Party",/eggy party|egg coins/],
-  ["Ragnarok M: Eternal Love",/ragnarok|big cat coins/],["Minecraft",/minecraft/],
-  ["Stumble Guys",/stumble guys/],["Point Blank",/point blank|pb cash/],
-  ["LifeAfter",/life ?after/],["State of Survival",/state.of.survival/],["Clash of Clans",/clash of clans|builder gold/]
- ];
- for(const [title,re] of aliases)if(re.test(name))return title;
- // Jangan menebak nama game dari nama item seperti "60 Gems" atau "Starter Pack".
- return "Game Lainnya";
+ if(game==="Mobile Legends"||game==="Free Fire"){
+  const code=sku.match(/^(?:ml|ff)(id|ph|my|sg|us|br|ru|tr|th|gl)/);
+  const labels={id:"Indonesia",ph:"Filipina",my:"Malaysia",sg:"Singapura",us:"Amerika",br:"Brasil",ru:"Rusia",tr:"Turki",th:"Thailand",gl:"Global"};
+  return code?(labels[code[1]]||""):"";
+ }
+ return "";
 }
-
-function normalizeProductName(name){
- return String(name||"").toLowerCase().normalize("NFKD")
-  .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+function normalizeProductName(name,game){
+ let value=String(name||"").toLowerCase().normalize("NFKD");
+ value=value.replace(/\((?:id|indonesia|global|sea|asia|philippines|philippine|ph|malaysia|my|singapore|sg|brazil|br|thailand|th|russia|ru|turkey|tr|eu|na|latam)\)/gi," ");
+ value=value.replace(/\b(?:indonesia|global|sea server|philippines|malaysia|singapore|brazil|thailand)\b/gi," ");
+ value=value.replace(/[^a-z0-9+]+/g," ").trim().replace(/\s+/g," ");
+ if((game==="Mobile Legends"||game==="Free Fire")&&/diamond/.test(value)){
+  const nums=(value.match(/\d[\d,.]*/g)||[]).map(x=>x.replace(/[,.]/g,""));
+  if(nums.length)return "diamond:"+nums.join("+");
+ }
+ return value;
 }
-
 function deduplicateProducts(products){
  const chosen=new Map();
  for(const p of products){
-  const meta=productMeta.get(p)||{};
-  const sku=String(p.sku_code||"").toLowerCase();
-  const family=meta.game.startsWith("Game ")||meta.game==="Perlu Identifikasi"?(sku.match(/^[a-z]+/)||[sku])[0]:"";
-  const regionMatch=sku.match(/^(mlid|mlph|mlmy|mlsg|mlbr|mltr|mlru|mlus|ffid|ffgl|ffbr|ffph|pubgmgl|pubgmi)/);
-  const region=regionMatch?regionMatch[1]:"";
-  const key=[meta.category,meta.game||"",family,region,normalizeProductName(p.name)].join("|");
-  const old=chosen.get(key);
-  const price=Number(p.selling_price??p.price)||Infinity;
+  const meta=productMeta.get(p)||{};const region=productRegion(p,meta.game);
+  const key=[meta.game||"",region,normalizeProductName(p.name,meta.game)].join("|");
+  const old=chosen.get(key);const price=Number(p.selling_price??p.price)||Infinity;
   const oldPrice=old?(Number(old.selling_price??old.price)||Infinity):Infinity;
   if(!old||price<oldPrice||(price===oldPrice&&String(p.sku_code)<String(old.sku_code)))chosen.set(key,p);
  }
- return [...chosen.values()].sort((a,b)=>{const pa=Number(a.selling_price??a.price)||Infinity,pb=Number(b.selling_price??b.price)||Infinity;return pa-pb||String(a.name).localeCompare(String(b.name),"id");});
+ return [...chosen.values()].sort((a,b)=>{
+  const pa=Number(a.selling_price??a.price)||Infinity,pb=Number(b.selling_price??b.price)||Infinity;
+  return pa-pb||String(a.name).localeCompare(String(b.name),"id");
+ });
 }
 
 function productDomain(p){
@@ -772,15 +885,17 @@ async function loadProducts(){
   const result=await response.json();
   const raw=Array.isArray(result)?result:(result.products||result.data||[]);
   allProducts=raw.filter(p=>p&&p.sku_code&&p.name&&String(p.status||"active").toLowerCase()==="active"&&Number(p.selling_price??p.price)>0);
-  productBuckets={game:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
+  productBuckets={game:[],unmappedGame:[],pulsa:[],data:[],pln:[],ewallet:[],giftcard:[],apps:[],other:[]};
   productMeta=new WeakMap();
   const grouped={};
   for(const p of allProducts){
-   const category=classifyProduct(p);
+   let category=classifyProduct(p);
    if(category==="excluded")continue;
    const game=category==="game"?getGameName(p):"";
-   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game).toLowerCase();
-   productMeta.set(p,{category,game,search});
+   if(category==="game"&&!game)category="unmappedGame";
+   const region=game?productRegion(p,game):"";
+   const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game+" "+region).toLowerCase();
+   productMeta.set(p,{category,game,region,search});
    (grouped[category]||(grouped[category]=[])).push(p);
   }
   for(const category of Object.keys(productBuckets)){
@@ -871,7 +986,7 @@ function resetGameFilter(){
  selectedGameFilter="";
  document.getElementById("search").value="";
  document.getElementById("catalogTitle").textContent="GAME";
- document.getElementById("catalogDesc").textContent="Semua produk game NEXTMART.";
+ document.getElementById("catalogDesc").textContent="Pilih game untuk melihat produk top-up yang sesuai.";
  renderCatalog();
 }
 
@@ -879,17 +994,7 @@ function resetGameFilter(){
 // TAMPILKAN KATALOG
 // =====================================================
 
-function matchesRecommendedGame(p,gameName){
- const meta=productMeta.get(p)||{};
- const sku=String(p.sku_code||"").toLowerCase();
- const name=String(p.name||"").toLowerCase();
- if(gameName==="Mobile Legends")return /^ml/.test(sku)||/mobile legends?|mlbb|diamond ml/.test(name);
- if(gameName==="Free Fire")return /^ff/.test(sku)||/free ?fire|ff max|diamond ff/.test(name);
- if(gameName==="Roblox")return /^rvl/.test(sku)||(/^rgc/.test(sku)&&/rv/.test(sku))||/robux/.test(name);
- if(gameName==="Genshin Impact")return /^giggl/.test(sku)||/genshin|genesis crystal/.test(name);
- if(gameName==="Arena Breakout")return /^abi/.test(sku)||/^ab\d/.test(sku)||/arena breakout|bond arena/.test(name);
- return meta.game===gameName||name.includes(gameName.toLowerCase());
-}
+function matchesRecommendedGame(p,gameName){return (productMeta.get(p)||{}).game===gameName;}
 
 function scheduleCatalogSearch(){
  clearTimeout(catalogSearchTimer);
@@ -902,14 +1007,16 @@ function renderCatalog(){
  let list=source.filter(p=>{const meta=productMeta.get(p);return !query||(meta&&meta.search.includes(query));});
  if(currentCategory==="game"&&!selectedGameFilter){
   const groups=new Map();
-  for(const p of list){const game=(productMeta.get(p)||{}).game||"Game Lainnya";if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
+  for(const p of list){const game=(productMeta.get(p)||{}).game;if(!game)continue;if(!groups.has(game))groups.set(game,[]);groups.get(game).push(p);}
   const grid=document.getElementById("catalogGrid");grid.replaceChildren();
   document.getElementById("empty").classList.toggle("hidden",groups.size>0);
-  if(!groups.size){grid.innerHTML='<div class="notice" style="grid-column:1/-1">Belum ada game yang cocok.</div>';return;}
-  const order=["Mobile Legends","Free Fire","Roblox","PUBG Mobile","Genshin Impact","Honkai: Star Rail","Wuthering Waves","Call of Duty: Mobile","Arena Breakout","VALORANT","Honor of Kings","League of Legends: Wild Rift","Eggy Party","Ragnarok M: Eternal Love","Dragon Nest M Classic","State of Survival","Clash of Clans","Arena of Valor","Game Lainnya"] ;
+  if(!groups.size){const unknownCount=(productBuckets.unmappedGame||[]).length;grid.innerHTML='<div class="notice" style="grid-column:1/-1">'+(unknownCount?unknownCount+' produk game belum dapat dipetakan ke judul game yang terverifikasi. Produk ini sengaja tidak dicampur ke game lain.':'Belum ada game yang cocok.')+'</div>';return;}
+  const order=["Mobile Legends","Free Fire","Roblox","PUBG Mobile","Genshin Impact","Honkai: Star Rail","Wuthering Waves","Call of Duty: Mobile","Arena Breakout","VALORANT","Honor of Kings","League of Legends: Wild Rift","Eggy Party","Ragnarok M: Eternal Love","Dragon Nest M Classic","State of Survival","Clash of Clans","Arena of Valor"] ;
   const names=[...groups.keys()].sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b);});
-  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="lazy"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
+  grid.innerHTML=names.map(name=>`<div class="card center game-tile" onclick="openGameByName('${escapeHTML(name).replace(/'/g,"\\'")}')"><div class="logo-box"><img data-game-logo="${escapeHTML(name)}" alt="Logo ${escapeHTML(name)}" loading="eager" style="display:none"><span class="logo-fallback">${gameInitials(name)}</span></div><b>${escapeHTML(name)}</b><small>${groups.get(name).length} pilihan produk</small></div>`).join("");
   loadGameArtworks(names);
+  const unknownCount=(productBuckets.unmappedGame||[]).length;
+  if(unknownCount){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=unknownCount+" produk game belum bisa dipastikan judulnya dari SKU supplier, jadi tidak dicampur ke game lain.";grid.appendChild(note);}
   return;
  }
  if(currentCategory==="game"&&selectedGameFilter)list=list.filter(p=>(productMeta.get(p)||{}).game===selectedGameFilter);
@@ -989,7 +1096,7 @@ function createProductCard(p){
  const meta=productMeta.get(p)||{};const gameName=meta.category==="game"?(meta.game||getGameName(p)):"";
  const logo=document.createElement("div");logo.className="logo-box product-art";
  const art=document.createElement("img");art.alt="Ilustrasi "+productVisualKind(p)+" untuk "+p.name;art.loading="lazy";art.src=productVisualURL(p);logo.appendChild(art);
- const title=document.createElement("b");title.textContent=p.name;
+ const title=document.createElement("b");title.textContent=p.name+(meta.region?" · "+meta.region:"");
  const price=document.createElement("small");price.textContent=rupiah(p.selling_price??p.price);
  el.append(logo,title,price);el.addEventListener("click",()=>openProduct(p),{passive:true});return el;
 }

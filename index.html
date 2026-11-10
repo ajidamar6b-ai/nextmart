@@ -404,6 +404,7 @@ const pulsaProviders=[
  {name:"Smartfren",key:"Smartfren",mark:"SF",color:"#e5252a"},
  {name:"by.U",key:"by.U",mark:"by.U",color:"#2678ee"}
 ];
+const dataProviders=pulsaProviders;
 const walletProviders=[
  {name:"DANA",key:"DANA",mark:"D",color:"#1689ed"},
  {name:"OVO",key:"OVO",mark:"OVO",color:"#4b2b83"},
@@ -877,22 +878,24 @@ function getPulsaOperator(product){
 function getWalletService(product){
  const name=String(product?.name||"").toLowerCase();
  const sku=String(product?.sku_code||"").toLowerCase();
- if(/shopee\s?pay|shopeepay/.test(name))return "ShopeePay";
- if(/link\s?aja|linkaja/.test(name))return "LinkAja";
- if(/\bdana\b/.test(name))return "DANA";
- if(/\bovo\b/.test(name))return "OVO";
- if(/gopay|go\s?pay/.test(name))return "GoPay";
+ if(/shopee\s?pay|shopeepay|saldo shopee/.test(name))return "ShopeePay";
+ if(/link\s?aja|linkaja|saldo linkaja/.test(name))return "LinkAja";
+ if(/\bdana\b|saldo dana|top ?up dana/.test(name))return "DANA";
+ if(/\bovo\b|saldo ovo|top ?up ovo/.test(name))return "OVO";
+ if(/gopay|go\s?pay|saldo gojek/.test(name))return "GoPay";
  // SKU-only wallet mapping is intentionally not guessed without a verified supplier map.
  return "";
 }
 
 function providerLogoHTML(provider){
  const safe=escapeHTML(provider.name);
- return `<div class="brand-logo" style="--brand-color:${provider.color}"><span>${escapeHTML(provider.mark)}</span></div><b>${safe}</b>`;
+ const domains={"Telkomsel":"telkomsel.com","Indosat":"im3.id","XL":"xl.co.id","AXIS":"axis.co.id","Tri":"tri.co.id","Smartfren":"smartfren.com","by.U":"byu.id","DANA":"dana.id","OVO":"ovo.id","GoPay":"gopay.co.id","ShopeePay":"shopee.co.id","LinkAja":"linkaja.id"};
+ const domain=domains[provider.key];
+ return `<div class="brand-logo" style="--brand-color:${provider.color}">${domain?`<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="Logo ${safe}" loading="lazy" onerror="this.remove()">`:""}<span>${escapeHTML(provider.mark)}</span></div><b>${safe}</b>`;
 }
 
 function providerTileHTML(provider,count,type){
- const label=type==="pulsa"?"Pilihan nominal pulsa":"Pilihan top-up saldo";
+ const label=type==="pulsa"?"Pilihan nominal pulsa":type==="data"?"Pilihan paket internet":"Pilihan top-up saldo";
  return `<div class="card center provider-tile" onclick="openProviderCategory('${type}','${escapeHTML(provider.key)}')"><div class="brand-lockup">${providerLogoHTML(provider)}</div><small>${count} produk • ${label}</small></div>`;
 }
 
@@ -954,7 +957,7 @@ async function loadProducts(){
    const game=category==="game"?getGameName(p):"";
    if(category==="game"&&!game)category="unmappedGame";
    const region=game?productRegion(p,game):"";
-   const operator=category==="pulsa"?getPulsaOperator(p):"";
+   const operator=(category==="pulsa"||category==="data")?getPulsaOperator(p):"";
    const wallet=category==="ewallet"?getWalletService(p):"";
    const search=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.sku_code||"")+" "+game+" "+region+" "+operator+" "+wallet).toLowerCase();
    productMeta.set(p,{category,game,region,operator,wallet,search});
@@ -1012,7 +1015,7 @@ function openCategory(id){
  document.getElementById("search").value="";
  const category=categories.find(c=>c.id===id);if(!category)return;
  document.getElementById("catalogTitle").textContent=category.name;
- document.getElementById("catalogDesc").textContent=id==="pulsa"?"Pilih operator untuk melihat nominal pulsa.":id==="ewallet"?"Pilih layanan e-wallet untuk melihat nominal top-up.":category.desc;
+ document.getElementById("catalogDesc").textContent=id==="pulsa"?"Pilih operator untuk melihat nominal pulsa.":id==="data"?"Pilih operator untuk melihat paket data.":id==="ewallet"?"Pilih layanan e-wallet untuk melihat nominal top-up.":category.desc;
  const token=++catalogLoadToken;showCategoryLoading(category.name);show("catalog");
  requestAnimationFrame(()=>{if(token!==catalogLoadToken||currentCategory!==id)return;renderCatalog();});
 }
@@ -1071,9 +1074,9 @@ function renderCatalog(){
  const query=document.getElementById("search").value.toLowerCase().trim();
  const source=productBuckets[currentCategory]||[];
  let list=source.filter(p=>{const meta=productMeta.get(p);return !query||(meta&&meta.search.includes(query));});
- if((currentCategory==="pulsa"||currentCategory==="ewallet")&&!selectedProviderFilter){
-  const type=currentCategory;const providers=type==="pulsa"?pulsaProviders:walletProviders;
-  const keyOf=p=>{const m=productMeta.get(p)||{};return type==="pulsa"?m.operator:m.wallet;};
+ if((currentCategory==="pulsa"||currentCategory==="data"||currentCategory==="ewallet")&&!selectedProviderFilter){
+  const type=currentCategory;const providers=type==="pulsa"?pulsaProviders:type==="data"?dataProviders:walletProviders;
+  const keyOf=p=>{const m=productMeta.get(p)||{};return type==="ewallet"?m.wallet:m.operator;};
   const grid=document.getElementById("catalogGrid");grid.replaceChildren();
   const counts=new Map();for(const p of list){const key=keyOf(p);if(key)counts.set(key,(counts.get(key)||0)+1);}
   const available=providers.filter(provider=>(counts.get(provider.key)||0)>0);
@@ -1084,7 +1087,7 @@ function renderCatalog(){
   if(unknown){const note=document.createElement("div");note.className="notice";note.style.gridColumn="1/-1";note.textContent=unknown+" produk belum bisa dipastikan operator/layanan-nya dari nama dan SKU supplier. Produk ini tidak dimasukkan ke kategori merek secara asal.";grid.appendChild(note);}
   return;
  }
- if(currentCategory==="pulsa"&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).operator===selectedProviderFilter);
+ if((currentCategory==="pulsa"||currentCategory==="data")&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).operator===selectedProviderFilter);
  if(currentCategory==="ewallet"&&selectedProviderFilter)list=list.filter(p=>(productMeta.get(p)||{}).wallet===selectedProviderFilter);
  if(currentCategory==="game"&&!selectedGameFilter){
   const groups=new Map();
@@ -1107,8 +1110,8 @@ function renderCatalog(){
  if(currentCategory==="game"&&selectedGameFilter){
   const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua Game";reset.onclick=resetGameFilter;grid.appendChild(reset);
  }
- if((currentCategory==="pulsa"||currentCategory==="ewallet")&&selectedProviderFilter){
-  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua "+(currentCategory==="pulsa"?"Operator":"E-Wallet");reset.onclick=()=>openCategory(currentCategory);grid.appendChild(reset);
+ if((currentCategory==="pulsa"||currentCategory==="data"||currentCategory==="ewallet")&&selectedProviderFilter){
+  const reset=document.createElement("button");reset.className="back";reset.style.gridColumn="1/-1";reset.textContent="← Semua "+(currentCategory==="ewallet"?"E-Wallet":"Operator");reset.onclick=()=>openCategory(currentCategory);grid.appendChild(reset);
  }
  if(!list.length){const message=document.createElement("div");message.className="notice";message.style.gridColumn="1/-1";message.textContent="Produk tidak ditemukan.";grid.appendChild(message);return;}
  catalogEntries=list.map(p=>({type:"product",product:p}));catalogCursor=0;catalogProductCount=list.length;renderMoreCatalog();

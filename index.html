@@ -559,42 +559,81 @@ const GAME_APP_ALIASES={
  "League of Legends: Wild Rift":["League of Legends: Wild Rift"],"Ragnarok M: Eternal Love":["Ragnarok M: Eternal Love"],
  "Dragon Nest M Classic":["Dragon Nest M: Classic"],"Devil May Cry: Peak of Combat":["Devil May Cry: Peak of Combat"],
  "Age of Empires Mobile":["Age of Empires Mobile"],"Dragon Raja SEA":["Dragon Raja SEA"],
- "The Seven Deadly Sins: Grand Cross":["The Seven Deadly Sins: Grand Cross"],
- "Lineage 2M":["Lineage 2M"],"Ragnarok Origin":["Ragnarok Origin"],
- "Ragnarok M: Classic":["Ragnarok M: Classic"],"The Lord of the Rings: Rise to War":["The Lord of the Rings: Rise to War"],
- "Solo Leveling: Arise":["Solo Leveling: Arise"],"Punishing: Gray Raven":["Punishing: Gray Raven"],
- "BLEACH: Soul Resonance":["BLEACH: Soul Resonance"],"CATS: Crash Arena Turbo Stars":["CATS: Crash Arena Turbo Stars"],
- "The Legend of Neverland":["The Legend of Neverland"],"Ragnarok X: Next Generation":["Ragnarok X: Next Generation"]
+ "The Seven Deadly Sins: Grand Cross":["The Seven Deadly Sins: Grand Cross"],"Lineage 2M":["Lineage 2M"],
+ "Ragnarok Origin":["Ragnarok Origin"],"Ragnarok M: Classic":["Ragnarok M: Classic"],
+ "The Lord of the Rings: Rise to War":["The Lord of the Rings: Rise to War"],"Solo Leveling: Arise":["Solo Leveling: Arise"],
+ "Punishing: Gray Raven":["Punishing: Gray Raven"],"BLEACH: Soul Resonance":["BLEACH: Soul Resonance"],
+ "CATS: Crash Arena Turbo Stars":["CATS: Crash Arena Turbo Stars"],"The Legend of Neverland":["The Legend of Neverland"],
+ "Ragnarok X: Next Generation":["Ragnarok X: Next Generation"]
+};
+// Domain resmi/utama digunakan sebagai sumber logo lintas platform, bukan hanya App Store.
+const GAME_LOGO_DOMAINS={
+ "Mobile Legends":"mobilelegends.com","Mobile Legends: Bang Bang":"mobilelegends.com","Free Fire":"ff.garena.com",
+ "PUBG Mobile":"pubgmobile.com","Roblox":"roblox.com","Genshin Impact":"genshin.hoyoverse.com",
+ "Honkai: Star Rail":"hsr.hoyoverse.com","Zenless Zone Zero":"zenless.hoyoverse.com","Wuthering Waves":"wutheringwaves.kurogames.com",
+ "Honor of Kings":"honorofkings.com","Call of Duty: Mobile":"callofduty.com","Arena of Valor":"arenaofvalor.com",
+ "League of Legends: Wild Rift":"wildrift.leagueoflegends.com","Valorant":"playvalorant.com","Clash of Clans":"supercell.com",
+ "Clash Royale":"supercell.com","Brawl Stars":"supercell.com","Minecraft":"minecraft.net","Stumble Guys":"stumbleguys.com",
+ "EA SPORTS FC Mobile":"ea.com","eFootball":"konami.com","Ragnarok Origin":"ragnarok-origin.com",
+ "Ragnarok X: Next Generation":"roglobal.com","Punishing: Gray Raven":"pgr.kurogame.net","Identity V":"identityvgame.com",
+ "LifeAfter":"lifeafter.netease.com","Eggy Party":"eggyparty.com","Marvel Snap":"marvelsnap.com"
 };
 function compactGameText(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
 function readGameLogoCache(){try{return JSON.parse(localStorage.getItem(GAME_LOGO_CACHE_KEY)||"{}");}catch(_){return {};}}
 function writeGameLogoCache(cache){try{localStorage.setItem(GAME_LOGO_CACHE_KEY,JSON.stringify(cache));}catch(_){}}
+function gameLogoDomain(name){
+ if(GAME_LOGO_DOMAINS[name])return GAME_LOGO_DOMAINS[name];
+ const n=String(name||"").toLowerCase();
+ if(/mobile legends|mlbb/.test(n))return "mobilelegends.com";
+ if(/free ?fire/.test(n))return "ff.garena.com";
+ if(/pubg/.test(n))return "pubgmobile.com";
+ if(/genshin/.test(n))return "genshin.hoyoverse.com";
+ if(/honkai.*star rail/.test(n))return "hsr.hoyoverse.com";
+ if(/wuthering/.test(n))return "wutheringwaves.kurogames.com";
+ if(/roblox|robux/.test(n))return "roblox.com";
+ if(/call of duty|codm/.test(n))return "callofduty.com";
+ if(/valorant|vp/.test(n))return "playvalorant.com";
+ if(/minecraft/.test(n))return "minecraft.net";
+ if(/wild rift/.test(n))return "wildrift.leagueoflegends.com";
+ if(/honor of kings/.test(n))return "honorofkings.com";
+ if(/clash of clans|clash royale|brawl stars/.test(n))return "supercell.com";
+ if(/stumble guys/.test(n))return "stumbleguys.com";
+ return "";
+}
+function loadFirstWorkingImage(urls){
+ return new Promise(resolve=>{let i=0;const test=()=>{if(i>=urls.length){resolve("");return;}const url=urls[i++];const im=new Image();im.onload=()=>resolve(url);im.onerror=test;im.referrerPolicy="no-referrer";im.src=url;};test();});
+}
+function logoCandidatesForDomain(domain,size=256){
+ if(!domain)return [];
+ const d=encodeURIComponent(domain);
+ return [
+  `https://icons.duckduckgo.com/ip3/${d}.ico`,
+  `https://www.google.com/s2/favicons?domain=${d}&sz=${size}`,
+  `https://logo.clearbit.com/${d}`,
+  `https://icon.horse/icon/${d}`
+ ];
+}
 async function getGameArtwork(name){
- if(Object.prototype.hasOwnProperty.call(gameArtwork,name))return gameArtwork[name];
- if(GAME_LOGO_STATIC[name]){gameArtwork[name]=GAME_LOGO_STATIC[name];return GAME_LOGO_STATIC[name];}
- const cached=readGameLogoCache();if(cached[name]){gameArtwork[name]=cached[name];return cached[name];}
- try{
-  const query=(recommendedGames.find(g=>g.name===name)?.search)||name;
-  const url="https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&country=id&limit=50";
-  const response=await fetch(url,{mode:"cors",cache:"force-cache"});
-  if(!response.ok)throw new Error("App Store lookup HTTP "+response.status);
-  const data=await response.json();
-  const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(compactGameText).filter(Boolean);
-  const scored=(data.results||[]).map(item=>{
-   const title=compactGameText(item.trackName);let score=0;
-   for(const alias of aliases){
-    if(title===alias)score=Math.max(score,100);
-    else if(title.startsWith(alias))score=Math.max(score,90);
-    else if(title.includes(alias))score=Math.max(score,75);
+ if(Object.prototype.hasOwnProperty.call(gameArtwork,name)&&gameArtwork[name])return gameArtwork[name];
+ if(GAME_LOGO_STATIC[name]){const direct=await loadFirstWorkingImage([GAME_LOGO_STATIC[name]]);if(direct){gameArtwork[name]=direct;return direct;}}
+ const cached=readGameLogoCache();
+ if(cached[name]){const valid=await loadFirstWorkingImage([cached[name]]);if(valid){gameArtwork[name]=valid;return valid;}delete cached[name];}
+ const domain=gameLogoDomain(name);
+ let image=await loadFirstWorkingImage(logoCandidatesForDomain(domain,512));
+ // App Store tetap dipakai sebagai fallback lintas platform jika logo situs tidak tersedia.
+ if(!image){
+  try{
+   const query=(recommendedGames.find(g=>g.name===name)?.search)||name;
+   const response=await fetch("https://itunes.apple.com/search?term="+encodeURIComponent(query)+"&entity=software&country=id&limit=50",{mode:"cors",cache:"force-cache"});
+   if(response.ok){const data=await response.json();const aliases=[name,...(GAME_APP_ALIASES[name]||[])].map(compactGameText).filter(Boolean);
+    const scored=(data.results||[]).map(item=>{const title=compactGameText(item.trackName);let score=0;for(const alias of aliases){if(title===alias)score=Math.max(score,100);else if(title.startsWith(alias))score=Math.max(score,90);else if(title.includes(alias))score=Math.max(score,75);}return {score,image:item.artworkUrl512||item.artworkUrl100||item.artworkUrl60};}).filter(x=>x.image).sort((x,y)=>y.score-x.score);
+    if(scored[0]&&scored[0].score>=75)image=await loadFirstWorkingImage([scored[0].image]);
    }
-   const image=item.artworkUrl512||item.artworkUrl100||item.artworkUrl60;
-   return {score,image};
-  }).filter(x=>x.image).sort((a,b)=>b.score-a.score);
-  const image=scored[0]&&scored[0].score>=75?scored[0].image:"";
-  gameArtwork[name]=image;
-  if(image){cached[name]=image;writeGameLogoCache(cached);}
-  return image;
- }catch(error){console.warn("Logo resmi App Store belum dapat dimuat:",name,error);gameArtwork[name]="";return "";}
+  }catch(error){console.warn("Sumber logo aplikasi tidak tersedia:",name,error);}
+ }
+ gameArtwork[name]=image||"";
+ if(image){cached[name]=image;writeGameLogoCache(cached);}
+ return image||"";
 }
 async function loadGameArtworks(names){
  const queue=[...new Set(names||[])];let cursor=0;
@@ -1495,7 +1534,9 @@ function createProductCard(p){
    img.style.cssText="width:27px;height:27px;object-fit:contain;position:absolute;border-radius:5px";
    img.onload=()=>{fallback.style.display="none";};
    img.onerror=()=>img.remove();
-   img.src="https://www.google.com/s2/favicons?domain="+encodeURIComponent(domain)+"&sz=128";
+   const candidates=logoCandidatesForDomain(domain,256);let candidateIndex=0;
+   img.onerror=()=>{if(candidateIndex<candidates.length)img.src=candidates[candidateIndex++];else img.remove();};
+   if(candidates.length)img.src=candidates[candidateIndex++];
    brand.appendChild(img);
   }
   logo.appendChild(brand);el.appendChild(logo);
@@ -1603,7 +1644,7 @@ function openProduct(p){
  if(detailType==="giftcard"&&giftBrandDomain(p.brand)){
   const fallback=productVisualURL(p);
   detailLogo.onerror=()=>{detailLogo.onerror=null;detailLogo.src=fallback;};
-  detailLogo.src="https://www.google.com/s2/favicons?domain="+encodeURIComponent(giftBrandDomain(p.brand))+"&sz=256";
+  const domain=giftBrandDomain(p.brand);const candidates=logoCandidatesForDomain(domain,512);detailLogo.onerror=()=>{const next=candidates.slice(1);let n=0;detailLogo.onerror=()=>{if(n<next.length)detailLogo.src=next[n++];else detailLogo.src=fallback;};if(n<next.length)detailLogo.src=next[n++];};detailLogo.src=candidates[0]||fallback;
  }else if(detailType==="game"&&detailMeta.game){
   const sku=p.sku_code;
   getGameArtwork(detailMeta.game).then(url=>{if(url&&selected&&selected.sku_code===sku)detailLogo.src=url;});
